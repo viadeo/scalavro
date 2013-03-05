@@ -11,8 +11,8 @@ class AvroFixed[T](
 
   val typeName = "fixed"
 
-  def write(obj: T): Array[Byte] = ???
+  def write(obj: T): Seq[Byte] = ???
 
-  def read(bytes: Array[Byte]): T = ???
+  def read(bytes: Seq[Byte]): T = ???
 
 }

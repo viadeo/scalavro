@@ -6,8 +6,11 @@ object AvroNull extends AvroType[Unit] {
 
   val typeName = "null"
 
-  def write(obj: Unit): Array[Byte] = ???
+  /**
+    * null is written as zero bytes.
+    */
+  def write(obj: Unit): Seq[Byte] = Seq()
 
-  def read(bytes: Array[Byte]): Unit = ???
+  def read(bytes: Seq[Byte]): Unit = ()
 
 }

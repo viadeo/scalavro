@@ -6,8 +6,14 @@ object AvroBoolean extends AvroType[Boolean] {
 
   val typeName = "boolean"
 
-  def write(obj: Boolean): Array[Byte] = ???
+  /**
+    * a boolean is written as a single byte whose value is either 0 (false) or
+    * 1 (true).
+    */
+  def write(value: Boolean): Seq[Byte] = 
+    if (value) Seq(1.toByte)
+    else Seq(0.toByte)
 
-  def read(bytes: Array[Byte]): Boolean = ???
+  def read(bytes: Seq[Byte]): Boolean = ???
 
 }

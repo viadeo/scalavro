@@ -6,8 +6,16 @@ object AvroFloat extends AvroType[Float] {
 
   val typeName = "float"
 
-  def write(obj: Float): Array[Byte] = ???
+  def write(value: Float): Seq[Byte] = {
+    val bits: Int = java.lang.Float.floatToIntBits(value)
+    Seq(
+      bits.toByte,
+      (bits >> 8).toByte,
+      (bits >> 16).toByte,
+      (bits >> 24).toByte
+    )
+  }
 
-  def read(bytes: Array[Byte]): Float = ???
+  def read(bytes: Seq[Byte]): Float = ???
 
 }

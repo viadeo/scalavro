@@ -12,7 +12,7 @@ import com.gensler.scalavro.types.complex._
 
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
-  "The AvroType companion object" should "return valid primitive types" in {
+  "The AvroType companion object" should "return valid primitive avro types" in {
     AvroType.fromType[Boolean] should be (Success(AvroBoolean))
     AvroType.fromType[Seq[Byte]] should be (Success(AvroBytes))
     AvroType.fromType[Double] should be (Success(AvroDouble))

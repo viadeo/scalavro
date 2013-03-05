@@ -6,8 +6,8 @@ object AvroLong extends AvroType[Long] {
 
   val typeName = "long"
 
-  def write(obj: Long): Array[Byte] = ???
+  def write(obj: Long): Seq[Byte] = ???
 
-  def read(bytes: Array[Byte]): Long = ???
+  def read(bytes: Seq[Byte]): Long = ???
 
 }

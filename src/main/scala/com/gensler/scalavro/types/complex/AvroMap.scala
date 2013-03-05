@@ -6,8 +6,8 @@ class AvroMap[T] extends AvroType[Map[String, T]] {
 
   val typeName = "map"
 
-  def write(obj: Map[String, T]): Array[Byte] = ???
+  def write(obj: Map[String, T]): Seq[Byte] = ???
 
-  def read(bytes: Array[Byte]): Map[String, T] = ???
+  def read(bytes: Seq[Byte]): Map[String, T] = ???
 
 }

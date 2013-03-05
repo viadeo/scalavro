@@ -6,8 +6,8 @@ object AvroString extends AvroType[String] {
 
   val typeName = "string"
 
-  def write(obj: String): Array[Byte] = ???
+  def write(obj: String): Seq[Byte] = ???
 
-  def read(bytes: Array[Byte]): String = ???
+  def read(bytes: Seq[Byte]): String = ???
 
 }

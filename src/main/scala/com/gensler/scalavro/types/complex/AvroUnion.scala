@@ -6,11 +6,11 @@ class AvroUnion[A, B] extends AvroNamedType[Either[A, B]] {
 
   val typeName = "union"
 
-  def write(obj: Either[A, B]): Array[Byte] = obj match {
+  def write(obj: Either[A, B]): Seq[Byte] = obj match {
     case Left(a)  => ???
     case Right(b) => ???
   }
 
-  def read(bytes: Array[Byte]): Either[A, B] = ???
+  def read(bytes: Seq[Byte]): Either[A, B] = ???
 
 }
