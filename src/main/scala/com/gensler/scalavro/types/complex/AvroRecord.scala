@@ -2,7 +2,7 @@ package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
 
-case class AvroRecord[T](
+class AvroRecord[T](
   name: String,
   namespace: String,
   fields: Seq[AvroRecordField[_]],
