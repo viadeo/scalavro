@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types
 
-import com.gensler.scalavro.types.primitive.AvroNull
+import com.gensler.scalavro.types.primitive._
 
 import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
@@ -16,8 +16,23 @@ trait AvroType[T] {
 
 object AvroType {
 
-  def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
-    ???
-  }
+  val primitiveTags: Map[TypeTag[_], Any] = Map(
+    typeTag[Unit]      -> AvroNull,
+    typeTag[Boolean]   -> AvroBoolean,
+    typeTag[Seq[Byte]] -> AvroBytes,
+    typeTag[Double]    -> AvroDouble,
+    typeTag[Float]     -> AvroFloat,
+    typeTag[Int]       -> AvroInt,
+    typeTag[Long]      -> AvroLong,
+    typeTag[String]    -> AvroString
+  )
+
+  def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] =
+    Try {
+      primitiveTags.get(tt) match {
+        case Some(primitive) => primitive.asInstanceOf[AvroType[T]]
+        case None            => ??? // complex types not handled yet
+      }
+    }
 
 }
