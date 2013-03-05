@@ -10,6 +10,8 @@ class AvroError[T](
   doc: Option[String] = None
 ) extends AvroNamedType[T] {
 
+  val typeName = "error"
+
   def write(obj: T): Array[Byte] = ???
 
   def read(bytes: Array[Byte]): T = ???

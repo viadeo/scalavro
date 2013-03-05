@@ -6,7 +6,10 @@ import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
 
 trait AvroType[T] {
+
   type scalaType = T
+
+  def typeName(): String
 
   def write(obj: T): Array[Byte]
 

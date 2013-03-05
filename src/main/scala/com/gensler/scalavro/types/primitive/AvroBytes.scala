@@ -4,6 +4,8 @@ import com.gensler.scalavro.types.AvroType
 
 object AvroBytes extends AvroType[Seq[Byte]] {
 
+  val typeName = "bytes"
+
   def write(obj: Seq[Byte]): Array[Byte] = ???
 
   def read(bytes: Array[Byte]): Seq[Byte] = ???

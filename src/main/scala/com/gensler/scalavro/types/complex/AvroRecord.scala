@@ -10,6 +10,8 @@ class AvroRecord[T](
   doc: Option[String] = None
 ) extends AvroNamedType[T] {
 
+  val typeName = "record"
+
   def write(obj: T): Array[Byte] = ???
 
   def read(bytes: Array[Byte]): T = ???
