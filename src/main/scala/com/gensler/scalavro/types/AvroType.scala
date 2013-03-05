@@ -19,7 +19,7 @@ trait AvroType[T] {
 
 object AvroType {
 
-  val primitiveTags: Map[TypeTag[_], Any] = Map(
+  val primitiveTags: Map[TypeTag[_], AvroType[_]] = Map(
     typeTag[Unit]      -> AvroNull,
     typeTag[Boolean]   -> AvroBoolean,
     typeTag[Seq[Byte]] -> AvroBytes,
