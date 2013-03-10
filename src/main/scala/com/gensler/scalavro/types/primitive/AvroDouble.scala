@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.primitive
 
 import com.gensler.scalavro.types.AvroType
+import scala.util.Try
 
 object AvroDouble extends AvroType[Double] {
 
@@ -18,9 +19,10 @@ object AvroDouble extends AvroType[Double] {
       (bits >> 48).toByte,
       (bits >> 56).toByte
     )
-
   }
 
-  def read(bytes: Seq[Byte]): Double = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[Double]
+  }
 
 }

@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
+import scala.util.Try
 
 class AvroRecord[T](
   name: String,
@@ -14,6 +15,10 @@ class AvroRecord[T](
 
   def write(obj: T): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]): T = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[T]
+  }
+
+  override def schema() = ???
 
 }

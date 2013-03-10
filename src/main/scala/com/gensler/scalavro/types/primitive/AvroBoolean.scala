@@ -1,8 +1,10 @@
 package com.gensler.scalavro.types.primitive
 
 import com.gensler.scalavro.types.AvroType
+import scala.util.Try
+import spray.json._
 
-object AvroBoolean extends AvroType[Boolean] {
+object AvroBoolean extends AvroType[Boolean] with DefaultJsonProtocol {
 
   val typeName = "boolean"
 
@@ -14,6 +16,8 @@ object AvroBoolean extends AvroType[Boolean] {
     if (value) Seq(1.toByte)
     else Seq(0.toByte)
 
-  def read(bytes: Seq[Byte]): Boolean = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[Boolean]
+  }
 
 }

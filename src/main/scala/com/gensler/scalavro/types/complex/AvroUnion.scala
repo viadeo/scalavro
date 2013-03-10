@@ -1,8 +1,12 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.AvroNamedType
+import com.gensler.scalavro.types.{AvroType, AvroNamedType}
+import com.gensler.scalavro.types.primitive.AvroNull
+import scala.reflect.runtime.universe._
+import scala.util.Try
+import spray.json._
 
-class AvroUnion[A, B] extends AvroNamedType[Either[A, B]] {
+class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
 
   val typeName = "union"
 
@@ -11,6 +15,13 @@ class AvroUnion[A, B] extends AvroNamedType[Either[A, B]] {
     case Right(b) => ???
   }
 
-  def read(bytes: Seq[Byte]): Either[A, B] = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[Either[A, B]]
+  }
+
+  override def schema() = Set(
+    AvroType.fromType[A].toOption.getOrElse(AvroNull).typeName,
+    AvroType.fromType[B].toOption.getOrElse(AvroNull).typeName
+  ).toJson
 
 }

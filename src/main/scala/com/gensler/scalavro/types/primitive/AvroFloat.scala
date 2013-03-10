@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.primitive
 
 import com.gensler.scalavro.types.AvroType
+import scala.util.Try
 
 object AvroFloat extends AvroType[Float] {
 
@@ -16,6 +17,8 @@ object AvroFloat extends AvroType[Float] {
     )
   }
 
-  def read(bytes: Seq[Byte]): Float = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[Float]
+  }
 
 }

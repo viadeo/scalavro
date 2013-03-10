@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.primitive
 
 import com.gensler.scalavro.types.AvroType
+import scala.util.Try
 
 object AvroLong extends AvroType[Long] {
 
@@ -8,6 +9,8 @@ object AvroLong extends AvroType[Long] {
 
   def write(obj: Long): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]): Long = ???
+  def read(bytes: Seq[Byte]) = Try {
+    ???.asInstanceOf[Long]
+  }
 
 }

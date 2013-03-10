@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.primitive
 
 import com.gensler.scalavro.types.AvroType
+import scala.util.{Try, Success}
 
 object AvroNull extends AvroType[Unit] {
 
@@ -11,6 +12,6 @@ object AvroNull extends AvroType[Unit] {
     */
   def write(obj: Unit): Seq[Byte] = Seq()
 
-  def read(bytes: Seq[Byte]): Unit = ()
+  def read(bytes: Seq[Byte]) = Success(())
 
 }

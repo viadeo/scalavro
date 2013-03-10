@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
+import scala.util.Try
 
 class AvroError[T](
   name: String,
@@ -8,12 +9,12 @@ class AvroError[T](
   fields: Seq[AvroRecordField[_]],
   aliases: Seq[String] = Seq(),
   doc: Option[String] = None
-) extends AvroNamedType[T] {
-
-  val typeName = "error"
-
-  def write(obj: T): Seq[Byte] = ???
-
-  def read(bytes: Seq[Byte]): T = ???
-
+) extends AvroRecord[T](
+  name,
+  namespace,
+  fields,
+  aliases,
+  doc
+) {
+  override val typeName = "error"
 }
