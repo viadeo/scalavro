@@ -30,8 +30,10 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
         println(intSeqType.schema)
       }
       case _ => fail
-    }
+    }    
+  }
 
+  it should "return valid avro map types" in {
     AvroType.fromTypeTag[Map[String, Int]] match {
       case Success(intMapType) => {
         intMapType.isInstanceOf[AvroMap[Int]] should be (true)
@@ -39,7 +41,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       }
       case _ => fail
     }
-    
   }
 
 }

@@ -67,34 +67,15 @@ object AvroType {
     val avroType = primitiveTags.get(tt) match {
       case Some(primitive) => primitive
       case None            => {
-        if (tt.tpe <:< typeOf[Seq[_]]) {
-          tt.tpe match {
-            case TypeRef(_, _, List(itemType)) => {
-              fromSeqType(TypeTag(
-                runtimeMirror(getClass.getClassLoader),
-                new TypeCreator {
-                  def apply[U <: Universe with Singleton](m: Mirror[U]) =
-                    //m.staticClass("scala."+itemType.toString).selfType
-                    itemType.asInstanceOf[U#Type]
-                }
-              ))
-            }
-          }
+
+        // lists, sequences, etc
+        if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
+          case TypeRef(_, _, List(itemType)) => fromSeqType(ruTagFor(itemType))
         }
 
-        else if (tt.tpe <:< typeOf[Map[String, _]]) {
-          tt.tpe match {
-            case TypeRef(_, _, List(stringType, itemType)) => {
-              fromMapType(TypeTag(
-                runtimeMirror(getClass.getClassLoader),
-                new TypeCreator {
-                  def apply[U <: Universe with Singleton](m: Mirror[U]) =
-                    //m.staticClass("scala."+itemType.toString).selfType
-                    itemType.asInstanceOf[U#Type]
-                }
-              ))
-            }
-          }
+        // string-keyed maps
+        else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
+          case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
         }
 
         else ??? // more complex types not handled yet
@@ -104,8 +85,20 @@ object AvroType {
     avroType.asInstanceOf[AvroType[T]]
   }
 
-  private def fromSeqType[A](itemType: TypeTag[A]) = new AvroArray()(itemType)
+  private def fromSeqType[A](itemType: TypeTag[_ <: A]) = new AvroArray()(itemType)
 
-  private def fromMapType[A](itemType: TypeTag[A]) = new AvroMap()(itemType)
+  private def fromMapType[A](itemType: TypeTag[_ <: A]) = new AvroMap()(itemType)
+
+  private def ruTagFor(tpe: Type) = {
+    import scala.reflect.api._
+    TypeTag(
+      runtimeMirror(getClass.getClassLoader),
+      new TypeCreator {
+        def apply[U <: Universe with Singleton](m: Mirror[U]) =
+          //m.staticClass("scala."+itemType.toString).selfType
+          tpe.asInstanceOf[U#Type]
+      }
+    )
+  }
 
 }
