@@ -1,5 +1,7 @@
-package com.gensler.scalavro.types
+package com.gensler.scalavro
+package types
 
+import com.gensler.scalavro
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 import scala.util.{Try, Success, Failure}
 import scala.language.existentials
@@ -42,11 +44,13 @@ trait AvroType[T] extends DefaultJsonProtocol {
   def schema(): spray.json.JsValue = typeName.toJson
 
   /**
+    * == Internal API ==
+    *
     * Returns the canonical JSON representation of the supplied Avro type, or
     * the JSON representation of [[AvroNull]] if no corresponding AvroType
     * can be found for the supplied type.
     */
-  protected def typeSchemaOrNull[A: TypeTag] =
+  private[scalavro] def typeSchemaOrNull[A: TypeTag] =
     AvroType.fromType[A] match {
       case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
                                 else avroType.schema

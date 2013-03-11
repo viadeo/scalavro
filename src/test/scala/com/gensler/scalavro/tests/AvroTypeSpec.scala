@@ -12,6 +12,7 @@ import com.gensler.scalavro.types.complex._
 
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
+  // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
     AvroType.fromType[Boolean] should be (Success(AvroBoolean))
     AvroType.fromType[Seq[Byte]] should be (Success(AvroBytes))
@@ -23,6 +24,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[String] should be (Success(AvroString))
   }
 
+  // arrays
   it should "return valid AvroArray types" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
@@ -47,9 +49,9 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       }
       case _ => fail
     }
-
   }
 
+  // maps
   it should "return valid AvroMap types" in {
     AvroType.fromType[Map[String, Int]] match {
       case Success(avroType) => {
@@ -68,6 +70,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     }
   }
 
+  // unions
   it should "return valid AvroUnion types for disjoint unions of two types" in {
     AvroType.fromType[Either[Double, Int]] match {
       case Success(avroType) => {

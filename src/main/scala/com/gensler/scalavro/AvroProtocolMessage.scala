@@ -34,7 +34,7 @@ import scala.language.existentials
   * no errors are listed.
   */
 case class AvroProtocolMessage(
-  request: AvroRecord[_],
+  request: AvroRecord[_ <: Product],
   response: AvroType[_],
   error: Option[AvroUnion[_, _]] = None,
   doc: Option[String] = None,

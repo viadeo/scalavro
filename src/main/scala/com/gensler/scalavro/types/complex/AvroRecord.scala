@@ -2,9 +2,10 @@ package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import com.gensler.scalavro.AvroOrder
+import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
-class AvroRecord[T](
+class AvroRecord[T <: Product : ru.TypeTag](
   name: String,
   namespace: String,
   fields: Seq[AvroRecord.Field[_]],
@@ -47,13 +48,15 @@ object AvroRecord {
     *
     * aliases
     */
-  case class Field[T](
+  case class Field[U](
     name: String,
-    fieldType: AvroType[T],
-    default: Option[T] = None,
+    fieldType: AvroType[U],
+    default: Option[U] = None,
     order: Option[AvroOrder] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None
-  )
+  ) {
+    def schema(): spray.json.JsValue = ???
+  }
 
 }
