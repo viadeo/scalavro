@@ -18,7 +18,7 @@ class AvroArray[T: TypeTag] extends AvroType[Seq[T]] {
 
   override def schema() = Map(
     "type"  -> typeName,
-    "items" -> AvroType.fromTypeTag[T].toOption.getOrElse(AvroNull).typeName
+    "items" -> AvroType.fromType[T].toOption.getOrElse(AvroNull).typeName
   ).toJson
 
 }

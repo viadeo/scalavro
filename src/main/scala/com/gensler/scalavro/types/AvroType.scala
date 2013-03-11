@@ -61,7 +61,7 @@ object AvroType {
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
     * for the supplied type.
     */
-  def fromTypeTag[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
+  def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
     import scala.reflect.api._
 
     val avroType = primitiveTags.get(tt) match {

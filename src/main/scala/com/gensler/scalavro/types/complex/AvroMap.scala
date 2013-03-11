@@ -18,7 +18,7 @@ class AvroMap[T: TypeTag] extends AvroType[Map[String, T]] {
 
   override def schema() = Map(
     "type"  -> typeName,
-    "values" -> AvroType.fromTypeTag[T].toOption.getOrElse(AvroNull).typeName
+    "values" -> AvroType.fromType[T].toOption.getOrElse(AvroNull).typeName
   ).toJson
 
 }
