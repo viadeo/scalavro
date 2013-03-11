@@ -94,9 +94,7 @@ object AvroType {
     TypeTag(
       runtimeMirror(getClass.getClassLoader),
       new TypeCreator {
-        def apply[U <: Universe with Singleton](m: Mirror[U]) =
-          //m.staticClass("scala."+itemType.toString).selfType
-          tpe.asInstanceOf[U#Type]
+        def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
       }
     )
   }
