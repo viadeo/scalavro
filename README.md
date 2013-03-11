@@ -10,3 +10,4 @@
 ## Reference
 
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
+1. [Scala 2.10 Reflection Overview](http://docs.scala-lang.org/overviews/reflection/overview.html)
