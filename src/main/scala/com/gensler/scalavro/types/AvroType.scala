@@ -2,6 +2,7 @@ package com.gensler.scalavro.types
 
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 import scala.util.{Try, Success, Failure}
+import scala.language.existentials
 import scala.reflect.runtime.universe._
 import spray.json._
 
@@ -16,6 +17,11 @@ trait AvroType[T] extends DefaultJsonProtocol {
     * Returns the Avro type name for this schema.
     */
   def typeName(): String
+
+  /**
+    * Returns true if this represents a primitive Avro type.
+    */
+  def isPrimitive(): Boolean
 
   /**
     * Returns a serialized representation of the supplied object.  Throws a
@@ -42,6 +48,7 @@ object AvroType {
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
 
+  // primitive type cache table
   private val primitiveTags: Map[TypeTag[_], AvroType[_]] = Map(
     typeTag[Unit]      -> AvroNull,
     typeTag[Boolean]   -> AvroBoolean,
@@ -53,7 +60,8 @@ object AvroType {
     typeTag[String]    -> AvroString
   )
 
-  // TODO: also cache complex avro types for performance
+  // complex type cache table
+  private var complexTags = Map[TypeTag[_], AvroType[_]]()
 
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
@@ -61,23 +69,30 @@ object AvroType {
     */
   def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
 
-    val avroType = primitiveTags.collectFirst {
-      case (tag, at) if tt.tpe =:= tag.tpe => at
-    } match {
+    val avroType = primitiveTags.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
       case Some(primitive) => primitive
-      case None            => {
+      case None => complexTags.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+        case Some(complex) => complex
+        case None => {
 
-        // lists, sequences, etc
-        if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
-          case TypeRef(_, _, List(itemType)) => fromSeqType(ruTagFor(itemType))
+          val newComplexType = {
+            // lists, sequences, etc
+            if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
+              case TypeRef(_, _, List(itemType)) => fromSeqType(ruTagFor(itemType))
+            }
+
+            // string-keyed maps
+            else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
+              case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
+            }
+
+            else ??? // more complex types not handled yet
+          }
+
+          complexTags += tt -> newComplexType
+          newComplexType
+
         }
-
-        // string-keyed maps
-        else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
-          case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
-        }
-
-        else ??? // more complex types not handled yet
       }
     }
 

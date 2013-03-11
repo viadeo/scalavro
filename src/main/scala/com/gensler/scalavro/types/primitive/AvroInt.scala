@@ -1,9 +1,9 @@
 package com.gensler.scalavro.types.primitive
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroPrimitiveType
 import scala.util.Try
 
-object AvroInt extends AvroType[Int] {
+object AvroInt extends AvroPrimitiveType[Int] {
 
   val typeName = "int"
 

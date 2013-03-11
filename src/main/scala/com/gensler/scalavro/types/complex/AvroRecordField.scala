@@ -24,7 +24,7 @@ import com.gensler.scalavro.AvroOrder
   *
   * aliases
   */
-case class AvroRecordField[T](
+case class Field[T](
   name: String,
   fieldType: AvroType[T],
   default: Option[T] = None,

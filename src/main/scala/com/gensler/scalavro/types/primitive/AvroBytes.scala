@@ -1,9 +1,9 @@
 package com.gensler.scalavro.types.primitive
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroPrimitiveType
 import scala.util.Try
 
-object AvroBytes extends AvroType[Seq[Byte]] {
+object AvroBytes extends AvroPrimitiveType[Seq[Byte]] {
 
   val typeName = "bytes"
 

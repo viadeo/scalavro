@@ -1,9 +1,9 @@
 package com.gensler.scalavro.types.primitive
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroPrimitiveType
 import scala.util.Try
 
-object AvroFloat extends AvroType[Float] {
+object AvroFloat extends AvroPrimitiveType[Float] {
 
   val typeName = "float"
 

@@ -1,9 +1,9 @@
 package com.gensler.scalavro.types.primitive
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroPrimitiveType
 import scala.util.{Try, Success}
 
-object AvroNull extends AvroType[Unit] {
+object AvroNull extends AvroPrimitiveType[Unit] {
 
   val typeName = "null"
 

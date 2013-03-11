@@ -1,10 +1,10 @@
 package com.gensler.scalavro.types.primitive
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroPrimitiveType
 import scala.util.Try
 import spray.json._
 
-object AvroBoolean extends AvroType[Boolean] with DefaultJsonProtocol {
+object AvroBoolean extends AvroPrimitiveType[Boolean] with DefaultJsonProtocol {
 
   val typeName = "boolean"
 

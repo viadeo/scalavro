@@ -6,7 +6,7 @@ import scala.util.Try
 class AvroError[T](
   name: String,
   namespace: String,
-  fields: Seq[AvroRecordField[_]],
+  fields: Seq[AvroRecord.Field[_]],
   aliases: Seq[String] = Seq(),
   doc: Option[String] = None
 ) extends AvroRecord[T](

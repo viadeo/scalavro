@@ -1,12 +1,12 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.{AvroType, AvroComplexType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import scala.reflect.runtime.universe._
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import spray.json._
 
-class AvroArray[T: TypeTag] extends AvroType[Seq[T]] {
+class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
   type ItemType = T
 
@@ -18,9 +18,17 @@ class AvroArray[T: TypeTag] extends AvroType[Seq[T]] {
     ???.asInstanceOf[Seq[T]]
   }
 
-  override def schema() = Map(
-    "type"  -> typeName,
-    "items" -> AvroType.fromType[T].toOption.getOrElse(AvroNull).typeName
-  ).toJson
+  override def schema() = {
 
+    val itemTypeSchema = AvroType.fromType[T] match {
+      case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
+                                else avroType.schema
+      case Failure(_) => AvroNull.typeName.toJson
+    }
+
+    Map(
+      "type"  -> typeName.toJson,
+      "items" -> itemTypeSchema
+    ).toJson
+  }
 }
