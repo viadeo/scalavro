@@ -1,7 +1,6 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
-import com.gensler.scalavro.AvroOrder
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
@@ -52,11 +51,20 @@ object AvroRecord {
     name: String,
     fieldType: AvroType[U],
     default: Option[U] = None,
-    order: Option[AvroOrder] = None,
+    order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None
   ) {
     def schema(): spray.json.JsValue = ???
   }
+
+  trait Order { def value(): String }
+
+  object Order {
+    case object Ascending extends Order { val value = "ascending" }
+    case object Descending extends Order { val value = "descending" }
+    case object Ignore extends Order { val value = "ignore" }
+  }
+
 
 }
