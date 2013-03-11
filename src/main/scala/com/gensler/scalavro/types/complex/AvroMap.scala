@@ -8,6 +8,8 @@ import spray.json._
 
 class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
+  import DefaultJsonProtocol._
+
   type ItemType = T
 
   val typeName = "map"

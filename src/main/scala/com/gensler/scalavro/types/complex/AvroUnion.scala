@@ -8,6 +8,8 @@ import spray.json._
 
 class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
 
+  import DefaultJsonProtocol._
+
   type LeftType = A
   type RightType = B
 

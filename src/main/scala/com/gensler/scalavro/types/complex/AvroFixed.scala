@@ -11,6 +11,8 @@ class AvroFixed[T](
   aliases: Seq[String] = Seq()
 ) extends AvroNamedType[T] {
 
+  import DefaultJsonProtocol._
+
   val typeName = "fixed"
 
   def write(obj: T): Seq[Byte] = ???

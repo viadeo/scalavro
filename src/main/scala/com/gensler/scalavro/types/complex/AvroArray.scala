@@ -8,6 +8,8 @@ import spray.json._
 
 class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
+  import DefaultJsonProtocol._
+
   type ItemType = T
 
   val typeName = "array"

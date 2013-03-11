@@ -8,7 +8,9 @@ import scala.language.existentials
 import scala.reflect.runtime.universe._
 import spray.json._
 
-trait AvroType[T] extends DefaultJsonProtocol {
+trait AvroType[T] {
+
+  import DefaultJsonProtocol._
 
   /**
     * The corresponding Scala type for this Avro type.
