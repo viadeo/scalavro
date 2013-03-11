@@ -1,10 +1,8 @@
 package com.gensler.scalavro.types
 
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
-
-import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
-
+import scala.reflect.runtime.universe._
 import spray.json._
 
 trait AvroType[T] extends DefaultJsonProtocol {
@@ -62,9 +60,10 @@ object AvroType {
     * for the supplied type.
     */
   def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
-    import scala.reflect.api._
 
-    val avroType = primitiveTags.get(tt) match {
+    val avroType = primitiveTags.collectFirst {
+      case (tag, at) if tt.tpe =:= tag.tpe => at
+    } match {
       case Some(primitive) => primitive
       case None            => {
 
@@ -86,7 +85,6 @@ object AvroType {
   }
 
   private def fromSeqType[A](itemType: TypeTag[_ <: A]) = new AvroArray()(itemType)
-
   private def fromMapType[A](itemType: TypeTag[_ <: A]) = new AvroMap()(itemType)
 
   private def ruTagFor(tpe: Type) = {
