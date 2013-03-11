@@ -41,6 +41,18 @@ trait AvroType[T] extends DefaultJsonProtocol {
     */
   def schema(): spray.json.JsValue = typeName.toJson
 
+  /**
+    * Returns the canonical JSON representation of the supplied Avro type, or
+    * the JSON representation of [[AvroNull]] if no corresponding AvroType
+    * can be found for the supplied type.
+    */
+  protected def typeSchemaOrNull[A: TypeTag] =
+    AvroType.fromType[A] match {
+      case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
+                                else avroType.schema
+      case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.typeName.toJson
+    }
+
 }
 
 object AvroType {
@@ -86,12 +98,15 @@ object AvroType {
               case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
             }
 
+            else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
+              case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
+            }
+
             else ??? // more complex types not handled yet
           }
 
           complexTags += tt -> newComplexType
           newComplexType
-
         }
       }
     }
@@ -99,10 +114,16 @@ object AvroType {
     avroType.asInstanceOf[AvroType[T]]
   }
 
-  private def fromSeqType[A](itemType: TypeTag[_ <: A]) = new AvroArray()(itemType)
-  private def fromMapType[A](itemType: TypeTag[_ <: A]) = new AvroMap()(itemType)
+  private def fromSeqType[A](itemType: TypeTag[_ <: A]) = 
+    new AvroArray()(itemType)
 
-  private def ruTagFor(tpe: Type) = {
+  private def fromMapType[A](itemType: TypeTag[_ <: A]) =
+    new AvroMap()(itemType)
+
+  private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
+    new AvroUnion()(left, right)
+
+  private def ruTagFor(tpe: Type): TypeTag[_] = {
     import scala.reflect.api._
     TypeTag(
       runtimeMirror(getClass.getClassLoader),

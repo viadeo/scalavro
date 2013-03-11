@@ -18,17 +18,8 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
     ???.asInstanceOf[Seq[T]]
   }
 
-  override def schema() = {
-
-    val itemTypeSchema = AvroType.fromType[T] match {
-      case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
-                                else avroType.schema
-      case Failure(_) => AvroNull.typeName.toJson
-    }
-
-    Map(
-      "type"  -> typeName.toJson,
-      "items" -> itemTypeSchema
-    ).toJson
-  }
+  override def schema() = Map(
+    "type"  -> typeName.toJson,
+    "items" -> typeSchemaOrNull[T]
+  ).toJson
 }

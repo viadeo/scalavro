@@ -18,18 +18,8 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
     ???.asInstanceOf[Map[String, T]]
   }
 
-  override def schema() = {
-
-    val itemTypeSchema = AvroType.fromType[T] match {
-      case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
-                                else avroType.schema
-      case Failure(_) => AvroNull.typeName.toJson
-    }
-
-    Map(
-      "type"   -> typeName.toJson,
-      "values" -> itemTypeSchema
-    ).toJson
-  }
-
+  override def schema() = Map(
+    "type"   -> typeName.toJson,
+    "values" -> typeSchemaOrNull[T]
+  ).toJson
 }

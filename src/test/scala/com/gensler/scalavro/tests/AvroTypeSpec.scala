@@ -23,7 +23,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[String] should be (Success(AvroString))
   }
 
-  it should "return valid avro array types" in {
+  it should "return valid AvroArray types" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroArray[_]] should be (true)
@@ -50,7 +50,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   }
 
-  it should "return valid avro map types" in {
+  it should "return valid AvroMap types" in {
     AvroType.fromType[Map[String, Int]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroMap[_]] should be (true)
@@ -62,6 +62,24 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Map[String, List[Double]]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroMap[_]] should be (true)
+        println(avroType.schema)
+      }
+      case _ => fail
+    }
+  }
+
+  it should "return valid AvroUnion types for disjoint unions of two types" in {
+    AvroType.fromType[Either[Double, Int]] match {
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
+        println(avroType.schema)
+      }
+      case _ => fail
+    }
+
+    AvroType.fromType[Either[List[Double], Map[String, Seq[Int]]]] match {
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
         println(avroType.schema)
       }
       case _ => fail
