@@ -55,24 +55,57 @@ object AvroType {
     typeTag[String]    -> AvroString
   )
 
+  // TODO: also cache complex avro types for performance
+
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
     * for the supplied type.
     */
-  def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] =
-    Try {
-      primitiveTags.get(tt) match {
-        case Some(primitive) => primitive.asInstanceOf[AvroType[T]]
-        case None            => {
-          if (tt.tpe <:< typeTag[Seq[Any]].tpe)
-            // TODO: dig out the Seq type parameter and pass to fromSeqType (Any is not good enough!!!)
-            fromSeqType(tt.asInstanceOf[TypeTag[_ <: Seq[_]]]).asInstanceOf[AvroType[T]]
+  def fromTypeTag[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
+    import scala.reflect.api._
 
-          else ??? // more complex types not handled yet
+    val avroType = primitiveTags.get(tt) match {
+      case Some(primitive) => primitive
+      case None            => {
+        if (tt.tpe <:< typeOf[Seq[_]]) {
+          tt.tpe match {
+            case TypeRef(_, _, List(itemType)) => {
+              fromSeqType(TypeTag(
+                runtimeMirror(getClass.getClassLoader),
+                new TypeCreator {
+                  def apply[U <: Universe with Singleton](m: Mirror[U]) =
+                    //m.staticClass("scala."+itemType.toString).selfType
+                    itemType.asInstanceOf[U#Type]
+                }
+              ))
+            }
+          }
         }
+
+        else if (tt.tpe <:< typeOf[Map[String, _]]) {
+          tt.tpe match {
+            case TypeRef(_, _, List(stringType, itemType)) => {
+              fromMapType(TypeTag(
+                runtimeMirror(getClass.getClassLoader),
+                new TypeCreator {
+                  def apply[U <: Universe with Singleton](m: Mirror[U]) =
+                    //m.staticClass("scala."+itemType.toString).selfType
+                    itemType.asInstanceOf[U#Type]
+                }
+              ))
+            }
+          }
+        }
+
+        else ??? // more complex types not handled yet
       }
     }
 
-  private def fromSeqType[A: TypeTag](seqType: TypeTag[_ <: Seq[A]]): AvroType[Seq[A]] = new AvroArray[A]
+    avroType.asInstanceOf[AvroType[T]]
+  }
+
+  private def fromSeqType[A](itemType: TypeTag[A]) = new AvroArray()(itemType)
+
+  private def fromMapType[A](itemType: TypeTag[A]) = new AvroMap()(itemType)
 
 }

@@ -20,8 +20,8 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
   }
 
   override def schema() = Set(
-    AvroType.fromType[A].toOption.getOrElse(AvroNull).typeName,
-    AvroType.fromType[B].toOption.getOrElse(AvroNull).typeName
+    AvroType.fromTypeTag[A].toOption.getOrElse(AvroNull).typeName,
+    AvroType.fromTypeTag[B].toOption.getOrElse(AvroNull).typeName
   ).toJson
 
 }

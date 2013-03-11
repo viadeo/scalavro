@@ -16,14 +16,9 @@ class AvroArray[T: TypeTag] extends AvroType[Seq[T]] {
     ???.asInstanceOf[Seq[T]]
   }
 
-  override def schema() = { 
-
-    println("Array of [%s]" format typeOf[T])
-
-    Map(
-      "type"  -> typeName,
-      "items" -> AvroType.fromType[T].toOption.getOrElse(AvroNull).typeName
-    ).toJson
-  }
+  override def schema() = Map(
+    "type"  -> typeName,
+    "items" -> AvroType.fromTypeTag[T].toOption.getOrElse(AvroNull).typeName
+  ).toJson
 
 }
