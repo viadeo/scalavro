@@ -25,19 +25,28 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   it should "return valid avro array types" in {
     AvroType.fromType[Seq[Int]] match {
-      case Success(intSeqType) => {
-        intSeqType.isInstanceOf[AvroArray[Int]] should be (true)
-        println(intSeqType.schema)
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroArray[_]] should be (true)
+        println(avroType.schema)
       }
       case _ => fail
     }    
+
+    AvroType.fromType[List[Int]] match {
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroArray[_]] should be (true)
+        println(avroType.schema)
+      }
+      case _ => fail
+    }    
+
   }
 
   it should "return valid avro map types" in {
     AvroType.fromType[Map[String, Int]] match {
-      case Success(intMapType) => {
-        intMapType.isInstanceOf[AvroMap[Int]] should be (true)
-        println(intMapType.schema)
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroMap[_]] should be (true)
+        println(avroType.schema)
       }
       case _ => fail
     }

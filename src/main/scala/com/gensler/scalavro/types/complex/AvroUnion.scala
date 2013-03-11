@@ -8,6 +8,9 @@ import spray.json._
 
 class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
 
+  type LeftType = A
+  type RightType = B
+
   val typeName = "union"
 
   def write(obj: Either[A, B]): Seq[Byte] = obj match {

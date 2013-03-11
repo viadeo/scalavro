@@ -8,6 +8,8 @@ import spray.json._
 
 class AvroMap[T: TypeTag] extends AvroType[Map[String, T]] {
 
+  type ItemType = T
+
   val typeName = "map"
 
   def write(obj: Map[String, T]): Seq[Byte] = ???
