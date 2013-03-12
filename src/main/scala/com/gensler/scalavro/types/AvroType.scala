@@ -168,9 +168,6 @@ object AvroType {
   private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
     new AvroUnion()(left, right)
 
-  private def fromProductType =
-    com.gensler.scalavro.types.primitive.AvroNull // TODO: this better!
-
   private def ruTagFor(tpe: Type): TypeTag[_] = {
     import scala.reflect.api._
     TypeTag(
