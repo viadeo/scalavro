@@ -78,7 +78,7 @@ object AvroRecord {
     def schema(): spray.json.JsValue = {
       val requiredParams = Map(
         "name" -> name.toJson,
-        "fieldType" -> fieldType.typeName.toJson
+        "fieldType" -> fieldType.schema
       )
 
       val defaultParam = Map("default" -> default).collect {

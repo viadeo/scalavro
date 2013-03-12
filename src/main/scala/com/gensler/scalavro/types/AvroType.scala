@@ -138,19 +138,16 @@ object AvroType {
                     AvroType.fromType(
                       ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)
                     ) match {
-                      case Success(fieldType) => AvroRecord.Field(
-                        sym.name.toString,
-                        fieldType
-                      )
+                      case Success(fieldType) => AvroRecord.Field(sym.name.toString, fieldType)
                       case Failure(cause) => throw cause
                     }
-
                   }
+
                 )
               }
             }
 
-            else ??? // more complex types not handled yet
+            else AvroNull // more complex types not handled yet
           }
 
           complexTags += tt -> newComplexType
