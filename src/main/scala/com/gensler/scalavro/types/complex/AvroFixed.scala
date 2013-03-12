@@ -1,17 +1,17 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
+import com.gensler.scalavro.JsonSchemaProtocol._
+import scala.reflect.runtime.universe._
 import scala.util.Try
 import spray.json._
 
-class AvroFixed[T](
+class AvroFixed[T: TypeTag](
   name: String,
   size: Int,
   namespace: Option[String] = None,
   aliases: Seq[String] = Seq()
 ) extends AvroNamedType[T] {
-
-  import DefaultJsonProtocol._
 
   val typeName = "fixed"
 

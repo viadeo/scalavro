@@ -1,8 +1,11 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
+import com.gensler.scalavro.JsonSchemifiable
+import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
+import spray.json._
 
 class AvroRecord[T <: Product : ru.TypeTag](
   name: String,
@@ -12,6 +15,8 @@ class AvroRecord[T <: Product : ru.TypeTag](
   doc: Option[String] = None
 ) extends AvroNamedType[T] {
 
+  import AvroRecord._
+
   val typeName = "record"
 
   def write(obj: T): Seq[Byte] = ???
@@ -20,7 +25,21 @@ class AvroRecord[T <: Product : ru.TypeTag](
     ???.asInstanceOf[T]
   }
 
-  override def schema() = ???
+  override def schema() = {
+    val requiredParams = Map(
+      "name"      -> name.toJson,
+      "namespace" -> namespace.toJson,
+      "fields"    -> fields.toJson
+    )
+
+    val aliasesParam = Map("aliases" -> aliases).collect {
+      case (k, s) if s.nonEmpty => (k, s.toJson) }
+
+    val docParam = Map("doc" -> doc).collect {
+      case (k, Some(v)) => (k, v.toJson) }
+
+    (requiredParams ++ aliasesParam ++ docParam).toJson
+  }
 
 }
 
@@ -54,17 +73,39 @@ object AvroRecord {
     order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None
-  ) {
-    def schema(): spray.json.JsValue = ???
+  ) extends JsonSchemifiable {
+
+    def schema(): spray.json.JsValue = {
+      val requiredParams = Map(
+        "name" -> name.toJson,
+        "fieldType" -> fieldType.typeName.toJson
+      )
+
+      val defaultParam = Map("default" -> default).collect {
+        case (k, Some(u)) => (k, fieldType.write(u).toJson) }
+
+      val orderParam = Map("order" -> order).collect {
+        case (k, Some(o)) => (k, o.schema) }
+
+      val aliasesParam = Map("aliases" -> aliases).collect {
+        case (k, s) if s.nonEmpty => (k, s.toJson) }
+
+      val docParam = Map("doc" -> doc).collect {
+        case (k, Some(v)) => (k, v.toJson) }
+
+      (requiredParams ++ defaultParam ++ orderParam ++ aliasesParam ++ docParam).toJson
+    }
   }
 
-  trait Order { def value(): String }
+  trait Order {
+    def value(): String
+    final def schema(): JsValue = value.toJson
+  }
 
   object Order {
     case object Ascending extends Order { val value = "ascending" }
     case object Descending extends Order { val value = "descending" }
     case object Ignore extends Order { val value = "ignore" }
   }
-
 
 }

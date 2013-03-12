@@ -10,7 +10,15 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 
+/** for testing AvroRecord below */
+case class Person(name: String, age: Int)
+
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
+
+  /**
+    * Set this value to `true` to enable printing of JSON schemata to STDOUT.
+    */
+  val DEBUG = false
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
@@ -29,7 +37,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroArray[_]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[Seq[Int]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -37,7 +46,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[List[Boolean]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroArray[_]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[List[Boolean]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -45,7 +55,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[List[List[Seq[Byte]]]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroArray[_]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[List[List[Seq[Byte]]]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -56,7 +67,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Map[String, Int]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroMap[_]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[Map[String, Int]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -64,7 +76,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Map[String, List[Double]]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroMap[_]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[Map[String, List[Double]]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -75,7 +88,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Either[Double, Int]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[Either[Double, Int]] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }
@@ -83,7 +97,20 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     AvroType.fromType[Either[List[Double], Map[String, Seq[Int]]]] match {
       case Success(avroType) => {
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
-        println(avroType.schema)
+        typeOf[avroType.scalaType] =:= typeOf[Either[List[Double], Map[String, Seq[Int]]]] should be (true)
+        if (DEBUG) println(avroType.schema)
+      }
+      case _ => fail
+    }
+  }
+
+  // records
+  it should "return valid AvroRecord types for product types" in {
+    AvroType.fromType[Person] match {
+      case Success(avroType) => {
+        avroType.isInstanceOf[AvroRecord[_]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[Person] should be (true)
+        if (DEBUG) println(avroType.schema)
       }
       case _ => fail
     }

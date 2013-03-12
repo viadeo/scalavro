@@ -3,14 +3,13 @@ package types
 
 import com.gensler.scalavro
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
+import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.util.{Try, Success, Failure}
 import scala.language.existentials
 import scala.reflect.runtime.universe._
 import spray.json._
 
-trait AvroType[T] {
-
-  import DefaultJsonProtocol._
+trait AvroType[T] extends JsonSchemifiable {
 
   /**
     * The corresponding Scala type for this Avro type.
@@ -59,12 +58,19 @@ trait AvroType[T] {
       case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.typeName.toJson
     }
 
+  override def toString(): String = {
+    val className = getClass.getSimpleName
+    if (className endsWith "$") className.dropRight(1) else className
+  }
+
 }
 
 object AvroType {
 
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
+
+  val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
   // primitive type cache table
   private val primitiveTags: Map[TypeTag[_], AvroType[_]] = Map(
@@ -78,7 +84,7 @@ object AvroType {
     typeTag[String]    -> AvroString
   )
 
-  // complex type cache table
+  // complex type cache table, initially empty
   private var complexTags = Map[TypeTag[_], AvroType[_]]()
 
   /**
@@ -108,6 +114,42 @@ object AvroType {
               case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
             }
 
+            else if (tt.tpe <:< typeOf[Product]) {
+              val classSymbol = tt.tpe.typeSymbol.asClass
+
+              if (! classSymbol.isCaseClass) throw new IllegalArgumentException(
+                "The only product types allowed as AvroRecords are case classes!"
+              )
+              
+              else { // We have a case class typeTag in hand!
+
+                val classMirror = classLoaderMirror reflectClass classSymbol
+                val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
+
+                val TypeRef(pre, sym, typeArgs) = tt.tpe
+
+                new AvroRecord(
+
+                  name = sym.name.toString,
+
+                  namespace = pre.toString.stripSuffix(".type"),
+
+                  fields = constructorMethodSymbol.paramss(0) map { sym => // for each argument in the constructor
+                    AvroType.fromType(
+                      ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)
+                    ) match {
+                      case Success(fieldType) => AvroRecord.Field(
+                        sym.name.toString,
+                        fieldType
+                      )
+                      case Failure(cause) => throw cause
+                    }
+
+                  }
+                )
+              }
+            }
+
             else ??? // more complex types not handled yet
           }
 
@@ -129,10 +171,13 @@ object AvroType {
   private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
     new AvroUnion()(left, right)
 
+  private def fromProductType =
+    com.gensler.scalavro.types.primitive.AvroNull // TODO: this better!
+
   private def ruTagFor(tpe: Type): TypeTag[_] = {
     import scala.reflect.api._
     TypeTag(
-      runtimeMirror(getClass.getClassLoader),
+      classLoaderMirror,
       new TypeCreator {
         def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
       }

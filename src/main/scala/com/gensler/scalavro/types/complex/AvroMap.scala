@@ -2,13 +2,12 @@ package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{AvroType, AvroComplexType}
 import com.gensler.scalavro.types.primitive.AvroNull
+import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
 import spray.json._
 
 class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
-
-  import DefaultJsonProtocol._
 
   type ItemType = T
 
