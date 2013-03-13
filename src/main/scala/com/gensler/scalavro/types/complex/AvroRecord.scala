@@ -76,10 +76,7 @@ object AvroRecord {
   ) extends JsonSchemifiable {
 
     def schema(): spray.json.JsValue = {
-      val requiredParams = Map(
-        "name" -> name.toJson,
-        "fieldType" -> fieldType.schema
-      )
+      val requiredParams = Map("name" -> name.toJson, "fieldType" -> fieldType.schema)
 
       val defaultParam = Map("default" -> default).collect {
         case (k, Some(u)) => (k, fieldType.write(u).toJson) }

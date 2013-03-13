@@ -6,7 +6,9 @@ import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializati
 import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.util.{Try, Success, Failure}
 import scala.language.existentials
+import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.runtime.universe._
+
 import spray.json._
 
 trait AvroType[T] extends JsonSchemifiable {
@@ -167,14 +169,11 @@ object AvroType {
   private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
     new AvroUnion()(left, right)
 
-  private def ruTagFor(tpe: Type): TypeTag[_] = {
-    import scala.reflect.api._
-    TypeTag(
-      classLoaderMirror,
-      new TypeCreator {
-        def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
-      }
-    )
-  }
+  private def ruTagFor(tpe: Type): TypeTag[_] = TypeTag(
+    classLoaderMirror,
+    new TypeCreator {
+      def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
+    }
+  )
 
 }
