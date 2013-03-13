@@ -114,40 +114,39 @@ object AvroType {
               case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
             }
 
+            // product types (tuples, case classes, etc)
             else if (tt.tpe <:< typeOf[Product]) {
               val classSymbol = tt.tpe.typeSymbol.asClass
 
               if (! classSymbol.isCaseClass) throw new IllegalArgumentException(
                 "The only product types allowed as AvroRecords are case classes!"
               )
-              
-              else { // We have a case class typeTag in hand!
 
+              else { // We have a case class typeTag in hand!
                 val classMirror = classLoaderMirror reflectClass classSymbol
                 val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
-
                 val TypeRef(pre, sym, typeArgs) = tt.tpe
 
                 new AvroRecord(
-
-                  name = sym.name.toString,
-
+                  name      = sym.name.toString,
                   namespace = pre.toString.stripSuffix(".type"),
-
-                  fields = constructorMethodSymbol.paramss(0) map { sym => // for each argument in the constructor
-                    AvroType.fromType(
-                      ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)
-                    ) match {
+                  fields    = constructorMethodSymbol.paramss(0) map { sym =>
+                    // for each argument in the constructor:
+                    // synthesize an AvroType and wrap it in an AvroField
+                    AvroType.fromType(ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)) match {
                       case Success(fieldType) => AvroRecord.Field(sym.name.toString, fieldType)
                       case Failure(cause) => throw cause
                     }
                   }
-
                 )
+
               }
             }
 
-            else AvroNull // more complex types not handled yet
+            // other types are not handled
+            else throw new IllegalArgumentException(
+              "Unable to find or make an AvroType for the supplied type []" format tt.tpe
+            )
           }
 
           complexTags += tt -> newComplexType
