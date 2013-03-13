@@ -15,9 +15,7 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
   def write(obj: Map[String, T]): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[Map[String, T]]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Map[String, T]] }
 
   override def schema() = Map(
     "type"   -> typeName.toJson,

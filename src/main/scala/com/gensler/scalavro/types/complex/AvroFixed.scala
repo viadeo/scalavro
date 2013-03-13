@@ -17,9 +17,7 @@ class AvroFixed[T: TypeTag](
 
   def write(obj: T): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[T]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
 
   override def schema() = {
     val requiredParams = Map(

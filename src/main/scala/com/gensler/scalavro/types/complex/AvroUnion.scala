@@ -19,9 +19,7 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
     case Right(b) => ???
   }
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[Either[A, B]]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Either[A, B]] }
 
   override def schema() = Set(
     typeSchemaOrNull[LeftType],

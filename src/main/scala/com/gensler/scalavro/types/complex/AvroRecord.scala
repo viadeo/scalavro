@@ -8,11 +8,11 @@ import scala.util.Try
 import spray.json._
 
 class AvroRecord[T <: Product : ru.TypeTag](
-  name: String,
-  namespace: String,
-  fields: Seq[AvroRecord.Field[_]],
-  aliases: Seq[String] = Seq(),
-  doc: Option[String] = None
+  val name: String,
+  val namespace: String,
+  val fields: Seq[AvroRecord.Field[_]],
+  val aliases: Seq[String] = Seq(),
+  val doc: Option[String] = None
 ) extends AvroNamedType[T] {
 
   import AvroRecord._
@@ -21,9 +21,7 @@ class AvroRecord[T <: Product : ru.TypeTag](
 
   def write(obj: T): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[T]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
 
   override def schema() = {
     val requiredParams = Map(

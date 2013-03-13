@@ -15,9 +15,7 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
   def write(obj: Seq[T]): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[Seq[T]]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Seq[T]] }
 
   override def schema() = Map(
     "type"  -> typeName.toJson,

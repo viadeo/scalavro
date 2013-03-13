@@ -10,9 +10,7 @@ class AvroEnum[T: TypeTag] extends AvroNamedType[T] {
 
   def write(obj: T): Seq[Byte] = ???
 
-  def read(bytes: Seq[Byte]) = Try {
-    ???.asInstanceOf[T]
-  }
+  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
 
   override def schema() = ???
 
