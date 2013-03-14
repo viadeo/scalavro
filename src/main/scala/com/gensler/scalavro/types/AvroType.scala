@@ -145,24 +145,16 @@ object AvroType {
                 "The only product types allowed as AvroRecords are case classes!"
               )
 
-              else { // We have a case class typeTag in hand!
-                val classMirror = classLoaderMirror reflectClass classSymbol
-                val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
-                val TypeRef(pre, sym, typeArgs) = tt.tpe
-
-                new AvroRecord(
-                  name      = sym.name.toString,
-                  namespace = pre.toString.stripSuffix(".type"),
-                  fields    = constructorMethodSymbol.paramss(0) map { sym =>
-                    // for each argument in the constructor:
-                    // synthesize an AvroType and wrap it in an AvroField
-                    AvroType.fromType(ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)) match {
-                      case Success(fieldType) => AvroRecord.Field(sym.name.toString, fieldType)
-                      case Failure(cause) => throw cause
+              else { // We have a case class typeTag in hand
+                tt.tpe match { case TypeRef(pre, sym, typeArgs) =>
+                  new AvroRecord(
+                    name      = sym.name.toString,
+                    namespace = pre.toString.stripSuffix(".type"),
+                    fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
+                      AvroRecord.Field(name, AvroType.fromType(tag).get)
                     }
-                  }
-                )
-
+                  )
+                }
               }
             }
 
@@ -181,6 +173,23 @@ object AvroType {
     avroType.asInstanceOf[AvroType[T]]
   }
 
+  private def formalConstructorParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
+    val tt: TypeTag[T] = typeTag[T]
+    val classSymbol = tt.tpe.typeSymbol.asClass
+    val classMirror = classLoaderMirror reflectClass classSymbol
+    val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
+    constructorMethodSymbol.paramss(0).map { sym =>
+      sym.name.toString -> ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)
+    }.toMap
+  }
+
+  private[scalavro] def ruTagFor(tpe: Type): TypeTag[_] = TypeTag(
+    classLoaderMirror,
+    new TypeCreator {
+      def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
+    }
+  )
+
   private def fromSeqType[A](itemType: TypeTag[_ <: A]) = 
     new AvroArray()(itemType)
 
@@ -189,12 +198,5 @@ object AvroType {
 
   private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
     new AvroUnion()(left, right)
-
-  private def ruTagFor(tpe: Type): TypeTag[_] = TypeTag(
-    classLoaderMirror,
-    new TypeCreator {
-      def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
-    }
-  )
 
 }

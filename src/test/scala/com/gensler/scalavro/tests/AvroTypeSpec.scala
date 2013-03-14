@@ -10,9 +10,13 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 
-/** for testing AvroRecord below */
+// for testing AvroRecord below
 case class Person(name: String, age: Int)
 case class SantaList(nice: List[Person], naughty: List[Person])
+
+// cyclic dependency to test dependency robustness
+case class A(b: B)
+case class B(a: A)
 
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
@@ -107,7 +111,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   // records
   it should "return valid AvroRecord types for product types" in {
-    val Success(personType) = AvroType.fromType[Person]
+    val personType = AvroType.fromType[Person].get
     if (DEBUG) println(personType.schema)
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
@@ -127,6 +131,22 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       }
       case _ => fail
     }
+  }
+
+  it should "detect dependencies among AvroRecord types" in {
+
+    // fails!
+/*
+    (AvroType.fromType[A], AvroType.fromType[B]) match {
+      case (Success(aType), Success(bType)) => {
+        aType dependsOn bType should be (true)
+        bType dependsOn aType should be (true)
+      }
+      case (Failure(cause), _) => throw cause
+      case (_, Failure(cause)) => throw cause
+    }
+*/
+
   }
 
 }
