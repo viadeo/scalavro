@@ -96,7 +96,7 @@ object AvroType {
   val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
   // primitive type cache table
-  private val primitiveTags: Map[TypeTag[_], AvroType[_]] = Map(
+  private val primitiveTypeCache: Map[TypeTag[_], AvroType[_]] = Map(
     typeTag[Unit]      -> AvroNull,
     typeTag[Boolean]   -> AvroBoolean,
     typeTag[Seq[Byte]] -> AvroBytes,
@@ -108,7 +108,7 @@ object AvroType {
   )
 
   // complex type cache table, initially empty
-  private var complexTags = Map[TypeTag[_], AvroType[_]]()
+  private[scalavro] var complexTypeCache = Map[TypeTag[_], AvroType[_]]()
 
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
@@ -116,9 +116,9 @@ object AvroType {
     */
   def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
 
-    val avroType = primitiveTags.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+    val avroType = primitiveTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
       case Some(primitive) => primitive
-      case None => complexTags.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+      case None => complexTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
         case Some(complex) => complex
         case None => {
 
@@ -156,7 +156,7 @@ object AvroType {
             )
           }
 
-          complexTags += tt -> newComplexType
+          complexTypeCache += tt -> newComplexType
           newComplexType
         }
       }

@@ -47,6 +47,10 @@ class AvroRecord[T <: Product : ru.TypeTag](
     }
   }
 
+  override def toString(): String = {
+    "%s[%s]".format(getClass.getSimpleName, name)
+  }
+
 }
 
 object AvroRecord {

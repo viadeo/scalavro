@@ -135,6 +135,12 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   it should "detect dependencies among AvroRecord types" in {
 
+    if (DEBUG) println {
+      AvroType.complexTypeCache.filter {
+        case (_, at) => at.isInstanceOf[AvroNamedType[_]]
+      } mkString "\n"
+    }
+
     // fails!
 /*
     (AvroType.fromType[A], AvroType.fromType[B]) match {
