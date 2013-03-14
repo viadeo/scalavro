@@ -39,7 +39,7 @@ class AvroRecord[T <: Product : ru.TypeTag](
     (requiredParams ++ aliasesParam ++ docParam).toJson
   }
 
-  def dependsOn[U](thatType: AvroType[U]) = {
+  def dependsOn(thatType: AvroType[_]) = {
     fields.foldLeft(false) { (dependencyFound, field) =>
       dependencyFound ||
       field.fieldType == thatType ||

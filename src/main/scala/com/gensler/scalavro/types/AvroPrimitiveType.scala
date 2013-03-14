@@ -4,5 +4,5 @@ import scala.reflect.runtime.universe.TypeTag
 
 trait AvroPrimitiveType[T] extends AvroType[T] {
   final val isPrimitive = true
-  final def dependsOn[U](thatType: AvroType[U]) = false
+  final def dependsOn(thatType: AvroType[_]) = false
 }

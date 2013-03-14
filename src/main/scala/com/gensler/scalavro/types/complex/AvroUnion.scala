@@ -26,7 +26,7 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
     typeSchemaOrNull[RightType]
   ).toJson
 
-  def dependsOn[U](thatType: AvroType[U]) = {
+  def dependsOn(thatType: AvroType[_]) = {
     (AvroType.fromType[LeftType], AvroType.fromType[RightType]) match {
       case (Success(leftAvroType), Success(rightAvroType)) => {
         leftAvroType == thatType || rightAvroType == thatType ||

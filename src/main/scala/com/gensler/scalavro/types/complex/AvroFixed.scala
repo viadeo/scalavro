@@ -37,6 +37,6 @@ class AvroFixed[T: TypeTag](
     (requiredParams ++ namespaceParam ++ aliasesParam).toJson
   }
 
-  def dependsOn[U](thatType: AvroType[U]) = false
+  def dependsOn(thatType: AvroType[_]) = false
 
 }

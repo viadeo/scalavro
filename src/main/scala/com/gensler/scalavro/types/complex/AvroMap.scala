@@ -22,7 +22,7 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
     "values" -> typeSchemaOrNull[T]
   ).toJson
 
-  def dependsOn[U](thatType: AvroType[U]) = AvroType.fromType[ItemType] match {
+  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[ItemType] match {
     case Success(avroTypeOfItems) => {
       avroTypeOfItems == thatType || (avroTypeOfItems dependsOn thatType)
     }

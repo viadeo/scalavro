@@ -16,7 +16,7 @@ class AvroEnum[T: TypeTag](
 
   override def schema() = ???
 
-  def dependsOn[U](thatType: AvroType[U]) = AvroType.fromType[T] match {
+  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[T] match {
     case Success(containedType) => {
       containedType == thatType || (containedType dependsOn thatType)
     }

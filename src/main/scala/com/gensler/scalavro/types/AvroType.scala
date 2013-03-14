@@ -84,7 +84,7 @@ trait AvroType[T] extends JsonSchemifiable {
   /**
     * Returns true if this type depends upon the supplied type.
     */
-  def dependsOn[U](thatType: AvroType[U]): Boolean
+  def dependsOn(thatType: AvroType[_]): Boolean
 
 }
 
