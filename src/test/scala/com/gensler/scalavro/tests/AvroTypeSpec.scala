@@ -107,30 +107,26 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   // records
   it should "return valid AvroRecord types for product types" in {
-    AvroType.fromType[Person] match {
-      case Success(avroType) => {
-        if (DEBUG) println(avroType.schema)
-        avroType.isInstanceOf[AvroRecord[_]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[Person] should be (true)
-        val avroRecord = avroType.asInstanceOf[AvroRecord[Person]]
-        avroRecord.namespace should be ("com.gensler.scalavro.tests")
-        avroRecord.name should be ("Person")
-      }
-      case _ => fail
-    }
+    val Success(personType) = AvroType.fromType[Person]
+    if (DEBUG) println(personType.schema)
+    personType.isInstanceOf[AvroRecord[_]] should be (true)
+    typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
+    val personRecord = personType.asInstanceOf[AvroRecord[Person]]
+    personRecord.namespace should be ("com.gensler.scalavro.tests")
+    personRecord.name should be ("Person")
  
     AvroType.fromType[SantaList] match {
-      case Success(avroType) => {
-        if (DEBUG) println(avroType.schema)
-        avroType.isInstanceOf[AvroRecord[_]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[SantaList] should be (true)
-        val avroRecord = avroType.asInstanceOf[AvroRecord[SantaList]]
-        avroRecord.namespace should be ("com.gensler.scalavro.tests")
-        avroRecord.name should be ("SantaList")
+      case Success(santaListType) => {
+        if (DEBUG) println(santaListType.schema)
+        santaListType.isInstanceOf[AvroRecord[_]] should be (true)
+        typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
+        val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
+        santaListRecord.namespace should be ("com.gensler.scalavro.tests")
+        santaListRecord.name should be ("SantaList")
+        santaListType dependsOn personRecord should be (true)
       }
       case _ => fail
     }
-
   }
 
 }
