@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.AvroNamedType
+import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.reflect.runtime.universe._
 import scala.util.Try
@@ -37,6 +37,6 @@ class AvroFixed[T: TypeTag](
     (requiredParams ++ namespaceParam ++ aliasesParam).toJson
   }
 
-  def dependsOn[U](thatType: AvroNamedType[U]) = false
+  def dependsOn[U](thatType: AvroType[U]) = false
 
 }
