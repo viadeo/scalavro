@@ -72,8 +72,7 @@ trait AvroType[T] extends JsonSchemifiable {
     */
   private[scalavro] def typeSchemaOrNull[A: TypeTag] =
     AvroType.fromType[A] match {
-      case Success(avroType) => if (avroType.isPrimitive) avroType.schemaOrName
-                                else avroType.schemaOrName
+      case Success(avroType) => avroType.schemaOrName
       case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.schema
     }
 
