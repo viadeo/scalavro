@@ -19,7 +19,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   /**
     * Set this value to `true` to enable printing of JSON schemata to STDOUT.
     */
-  val DEBUG = true
+  val DEBUG = false
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
