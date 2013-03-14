@@ -137,24 +137,16 @@ object AvroType {
               case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
             }
 
-            // product types (tuples, case classes, etc)
-            else if (tt.tpe <:< typeOf[Product]) {
-              val classSymbol = tt.tpe.typeSymbol.asClass
-
-              if (! classSymbol.isCaseClass) throw new IllegalArgumentException(
-                "The only product types allowed as AvroRecords are case classes!"
-              )
-
-              else { // We have a case class typeTag in hand
-                tt.tpe match { case TypeRef(pre, sym, typeArgs) =>
-                  new AvroRecord(
-                    name      = sym.name.toString,
-                    namespace = pre.toString.stripSuffix(".type"),
-                    fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
-                      AvroRecord.Field(name, AvroType.fromType(tag).get)
-                    }
-                  )
-                }
+            // case classes
+            else if (tt.tpe <:< typeOf[Product] && tt.tpe.typeSymbol.asClass.isCaseClass) {
+              tt.tpe match { case TypeRef(prefix, symbol, _) =>
+                new AvroRecord(
+                  name      = symbol.name.toString,
+                  namespace = prefix.toString.stripSuffix(".type"),
+                  fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
+                    AvroRecord.Field(name, AvroType.fromType(tag).get)
+                  }
+                )
               }
             }
 
