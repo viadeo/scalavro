@@ -12,13 +12,14 @@ import com.gensler.scalavro.types.complex._
 
 /** for testing AvroRecord below */
 case class Person(name: String, age: Int)
+case class SantaList(nice: List[Person], naughty: List[Person])
 
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   /**
     * Set this value to `true` to enable printing of JSON schemata to STDOUT.
     */
-  val DEBUG = false
+  val DEBUG = true
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
@@ -117,6 +118,19 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       }
       case _ => fail
     }
+ 
+    AvroType.fromType[SantaList] match {
+      case Success(avroType) => {
+        if (DEBUG) println(avroType.schema)
+        avroType.isInstanceOf[AvroRecord[_]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[SantaList] should be (true)
+        val avroRecord = avroType.asInstanceOf[AvroRecord[SantaList]]
+        avroRecord.namespace should be ("com.gensler.scalavro.tests")
+        avroRecord.name should be ("SantaList")
+      }
+      case _ => fail
+    }
+
   }
 
 }

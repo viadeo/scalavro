@@ -1,10 +1,12 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.AvroNamedType
+import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import scala.reflect.runtime.universe._
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
-class AvroEnum[T: TypeTag] extends AvroNamedType[T] {
+class AvroEnum[T: TypeTag](
+  val name: String
+) extends AvroNamedType[T] {
 
   val typeName = "enum"
 
@@ -13,6 +15,13 @@ class AvroEnum[T: TypeTag] extends AvroNamedType[T] {
   def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
 
   override def schema() = ???
+
+  def dependsOn[U](thatType: AvroNamedType[U]) = AvroType.fromType[T] match {
+    case Success(containedType) => {
+      containedType == thatType || (containedType dependsOn thatType)
+    }
+    case _ => false
+  }
 
 }
 

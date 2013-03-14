@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{AvroType, AvroComplexType}
+import com.gensler.scalavro.types.{AvroType, AvroComplexType, AvroNamedType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.reflect.runtime.universe._
@@ -21,4 +21,12 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
     "type"  -> typeName.toJson,
     "items" -> typeSchemaOrNull[T]
   ).toJson
+
+  def dependsOn[U](thatType: AvroNamedType[U]) = AvroType.fromType[ItemType] match {
+    case Success(avroTypeOfItems) => {
+      avroTypeOfItems == thatType || (avroTypeOfItems dependsOn thatType)
+    }
+    case _ => false
+  }
+
 }

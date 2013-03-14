@@ -39,6 +39,14 @@ class AvroRecord[T <: Product : ru.TypeTag](
     (requiredParams ++ aliasesParam ++ docParam).toJson
   }
 
+  def dependsOn[U](thatType: AvroNamedType[U]) = {
+    fields.foldLeft(false) { (dependencyFound, field) =>
+      dependencyFound ||
+      field.fieldType == thatType ||
+      (field.fieldType dependsOn thatType)
+    }
+  }
+
 }
 
 object AvroRecord {
@@ -74,7 +82,10 @@ object AvroRecord {
   ) extends JsonSchemifiable {
 
     def schema(): spray.json.JsValue = {
-      val requiredParams = Map("name" -> name.toJson, "fieldType" -> fieldType.schema)
+      val requiredParams = Map(
+        "name" -> name.toJson,
+        "fieldType" -> fieldType.schemaOrName
+      )
 
       val defaultParam = Map("default" -> default).collect {
         case (k, Some(u)) => (k, fieldType.write(u).toJson) }

@@ -7,10 +7,10 @@ import scala.util.Try
 import spray.json._
 
 class AvroFixed[T: TypeTag](
-  name: String,
-  size: Int,
-  namespace: Option[String] = None,
-  aliases: Seq[String] = Seq()
+  val name: String,
+  val size: Int,
+  val namespace: Option[String] = None,
+  val aliases: Seq[String] = Seq()
 ) extends AvroNamedType[T] {
 
   val typeName = "fixed"
@@ -36,4 +36,7 @@ class AvroFixed[T: TypeTag](
 
     (requiredParams ++ namespaceParam ++ aliasesParam).toJson
   }
+
+  def dependsOn[U](thatType: AvroNamedType[U]) = false
+
 }

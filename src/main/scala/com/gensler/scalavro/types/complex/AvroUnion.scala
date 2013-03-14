@@ -1,13 +1,13 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{AvroType, AvroNamedType}
+import com.gensler.scalavro.types.{AvroType, AvroComplexType, AvroNamedType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 import scala.reflect.runtime.universe._
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import spray.json._
 
-class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
+class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
 
   type LeftType = A
   type RightType = B
@@ -25,5 +25,15 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroNamedType[Either[A, B]] {
     typeSchemaOrNull[LeftType],
     typeSchemaOrNull[RightType]
   ).toJson
+
+  def dependsOn[U](thatType: AvroNamedType[U]) = {
+    (AvroType.fromType[LeftType], AvroType.fromType[RightType]) match {
+      case (Success(leftAvroType), Success(rightAvroType)) => {
+        leftAvroType == thatType || rightAvroType == thatType ||
+        (leftAvroType dependsOn thatType) || (rightAvroType dependsOn thatType)
+      }
+      case _ => false
+    }
+  }
 
 }

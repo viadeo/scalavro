@@ -2,8 +2,11 @@ package com.gensler.scalavro
 package types
 
 import com.gensler.scalavro
+import com.gensler.scalavro.types.primitive._
+import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 import com.gensler.scalavro.JsonSchemaProtocol._
+
 import scala.util.{Try, Success, Failure}
 import scala.language.existentials
 import scala.reflect.api.{ Universe, Mirror, TypeCreator }
@@ -47,23 +50,42 @@ trait AvroType[T] extends JsonSchemifiable {
   def schema(): spray.json.JsValue = typeName.toJson
 
   /**
+    * Returns the schema name if this is an instance of [[AvroNamedType]], or
+    * the expanded schema otherwise.
+    */
+  def schemaOrName(): spray.json.JsValue = 
+    if (this.isInstanceOf[AvroRecord[_]] ||
+        this.isInstanceOf[AvroEnum[_]] ||
+        this.isInstanceOf[AvroFixed[_]]
+    ) {
+      this.asInstanceOf[AvroNamedType[_]].name.toJson
+    }
+    else this.schema
+
+  /**
     * == Internal API ==
     *
-    * Returns the canonical JSON representation of the supplied Avro type, or
+    * Returns the schema name if this is an instance of [[AvroNamedType]], or
+    * the canonical JSON representation of the supplied Avro type, or
     * the JSON representation of [[AvroNull]] if no corresponding AvroType
     * can be found for the supplied type.
     */
   private[scalavro] def typeSchemaOrNull[A: TypeTag] =
     AvroType.fromType[A] match {
-      case Success(avroType) => if (avroType.isPrimitive) avroType.typeName.toJson
-                                else avroType.schema
-      case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.typeName.toJson
+      case Success(avroType) => if (avroType.isPrimitive) avroType.schemaOrName
+                                else avroType.schemaOrName
+      case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.schema
     }
 
   override def toString(): String = {
     val className = getClass.getSimpleName
     if (className endsWith "$") className.dropRight(1) else className
   }
+
+  /**
+    * Returns true if this type depends upon the supplied type.
+    */
+  def dependsOn[U](thatType: AvroNamedType[U]): Boolean
 
 }
 
