@@ -117,9 +117,16 @@ object AvroType {
   def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
 
     val avroType = primitiveTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+
+      // primitive type cache hit
       case Some(primitive) => primitive
+
       case None => complexTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+
+        // complex type cache hit
         case Some(complex) => complex
+
+        // cache miss
         case None => {
 
           val newComplexType = {
@@ -133,6 +140,7 @@ object AvroType {
               case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
             }
 
+            // binary disjunctive unions
             else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
               case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
             }
@@ -156,7 +164,9 @@ object AvroType {
             )
           }
 
+          // add the synthesized AvroType to the complex type cache table
           complexTypeCache += tt -> newComplexType
+
           newComplexType
         }
       }
