@@ -4,7 +4,7 @@ name := "scalavro"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.1"
 
 resolvers ++= Seq(
   "Spray Repository" at "http://repo.spray.io/"

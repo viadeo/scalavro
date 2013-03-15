@@ -36,4 +36,5 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
     }
   }
 
+  def parsingCanonicalForm() = ???
 }

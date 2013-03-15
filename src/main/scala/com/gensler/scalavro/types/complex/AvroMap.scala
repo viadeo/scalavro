@@ -29,4 +29,5 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
     case _ => false
   }
 
+  def parsingCanonicalForm() = ???
 }

@@ -39,4 +39,5 @@ class AvroFixed[T: TypeTag](
 
   def dependsOn(thatType: AvroType[_]) = false
 
+  def parsingCanonicalForm() = schema
 }

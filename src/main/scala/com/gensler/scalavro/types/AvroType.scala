@@ -4,7 +4,7 @@ package types
 import com.gensler.scalavro
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
-import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
+import com.gensler.scalavro.error._
 import com.gensler.scalavro.JsonSchemaProtocol._
 
 import scala.util.{Try, Success, Failure}
@@ -76,6 +76,38 @@ trait AvroType[T] extends JsonSchemifiable {
       case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.schema
     }
 
+  /**
+    * Returns the JSON schema for this type in "parsing canonical form".
+    *
+    * _X_ [PRIMITIVES] Convert primitive schemas to their simple form (e.g.,
+    *     int instead of {"type":"int"}).
+    *
+    * ___ [FULLNAMES] Replace short names with fullnames, using applicable
+    *     namespaces to do so. Then eliminate namespace attributes, which are
+    *     now redundant.
+    *
+    * ___ [STRIP] Keep only attributes that are relevant to parsing data, which
+    *     are: type, name, fields, symbols, items, values, size. Strip all
+    *     others (e.g., doc and aliases).
+    *
+    * ___ [ORDER] Order the appearance of fields of JSON objects as follows:
+    *     name, type, fields, symbols, items, values, size. For example, if an
+    *     object has type, name, and size fields, then the name field should
+    *     appear first, followed by the type and then the size fields.
+    *
+    * ___ [STRINGS] For all JSON string literals in the schema text, replace
+    *     any escaped characters (e.g., \\uXXXX escapes) with their UTF-8
+    *     equivalents.
+    *
+    * _X_ [INTEGERS] Eliminate quotes around and any leading zeros in front of
+    *     JSON integer literals (which appear in the size attributes of fixed
+    *     schemas).
+    *
+    * _X_ [WHITESPACE] Eliminate all whitespace in JSON outside of string
+    *     literals.
+    */
+  def parsingCanonicalForm(): JsValue
+
   override def toString(): String = {
     val className = getClass.getSimpleName
     if (className endsWith "$") className.dropRight(1) else className
@@ -114,7 +146,17 @@ object AvroType {
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
     * for the supplied type.
     */
-  def fromType[T](implicit tt: TypeTag[T]): Try[AvroType[T]] = Try {
+  def fromType[T](implicit typeTag: TypeTag[T]): Try[AvroType[T]] = fromTypeHelper(typeTag)
+
+  private def fromTypeHelper[T](
+    implicit tt: TypeTag[T],
+    processedTypes: Set[Type] = Set[Type]()
+  ): Try[AvroType[T]] = Try {
+
+    if (processedTypes contains tt.tpe) throw new CyclicTypeDependencyException(
+      "A cyclic type dependency was detected while attempting to " +
+      "synthesize an AvroType for  type [%s]" format tt.tpe
+    )
 
     val avroType = primitiveTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
 
@@ -132,17 +174,17 @@ object AvroType {
           val newComplexType = {
             // lists, sequences, etc
             if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
-              case TypeRef(_, _, List(itemType)) => fromSeqType(ruTagFor(itemType))
+              case TypeRef(_, _, List(itemType)) => fromSeqType(tagForType(itemType))
             }
 
             // string-keyed maps
             else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
-              case TypeRef(_, _, List(stringType, itemType)) => fromMapType(ruTagFor(itemType))
+              case TypeRef(_, _, List(stringType, itemType)) => fromMapType(tagForType(itemType))
             }
 
             // binary disjunctive unions
             else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
-              case TypeRef(_, _, List(left, right)) => fromEitherType(ruTagFor(left), ruTagFor(right))
+              case TypeRef(_, _, List(left, right)) => fromEitherType(tagForType(left), tagForType(right))
             }
 
             // case classes
@@ -152,7 +194,7 @@ object AvroType {
                   name      = symbol.name.toString,
                   namespace = prefix.toString.stripSuffix(".type"),
                   fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
-                    AvroRecord.Field(name, AvroType.fromType(tag).get)
+                    AvroRecord.Field(name, fromTypeHelper(tag, (processedTypes + tt.tpe)).get)
                   }
                 )
               }
@@ -175,17 +217,18 @@ object AvroType {
     avroType.asInstanceOf[AvroType[T]]
   }
 
+
   private def formalConstructorParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
     val tt: TypeTag[T] = typeTag[T]
     val classSymbol = tt.tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
     val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
     constructorMethodSymbol.paramss(0).map { sym =>
-      sym.name.toString -> ruTagFor(tt.tpe.member(sym.name).asMethod.returnType)
+      sym.name.toString -> tagForType(tt.tpe.member(sym.name).asMethod.returnType)
     }.toMap
   }
 
-  private[scalavro] def ruTagFor(tpe: Type): TypeTag[_] = TypeTag(
+  private[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(
     classLoaderMirror,
     new TypeCreator {
       def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]

@@ -23,5 +23,6 @@ class AvroEnum[T: TypeTag](
     case _ => false
   }
 
+  def parsingCanonicalForm() = ???
 }
 

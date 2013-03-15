@@ -51,6 +51,7 @@ class AvroRecord[T <: Product : ru.TypeTag](
     "%s[%s]".format(getClass.getSimpleName, name)
   }
 
+  def parsingCanonicalForm() = ???
 }
 
 object AvroRecord {

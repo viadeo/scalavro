@@ -131,27 +131,19 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       }
       case _ => fail
     }
-  }
-
-  it should "detect dependencies among AvroRecord types" in {
 
     if (DEBUG) println {
       AvroType.complexTypeCache.filter {
         case (_, at) => at.isInstanceOf[AvroNamedType[_]]
       } mkString "\n"
     }
+  }
 
-    // fails!
-/*
-    (AvroType.fromType[A], AvroType.fromType[B]) match {
-      case (Success(aType), Success(bType)) => {
-        aType dependsOn bType should be (true)
-        bType dependsOn aType should be (true)
-      }
-      case (Failure(cause), _) => throw cause
-      case (_, Failure(cause)) => throw cause
-    }
-*/
+  it should "detect dependencies among AvroRecord types" in {
+    import com.gensler.scalavro.error.CyclicTypeDependencyException
+
+    evaluating { AvroType.fromType[A].get } should produce [CyclicTypeDependencyException]
+    evaluating { AvroType.fromType[B].get } should produce [CyclicTypeDependencyException]
 
   }
 

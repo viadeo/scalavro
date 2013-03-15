@@ -29,4 +29,5 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
     case _ => false
   }
 
+  def parsingCanonicalForm() = ???
 }
