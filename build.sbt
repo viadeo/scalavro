@@ -4,6 +4,10 @@ name := "scalavro"
 
 version := "0.1.0-SNAPSHOT"
 
+licenses in ThisBuild := Seq(
+  "BSD-style" -> url("http://opensource.org/licenses/BSD-2-Clause")
+)
+
 scalaVersion := "2.10.1"
 
 resolvers ++= Seq(
@@ -16,4 +20,4 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 )
 
-scalacOptions in Compile ++= Seq("-feature")
+scalacOptions in Compile ++= Seq("-unchecked", "-deprecation", "-feature")
