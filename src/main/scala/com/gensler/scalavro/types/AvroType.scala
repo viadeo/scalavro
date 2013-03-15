@@ -163,6 +163,7 @@ object AvroType {
       // primitive type cache hit
       case Some(primitive) => primitive
 
+      // primitive type cache miss
       case None => complexTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
 
         // complex type cache hit
