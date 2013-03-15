@@ -224,7 +224,7 @@ object AvroType {
     val classSymbol = tt.tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
     val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
-    constructorMethodSymbol.paramss(0).map { sym =>
+    constructorMethodSymbol.paramss.reduceLeft( _ ++ _ ).map { sym =>
       sym.name.toString -> tagForType(tt.tpe.member(sym.name).asMethod.returnType)
     }.toMap
   }
