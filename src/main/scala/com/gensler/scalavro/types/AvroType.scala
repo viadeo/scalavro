@@ -153,7 +153,7 @@ object AvroType {
     processedTypes: Set[Type] = Set[Type]()
   ): Try[AvroType[T]] = Try {
 
-    if (processedTypes contains tt.tpe) throw new CyclicTypeDependencyException(
+    if (processedTypes exists { _ =:= tt.tpe }) throw new CyclicTypeDependencyException(
       "A cyclic type dependency was detected while attempting to " +
       "synthesize an AvroType for  type [%s]" format tt.tpe
     )
