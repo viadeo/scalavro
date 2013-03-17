@@ -3,9 +3,12 @@ package com.gensler.scalavro.types.complex
 import com.gensler.scalavro.types.{AvroType, AvroComplexType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
+
+import spray.json._
+
 import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
-import spray.json._
+import scala.collection.immutable.ListMap
 
 class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
@@ -17,9 +20,17 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
   def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Map[String, T]] }
 
-  override def schema() = Map(
+  // name, type, fields, symbols, items, values, size
+  override def schema() = ListMap(
     "type"   -> typeName.toJson,
     "values" -> typeSchemaOrNull[T]
+  ).toJson
+
+  override def parsingCanonicalForm(): JsValue = ListMap(
+    "type"   -> typeName.toJson,
+    "values" -> {
+      AvroType.fromType[ItemType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
+    }
   ).toJson
 
   def dependsOn(thatType: AvroType[_]) = AvroType.fromType[ItemType] match {
@@ -29,5 +40,4 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
     case _ => false
   }
 
-  def parsingCanonicalForm() = ???
 }

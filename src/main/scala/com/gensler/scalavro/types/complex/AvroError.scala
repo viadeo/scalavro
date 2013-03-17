@@ -6,15 +6,15 @@ import scala.util.Try
 
 class AvroError[T <: Product : ru.TypeTag](
   name: String,
-  namespace: String,
   fields: Seq[AvroRecord.Field[_]],
   aliases: Seq[String] = Seq(),
+  namespace: Option[String] = None,
   doc: Option[String] = None
 ) extends AvroRecord[T](
   name,
-  namespace,
   fields,
   aliases,
+  namespace,
   doc
 ) {
   override val typeName = "error"

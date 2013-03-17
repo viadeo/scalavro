@@ -26,6 +26,13 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
     typeSchemaOrNull[RightType]
   ).toJson
 
+  override def parsingCanonicalForm(): JsValue = {
+    Set(
+      AvroType.fromType[LeftType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema,
+      AvroType.fromType[RightType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
+    ).toJson
+  }
+
   def dependsOn(thatType: AvroType[_]) = {
     (AvroType.fromType[LeftType], AvroType.fromType[RightType]) match {
       case (Success(leftAvroType), Success(rightAvroType)) => {
@@ -36,5 +43,4 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
     }
   }
 
-  def parsingCanonicalForm() = ???
 }

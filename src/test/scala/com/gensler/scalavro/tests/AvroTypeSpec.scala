@@ -116,16 +116,24 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
     val personRecord = personType.asInstanceOf[AvroRecord[Person]]
-    personRecord.namespace should be ("com.gensler.scalavro.tests")
+    personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
     personRecord.name should be ("Person")
  
     AvroType.fromType[SantaList] match {
       case Success(santaListType) => {
-        if (DEBUG) println(santaListType.schema)
+
+        if (DEBUG) {
+          println("\n%s \n\n%s\n".format(
+            santaListType.schema,
+            santaListType.parsingCanonicalForm
+          ))
+        }
+
+
         santaListType.isInstanceOf[AvroRecord[_]] should be (true)
         typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
         val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
-        santaListRecord.namespace should be ("com.gensler.scalavro.tests")
+        santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
         santaListRecord.name should be ("SantaList")
         santaListType dependsOn personType should be (true)
       }

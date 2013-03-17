@@ -30,11 +30,12 @@ Which yields:
 
     {
       "name":"Person",
-      "namespace":"com.gensler.scalavro.tests",
+      "type":"record",
       "fields":[
         {"name":"name","type":"string"},
         {"name":"age","type":"int"}
-      ]
+      ],
+      "namespace":"com.gensler.scalavro.tests"
     }
 
 And perhaps more interestingly:
@@ -47,11 +48,12 @@ Which yields:
 
     {
       "name":"SantaList",
-      "namespace":"com.gensler.scalavro.tests",
+      "type":"record",
       "fields":[
         {"name":"nice","type":{"type":"array","items":"Person"}},
         {"name":"naughty","type":{"type":"array","items":"Person"}}
-      ]
+      ],
+      "namespace":"com.gensler.scalavro.tests"
     }
 
 ## Current Capabilities

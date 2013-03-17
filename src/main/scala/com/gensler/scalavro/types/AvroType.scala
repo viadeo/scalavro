@@ -14,7 +14,7 @@ import scala.reflect.runtime.universe._
 
 import spray.json._
 
-trait AvroType[T] extends JsonSchemifiable {
+trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
 
   /**
     * The corresponding Scala type for this Avro type.
@@ -53,7 +53,7 @@ trait AvroType[T] extends JsonSchemifiable {
     * Returns the schema name if this is an instance of [[AvroNamedType]], or
     * the expanded schema otherwise.
     */
-  def schemaOrName(): spray.json.JsValue = 
+  def schemaOrName(): spray.json.JsValue =
     if (this.isInstanceOf[AvroRecord[_]] ||
         this.isInstanceOf[AvroEnum[_]] ||
         this.isInstanceOf[AvroFixed[_]]
@@ -61,6 +61,22 @@ trait AvroType[T] extends JsonSchemifiable {
       this.asInstanceOf[AvroNamedType[_]].name.toJson
     }
     else this.schema
+
+  /**
+    * == Internal API ==
+    * 
+    * Returns the fully qualified schema name if this is an instance of
+    * [[AvroNamedType]], or the parsing canonical form of this type schema
+    * otherwise.
+    */
+  private[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
+    if (this.isInstanceOf[AvroRecord[_]] ||
+        this.isInstanceOf[AvroEnum[_]] ||
+        this.isInstanceOf[AvroFixed[_]]
+    ) {
+      this.asInstanceOf[AvroNamedType[_]].fullyQualifiedName.toJson
+    }
+    else this.parsingCanonicalForm
 
   /**
     * == Internal API ==
@@ -82,15 +98,15 @@ trait AvroType[T] extends JsonSchemifiable {
     * _X_ [PRIMITIVES] Convert primitive schemas to their simple form (e.g.,
     *     int instead of {"type":"int"}).
     *
-    * ___ [FULLNAMES] Replace short names with fullnames, using applicable
+    * _X_ [FULLNAMES] Replace short names with fullnames, using applicable
     *     namespaces to do so. Then eliminate namespace attributes, which are
     *     now redundant.
     *
-    * ___ [STRIP] Keep only attributes that are relevant to parsing data, which
+    * _X_ [STRIP] Keep only attributes that are relevant to parsing data, which
     *     are: type, name, fields, symbols, items, values, size. Strip all
     *     others (e.g., doc and aliases).
     *
-    * ___ [ORDER] Order the appearance of fields of JSON objects as follows:
+    * _X_ [ORDER] Order the appearance of fields of JSON objects as follows:
     *     name, type, fields, symbols, items, values, size. For example, if an
     *     object has type, name, and size fields, then the name field should
     *     appear first, followed by the type and then the size fields.
@@ -106,7 +122,7 @@ trait AvroType[T] extends JsonSchemifiable {
     * _X_ [WHITESPACE] Eliminate all whitespace in JSON outside of string
     *     literals.
     */
-  def parsingCanonicalForm(): JsValue
+  def parsingCanonicalForm(): JsValue = schema
 
   override def toString(): String = {
     val className = getClass.getSimpleName
@@ -193,10 +209,10 @@ object AvroType {
               tt.tpe match { case TypeRef(prefix, symbol, _) =>
                 new AvroRecord(
                   name      = symbol.name.toString,
-                  namespace = prefix.toString.stripSuffix(".type"),
                   fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
                     AvroRecord.Field(name, fromTypeHelper(tag, (processedTypes + tt.tpe)).get)
-                  }
+                  },
+                  namespace = Some(prefix.toString.stripSuffix(".type"))
                 )
               }
             }

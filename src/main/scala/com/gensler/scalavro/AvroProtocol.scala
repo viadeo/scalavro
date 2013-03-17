@@ -3,7 +3,12 @@ package com.gensler.scalavro
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import com.gensler.scalavro.types.complex.{AvroRecord, AvroUnion}
 import com.gensler.scalavro.JsonSchemaProtocol._
+
 import scala.language.existentials
+import scala.collection.immutable.ListMap
+
+import java.security.MessageDigest
+
 import spray.json._
 
 /**
@@ -36,7 +41,7 @@ case class AvroProtocol(
   messages: Seq[AvroProtocol.Message],
   namespace: Option[String] = None,
   doc: Option[String] = None
-) extends JsonSchemifiable {
+) extends JsonSchemifiable with CanonicalForm {
 
   import scala.util.Sorting, scala.math.Ordering
 
@@ -56,10 +61,10 @@ case class AvroProtocol(
   lazy val normalizedDeclarations: Seq[AvroNamedType[_]] = Sorting.stableSort(types)
 
   def schema(): JsValue = {
-    val requiredParams = Map(
+    val requiredParams = ListMap(
       "protocol" -> protocol.toJson,
-      "types" -> normalizedDeclarations.asInstanceOf[JsonSchemifiable].toJson,
-      "messages" -> messages.asInstanceOf[JsonSchemifiable].toJson
+      "types" -> normalizedDeclarations.asInstanceOf[Seq[JsonSchemifiable]].toJson,
+      "messages" -> messages.asInstanceOf[Seq[JsonSchemifiable]].toJson
     )
 
     val optionalParams = Map(
@@ -68,6 +73,20 @@ case class AvroProtocol(
     ) collect { case (k, Some(v)) => (k, v.toJson) }
 
     (requiredParams ++ optionalParams).toJson
+  }
+
+  def parsingCanonicalForm(): JsValue = {
+    val fullyQualifiedName = namespace.map { _ + "." }.getOrElse("") + protocol
+    ListMap(
+      "protocol" -> fullyQualifiedName.toJson,
+      "types" -> normalizedDeclarations.asInstanceOf[Seq[CanonicalForm]].toJson,
+      "messages" -> messages.asInstanceOf[Seq[CanonicalForm]].toJson
+    ).toJson
+  }
+
+  def fingerprint(): Array[Byte] = {
+    val MD5 = MessageDigest.getInstance("MD5")
+    MD5.digest(parsingCanonicalForm.toString.getBytes)
   }
 
 }
@@ -107,7 +126,7 @@ object AvroProtocol {
     error: Option[AvroUnion[_, _]] = None,
     doc: Option[String] = None,
     oneWay: Option[Boolean] = None
-  ) extends JsonSchemifiable {
+  ) extends JsonSchemifiable with CanonicalForm {
 
     def schema(): JsValue = {
       val requiredParams = Map(
@@ -128,6 +147,23 @@ object AvroProtocol {
       }
 
       (requiredParams ++ errorParam ++ docParam ++ oneWayParam).toJson
+    }
+
+    def parsingCanonicalForm(): JsValue = {
+      val requiredParams = Map(
+        "request" -> request.parsingCanonicalForm,
+        "response" -> response.parsingCanonicalForm
+      )
+
+      val errorParam = Map("error" -> error) collect {
+        case (k, Some(union)) => (k, union.parsingCanonicalForm)
+      }
+
+      val oneWayParam = Map("one-way" -> oneWay) collect {
+        case (k, Some(v)) => (k, v.toJson)
+      }
+
+      (requiredParams ++ errorParam ++ oneWayParam).toJson
     }
 
   }

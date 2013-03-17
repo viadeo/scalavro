@@ -1,17 +1,20 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
-import com.gensler.scalavro.JsonSchemifiable
+import com.gensler.scalavro.{JsonSchemifiable, CanonicalForm}
 import com.gensler.scalavro.JsonSchemaProtocol._
-import scala.reflect.runtime.{universe => ru}
-import scala.util.Try
+
 import spray.json._
+
+import scala.reflect.runtime.{universe => ru}
+import scala.util.{Try, Success, Failure}
+import scala.collection.immutable.ListMap
 
 class AvroRecord[T <: Product : ru.TypeTag](
   val name: String,
-  val namespace: String,
   val fields: Seq[AvroRecord.Field[_]],
   val aliases: Seq[String] = Seq(),
+  val namespace: Option[String] = None,
   val doc: Option[String] = None
 ) extends AvroNamedType[T] {
 
@@ -23,21 +26,29 @@ class AvroRecord[T <: Product : ru.TypeTag](
 
   def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
 
+  // name, type, fields, symbols, items, values, size
   override def schema() = {
-    val requiredParams = Map(
+    val requiredParams = ListMap(
       "name"      -> name.toJson,
-      "namespace" -> namespace.toJson,
-      "fields"    -> fields.toJson
+      "type"      -> typeName.toJson,
+      "fields"    -> fields.toJson,
+      "namespace" -> namespace.toJson
     )
 
-    val aliasesParam = Map("aliases" -> aliases).collect {
+    val aliasesParam = ListMap("aliases" -> aliases).collect {
       case (k, s) if s.nonEmpty => (k, s.toJson) }
 
-    val docParam = Map("doc" -> doc).collect {
+    val docParam = ListMap("doc" -> doc).collect {
       case (k, Some(v)) => (k, v.toJson) }
 
     (requiredParams ++ aliasesParam ++ docParam).toJson
   }
+
+  override def parsingCanonicalForm(): JsValue = ListMap(
+    "name"      -> fullyQualifiedName.toJson,
+    "type"      -> typeName.toJson,
+    "fields"    -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
+  ).toJson
 
   def dependsOn(thatType: AvroType[_]) = {
     fields.foldLeft(false) { (dependencyFound, field) =>
@@ -51,7 +62,6 @@ class AvroRecord[T <: Product : ru.TypeTag](
     "%s[%s]".format(getClass.getSimpleName, name)
   }
 
-  def parsingCanonicalForm() = ???
 }
 
 object AvroRecord {
@@ -84,28 +94,45 @@ object AvroRecord {
     order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None
-  ) extends JsonSchemifiable {
+  ) extends JsonSchemifiable with CanonicalForm {
 
+    // name, type, fields, symbols, items, values, size
     def schema(): spray.json.JsValue = {
-      val requiredParams = Map(
+      val requiredParams = ListMap(
         "name" -> name.toJson,
         "type" -> fieldType.schemaOrName
       )
 
-      val defaultParam = Map("default" -> default).collect {
+      val defaultParam = ListMap("default" -> default).collect {
         case (k, Some(u)) => (k, fieldType.write(u).toJson) }
 
-      val orderParam = Map("order" -> order).collect {
+      val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
 
-      val aliasesParam = Map("aliases" -> aliases).collect {
+      val aliasesParam = ListMap("aliases" -> aliases).collect {
         case (k, s) if s.nonEmpty => (k, s.toJson) }
 
-      val docParam = Map("doc" -> doc).collect {
+      val docParam = ListMap("doc" -> doc).collect {
         case (k, Some(v)) => (k, v.toJson) }
 
       (requiredParams ++ defaultParam ++ orderParam ++ aliasesParam ++ docParam).toJson
     }
+
+    def parsingCanonicalForm(): JsValue = {
+      val requiredParams = ListMap(
+        "name" -> name.toJson,
+        "type" -> fieldType.canonicalFormOrFullyQualifiedName
+      )
+
+      val defaultParam = ListMap("default" -> default).collect {
+        case (k, Some(u)) => (k, fieldType.write(u).toJson) }
+
+      val orderParam = ListMap("order" -> order).collect {
+        case (k, Some(o)) => (k, o.schema) }
+
+      (requiredParams ++ defaultParam ++ orderParam).toJson
+    }
+
   }
 
   trait Order {
