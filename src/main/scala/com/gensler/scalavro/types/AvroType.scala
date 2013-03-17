@@ -175,17 +175,17 @@ object AvroType {
           val newComplexType = {
             // lists, sequences, etc
             if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
-              case TypeRef(_, _, List(itemType)) => fromSeqType(tagForType(itemType))
+              case TypeRef(_, _, List(itemType)) => new AvroArray()(tagForType(itemType))
             }
 
             // string-keyed maps
             else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
-              case TypeRef(_, _, List(stringType, itemType)) => fromMapType(tagForType(itemType))
+              case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(tagForType(itemType))
             }
 
             // binary disjunctive unions
             else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
-              case TypeRef(_, _, List(left, right)) => fromEitherType(tagForType(left), tagForType(right))
+              case TypeRef(_, _, List(left, right)) => new AvroUnion()(tagForType(left), tagForType(right))
             }
 
             // case classes
@@ -235,14 +235,5 @@ object AvroType {
       def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
     }
   )
-
-  private def fromSeqType[A](itemType: TypeTag[_ <: A]) = 
-    new AvroArray()(itemType)
-
-  private def fromMapType[A](itemType: TypeTag[_ <: A]) =
-    new AvroMap()(itemType)
-
-  private def fromEitherType[A, B](left: TypeTag[_ <: A], right: TypeTag[_ <: B]) =
-    new AvroUnion()(left, right)
 
 }
