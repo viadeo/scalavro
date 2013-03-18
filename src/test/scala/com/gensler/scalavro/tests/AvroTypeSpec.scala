@@ -23,7 +23,7 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   /**
     * Set this value to `true` to enable printing of JSON schemata to STDOUT.
     */
-  val DEBUG = false
+  val DEBUG = true
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
@@ -112,7 +112,14 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   // records
   it should "return valid AvroRecord types for product types" in {
     val personType = AvroType.fromType[Person].get
-    if (DEBUG) println(personType.schema)
+
+    if (DEBUG) {
+      println("\n%s \n\n%s\n".format(
+        personType.schema,
+        personType.parsingCanonicalForm
+      ))
+    }
+
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
     val personRecord = personType.asInstanceOf[AvroRecord[Person]]
