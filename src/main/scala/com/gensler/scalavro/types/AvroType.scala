@@ -55,6 +55,7 @@ trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
     */
   def schemaOrName(): spray.json.JsValue =
     if (this.isInstanceOf[AvroRecord[_]] ||
+        this.isInstanceOf[AvroError[_]] ||
         this.isInstanceOf[AvroEnum[_]] ||
         this.isInstanceOf[AvroFixed[_]]
     ) {
