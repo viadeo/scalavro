@@ -32,7 +32,7 @@ class AvroEnum[T: TypeTag](
       "namespace" -> namespace
     ).collect { case (k, Some(v)) => (k, v.toJson) }
 
-    (requiredParams ++ optionalParams).toJson
+    new JsObject(requiredParams ++ optionalParams)
   }
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(schema)

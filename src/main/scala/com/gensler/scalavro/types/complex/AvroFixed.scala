@@ -38,7 +38,7 @@ class AvroFixed[T: TypeTag](
       "aliases" -> aliases
     ).collect { case (k, v) => (k, v.toJson) }
 
-    (requiredParams ++ namespaceParam ++ aliasesParam).toJson
+    new JsObject(requiredParams ++ namespaceParam ++ aliasesParam)
   }
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(withoutDocOrAliases(schema))

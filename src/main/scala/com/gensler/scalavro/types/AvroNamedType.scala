@@ -19,9 +19,10 @@ trait AvroNamedType[T] extends AvroComplexType[T] {
   final def fullyQualifiedName(): String = namespace.map { _ + "." + name } getOrElse name
 
   def fullyQualify(json: JsValue): JsValue = json match {
-    case JsObject(fields) => new JsObject(
-      ListMap("name" -> fullyQualifiedName.toJson) ++ (fields -- Seq("name", "namespace"))
-    )
+    case JsObject(fields) => new JsObject(ListMap(
+      "name" -> fullyQualifiedName.toJson) ++
+      (fields -- Seq("name", "namespace")
+    ))
     case otherJsValue: JsValue => otherJsValue
   }
 

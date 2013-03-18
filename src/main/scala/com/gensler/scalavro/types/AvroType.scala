@@ -126,6 +126,12 @@ trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
     */
   def parsingCanonicalForm(): JsValue = schema
 
+  def writeCanonicalForm(os: java.io.OutputStream) {
+    val writer = new java.io.OutputStreamWriter(os, "UTF-8")
+    writer write parsingCanonicalForm.toString
+    writer.close
+  }
+
   override def toString(): String = {
     val className = getClass.getSimpleName
     if (className endsWith "$") className.dropRight(1) else className

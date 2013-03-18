@@ -41,14 +41,14 @@ class AvroRecord[T <: Product : ru.TypeTag](
     val docParam = ListMap("doc" -> doc).collect {
       case (k, Some(v)) => (k, v.toJson) }
 
-    (requiredParams ++ aliasesParam ++ docParam).toJson
+    new JsObject(requiredParams ++ aliasesParam ++ docParam)
   }
 
-  override def parsingCanonicalForm(): JsValue = ListMap(
+  override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
     "name"      -> fullyQualifiedName.toJson,
     "type"      -> typeName.toJson,
     "fields"    -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
-  ).toJson
+  ))
 
   def dependsOn(thatType: AvroType[_]) = {
     fields.foldLeft(false) { (dependencyFound, field) =>
@@ -115,7 +115,7 @@ object AvroRecord {
       val docParam = ListMap("doc" -> doc).collect {
         case (k, Some(v)) => (k, v.toJson) }
 
-      (requiredParams ++ defaultParam ++ orderParam ++ aliasesParam ++ docParam).toJson
+      new JsObject(requiredParams ++ defaultParam ++ orderParam ++ aliasesParam ++ docParam)
     }
 
     def parsingCanonicalForm(): JsValue = {
@@ -130,7 +130,7 @@ object AvroRecord {
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
 
-      (requiredParams ++ defaultParam ++ orderParam).toJson
+      new JsObject(requiredParams ++ defaultParam ++ orderParam)
     }
 
   }

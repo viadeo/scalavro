@@ -21,17 +21,17 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
   def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Map[String, T]] }
 
   // name, type, fields, symbols, items, values, size
-  override def schema() = ListMap(
+  override def schema() = new JsObject(ListMap(
     "type"   -> typeName.toJson,
     "values" -> typeSchemaOrNull[T]
-  ).toJson
+  ))
 
-  override def parsingCanonicalForm(): JsValue = ListMap(
+  override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
     "type"   -> typeName.toJson,
     "values" -> {
       AvroType.fromType[ItemType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
     }
-  ).toJson
+  ))
 
   def dependsOn(thatType: AvroType[_]) = AvroType.fromType[ItemType] match {
     case Success(avroTypeOfItems) => {
