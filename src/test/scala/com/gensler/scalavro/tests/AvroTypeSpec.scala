@@ -9,9 +9,12 @@ import scala.reflect.runtime.universe._
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
+import com.gensler.scalavro.AvroProtocol
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import spray.json.PrettyPrinter
 
 // for testing AvroRecord below
 case class Person(name: String, age: Int)
@@ -20,6 +23,11 @@ case class SantaList(nice: List[Person], naughty: List[Person])
 // cyclic dependency to test dependency robustness
 case class A(b: B)
 case class B(a: A)
+
+// types for protocol testing
+case class Greeting(message: String)
+case class Curse(message: String)
+
 
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
@@ -41,7 +49,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   it should "return valid AvroArray types" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
@@ -52,7 +59,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
     AvroType.fromType[List[Boolean]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
@@ -63,7 +69,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
     AvroType.fromType[List[List[Seq[Byte]]]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
@@ -77,7 +82,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   it should "return valid AvroMap types" in {
     AvroType.fromType[Map[String, Int]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroMap[_]] should be (true)
@@ -88,7 +92,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
     AvroType.fromType[Map[String, List[Double]]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroMap[_]] should be (true)
@@ -102,7 +105,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   it should "return valid AvroUnion types for disjoint unions of two types" in {
     AvroType.fromType[Either[Double, Int]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
@@ -113,7 +115,6 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
     AvroType.fromType[Either[List[Double], Map[String, Seq[Int]]]] match {
       case Success(avroType) => {
-
         log debug avroType.schema.toString
 
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
@@ -138,30 +139,62 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
     personRecord.name should be ("Person")
  
-    AvroType.fromType[SantaList] match {
-      case Success(santaListType) => {
+    val santaListType = AvroType.fromType[SantaList].get
 
-        log.debug("\n{}\n{}",
-          santaListType.schema,
-          santaListType.parsingCanonicalForm
-        )
+    log.debug("\n{}\n{}",
+      santaListType.schema,
+      santaListType.parsingCanonicalForm
+    )
 
-        santaListType.isInstanceOf[AvroRecord[_]] should be (true)
-        typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
-        val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
-        santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
-        santaListRecord.name should be ("SantaList")
-        santaListType dependsOn personType should be (true)
-      }
-      case _ => fail
-    }
-
+    santaListType.isInstanceOf[AvroRecord[_]] should be (true)
+    typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
+    val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
+    santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
+    santaListRecord.name should be ("SantaList")
+    santaListType dependsOn personType should be (true)
   }
 
   it should "detect dependencies among AvroRecord types" in {
     import com.gensler.scalavro.error.CyclicTypeDependencyException
     evaluating { AvroType.fromType[A].get } should produce [CyclicTypeDependencyException]
     evaluating { AvroType.fromType[B].get } should produce [CyclicTypeDependencyException]
+  }
+
+  it should "construct protocol definitions" in {
+    import AvroProtocol.Message
+
+    val greetingType = AvroType.fromType[Greeting].get.asInstanceOf[AvroRecord[Greeting]]
+    val curseType = AvroType.fromType[Curse].get.asInstanceOf[AvroRecord[Curse]]
+
+    // make a simple protocol definition
+    val hwProtocol = AvroProtocol(
+      protocol = "HelloWorld",
+      types    = Seq(greetingType, curseType),
+      messages = Map(
+                  "hello" -> Message(
+                    request = Map(
+                      "greeting" -> greetingType
+                    ),
+                    response = greetingType,
+                    errors = Some(AvroType.fromType[Either[Curse, String]].get.asInstanceOf[AvroUnion[_, _]]),
+                    doc = Some("Say hello.")
+                  )
+                 ),
+      namespace = Some("com.gensler.scalavro.tests"),
+      doc       = Some("Protocol Greetings")
+    )
+
+    // output the schema
+    val schemaBuff = new java.lang.StringBuilder
+    PrettyPrinter.print(hwProtocol.schema, schemaBuff)
+    log debug schemaBuff.toString
+
+    val canonicalBuff = new java.lang.StringBuilder
+    PrettyPrinter.print(hwProtocol.parsingCanonicalForm, canonicalBuff)
+    log debug canonicalBuff.toString
+
+    // output the CPF
+    // output the fingerprint (MD5)
   }
 
 }

@@ -38,7 +38,7 @@ import spray.json._
 case class AvroProtocol(
   protocol: String,
   types: Seq[AvroNamedType[_]],
-  messages: Seq[AvroProtocol.Message],
+  messages: Map[String, AvroProtocol.Message],
   namespace: Option[String] = None,
   doc: Option[String] = None
 ) extends JsonSchemifiable with CanonicalForm {
@@ -64,7 +64,7 @@ case class AvroProtocol(
     val requiredParams = ListMap(
       "protocol" -> protocol.toJson,
       "types" -> normalizedDeclarations.asInstanceOf[Seq[JsonSchemifiable]].toJson,
-      "messages" -> messages.asInstanceOf[Seq[JsonSchemifiable]].toJson
+      "messages" -> messages.asInstanceOf[Map[String, JsonSchemifiable]].toJson
     )
 
     val optionalParams = Map(
@@ -80,7 +80,7 @@ case class AvroProtocol(
     ListMap(
       "protocol" -> fullyQualifiedName.toJson,
       "types" -> normalizedDeclarations.asInstanceOf[Seq[CanonicalForm]].toJson,
-      "messages" -> messages.asInstanceOf[Seq[CanonicalForm]].toJson
+      "messages" -> messages.asInstanceOf[Map[String, CanonicalForm]].toJson
     ).toJson
   }
 
@@ -121,20 +121,23 @@ object AvroProtocol {
     * no errors are listed.
     */
   case class Message(
-    request: AvroRecord[_ <: Product],
+    request: Map[String, AvroRecord[_ <: Product]],
     response: AvroType[_],
-    error: Option[AvroUnion[_, _]] = None,
+    errors: Option[AvroUnion[_, _]] = None,
     doc: Option[String] = None,
     oneWay: Option[Boolean] = None
   ) extends JsonSchemifiable with CanonicalForm {
 
     def schema(): JsValue = {
       val requiredParams = Map(
-        "request" -> request.schema,
-        "response" -> response.schema
+        "request" -> request.toSeq.map {
+          case (paramName, paramType) =>
+            new JsObject(Map(paramName -> paramType.fullyQualifiedName.toJson))
+        }.asInstanceOf[Seq[JsValue]].toJson,
+        "response" -> response.canonicalFormOrFullyQualifiedName
       )
 
-      val errorParam = Map("error" -> error) collect {
+      val errorParam = Map("errors" -> errors) collect {
         case (k, Some(union)) => (k, union.schema)
       }
 
@@ -146,16 +149,19 @@ object AvroProtocol {
         case (k, Some(v)) => (k, v.toJson)
       }
 
-      (requiredParams ++ errorParam ++ docParam ++ oneWayParam).toJson
+      new JsObject(requiredParams ++ errorParam ++ docParam ++ oneWayParam)
     }
 
     def parsingCanonicalForm(): JsValue = {
       val requiredParams = Map(
-        "request" -> request.parsingCanonicalForm,
-        "response" -> response.parsingCanonicalForm
+        "request" -> request.toSeq.map {
+          case (paramName, paramType) =>
+            new JsObject(Map(paramName -> paramType.fullyQualifiedName.toJson))
+        }.asInstanceOf[Seq[JsValue]].toJson,
+        "response" -> response.canonicalFormOrFullyQualifiedName
       )
 
-      val errorParam = Map("error" -> error) collect {
+      val errorParam = Map("errors" -> errors) collect {
         case (k, Some(union)) => (k, union.parsingCanonicalForm)
       }
 
@@ -163,7 +169,7 @@ object AvroProtocol {
         case (k, Some(v)) => (k, v.toJson)
       }
 
-      (requiredParams ++ errorParam ++ oneWayParam).toJson
+      new JsObject(requiredParams ++ errorParam ++ oneWayParam)
     }
 
   }
