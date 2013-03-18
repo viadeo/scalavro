@@ -17,6 +17,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.0",
   "io.spray" % "spray-json_2.10.0-RC3" % "1.2.3",
+  "ch.qos.logback" % "logback-classic" % "1.0.9",
   "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 )
 
