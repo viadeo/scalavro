@@ -29,13 +29,13 @@ _* but as yet incomplete_
 Which yields:
 
     {
-      "name":"Person",
-      "type":"record",
-      "fields":[
-        {"name":"name","type":"string"},
-        {"name":"age","type":"int"}
+      "name": "Person",
+      "type": "record",
+      "fields": [
+        {"name": "name","type": "string"},
+        {"name": "age","type": "int"}
       ],
-      "namespace":"com.gensler.scalavro.tests"
+      "namespace": "com.gensler.scalavro.tests"
     }
 
 And perhaps more interestingly:
@@ -47,13 +47,19 @@ And perhaps more interestingly:
 Which yields:
 
     {
-      "name":"SantaList",
-      "type":"record",
-      "fields":[
-        {"name":"nice","type":{"type":"array","items":"Person"}},
-        {"name":"naughty","type":{"type":"array","items":"Person"}}
+      "name": "SantaList",
+      "type": "record",
+      "fields": [
+        {
+          "name": "nice",
+          "type": {"type": "array", "items": "Person"}
+        },
+        {
+          "name": "naughty",
+          "type": {"type": "array","items": "Person"}
+        }
       ],
-      "namespace":"com.gensler.scalavro.tests"
+      "namespace": "com.gensler.scalavro.tests"
     }
 
 ## Current Capabilities
