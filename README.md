@@ -62,11 +62,11 @@ Which yields:
 - Schema generation from String-keyed `Map` types.
 - Schema output for Avro protocols.
 - Robustness in the face of cyclic type dependencies (such records are never valid Avro).
+- Conversion to "Canonical Parsing Form"
 
 ## Current Limitations
 - IO is not yet implemented (schema generation only).
 - Reading JSON schemas is not yet supported.
-- Conversion to "Canonical Parsing Form" is not yet supported (hence no valid fingerprints can be generated for schema resolution during handshake).
 - Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).
 - Enums are not yet supported.
 
