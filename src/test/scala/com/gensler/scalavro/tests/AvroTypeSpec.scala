@@ -14,7 +14,7 @@ import com.gensler.scalavro.AvroProtocol
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import spray.json.PrettyPrinter
+import spray.json.{JsValue, PrettyPrinter}
 
 // for testing AvroRecord below
 case class Person(name: String, age: Int)
@@ -28,10 +28,15 @@ case class B(a: A)
 case class Greeting(message: String)
 case class Curse(message: String)
 
-
 class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   val log = LoggerFactory.getLogger(getClass.getName)
+
+  private def prettyPrint(json: JsValue) {
+    val buff = new java.lang.StringBuilder
+    PrettyPrinter.print(json, buff)
+    log debug buff.toString
+  }
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
@@ -128,10 +133,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   it should "return valid AvroRecord types for product types" in {
     val personType = AvroType.fromType[Person].get
 
-    log.debug("\n{}\n{}",
-      personType.schema,
-      personType.parsingCanonicalForm
-    )
+    prettyPrint(personType.schema)
+    prettyPrint(personType.parsingCanonicalForm)
 
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
@@ -141,10 +144,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
  
     val santaListType = AvroType.fromType[SantaList].get
 
-    log.debug("\n{}\n{}",
-      santaListType.schema,
-      santaListType.parsingCanonicalForm
-    )
+    prettyPrint(santaListType.schema)
+    prettyPrint(santaListType.parsingCanonicalForm)
 
     santaListType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
@@ -184,17 +185,8 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
       doc       = Some("Protocol Greetings")
     )
 
-    // output the schema
-    val schemaBuff = new java.lang.StringBuilder
-    PrettyPrinter.print(hwProtocol.schema, schemaBuff)
-    log debug schemaBuff.toString
-
-    val canonicalBuff = new java.lang.StringBuilder
-    PrettyPrinter.print(hwProtocol.parsingCanonicalForm, canonicalBuff)
-    log debug canonicalBuff.toString
-
-    // output the CPF
-    // output the fingerprint (MD5)
+    prettyPrint(hwProtocol.schema)
+    prettyPrint(hwProtocol.parsingCanonicalForm)
   }
 
 }
