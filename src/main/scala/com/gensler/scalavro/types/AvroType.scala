@@ -14,6 +14,8 @@ import scala.reflect.runtime.universe._
 
 import spray.json._
 
+import java.io.{InputStream, OutputStream, DataOutputStream }
+
 trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
 
   /**
@@ -32,17 +34,36 @@ trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
   def isPrimitive(): Boolean
 
   /**
-    * Returns a serialized representation of the supplied object.  Throws a
-    * SerializationException if writing is unsuccessful. 
+    * Writes a serialized representation of the supplied object.  Throws an
+    * AvroSerializationException if writing is unsuccessful. 
     */
   @throws[AvroSerializationException[_]]
-  def write(obj: T): Seq[Byte]
+  def write(obj: T, stream: OutputStream)
+
+  /**
+    * Returns the JSON serialization of the supplied object.  Throws an
+    * AvroSerializationException if writing is unsuccessful. 
+    */
+  @throws[AvroSerializationException[_]]
+  def writeAsJson(obj: T): JsValue
 
   /**
     * Attempts to create an object of type T by reading the required data from
-    * the supplied bytes.
+    * the supplied stream.
     */
-  def read(bytes: Seq[Byte]): Try[T]
+  def read(stream: InputStream): Try[T]
+
+  /**
+    * Attempts to create an object of type T by reading the required data from
+    * the supplied JSON source.
+    */
+  final def readFromJson(json: String): Try[T] = readFromJson(json.asJson)
+
+  /**
+    * Attempts to create an object of type T by reading the required data from
+    * the supplied JSON.
+    */
+  def readFromJson(json: JsValue): Try[T]
 
   /**
     * Returns the canonical JSON representation of this Avro type.
@@ -113,10 +134,6 @@ trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
     *     object has type, name, and size fields, then the name field should
     *     appear first, followed by the type and then the size fields.
     *
-    * ___ [STRINGS] For all JSON string literals in the schema text, replace
-    *     any escaped characters (e.g., \\uXXXX escapes) with their UTF-8
-    *     equivalents.
-    *
     * _X_ [INTEGERS] Eliminate quotes around and any leading zeros in front of
     *     JSON integer literals (which appear in the size attributes of fixed
     *     schemas).
@@ -126,10 +143,13 @@ trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
     */
   def parsingCanonicalForm(): JsValue = schema
 
+  /**
+    * _X_ [STRINGS] For all JSON string literals in the schema text, replace
+    *     any escaped characters (e.g., \\uXXXX escapes) with their UTF-8
+    *     equivalents.
+    */
   def writeCanonicalForm(os: java.io.OutputStream) {
-    val writer = new java.io.OutputStreamWriter(os, "UTF-8")
-    writer write parsingCanonicalForm.toString
-    writer.close
+    new DataOutputStream(os) writeUTF parsingCanonicalForm.toString
   }
 
   override def toString(): String = {
@@ -152,19 +172,19 @@ object AvroType {
   val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
   // primitive type cache table
-  private val primitiveTypeCache: Map[TypeTag[_], AvroType[_]] = Map(
-    typeTag[Unit]      -> AvroNull,
-    typeTag[Boolean]   -> AvroBoolean,
-    typeTag[Seq[Byte]] -> AvroBytes,
-    typeTag[Double]    -> AvroDouble,
-    typeTag[Float]     -> AvroFloat,
-    typeTag[Int]       -> AvroInt,
-    typeTag[Long]      -> AvroLong,
-    typeTag[String]    -> AvroString
+  private val primitiveTypeCache: Map[Type, AvroType[_]] = Map(
+    typeOf[Unit]      -> AvroNull,
+    typeOf[Boolean]   -> AvroBoolean,
+    typeOf[Seq[Byte]] -> AvroBytes,
+    typeOf[Double]    -> AvroDouble,
+    typeOf[Float]     -> AvroFloat,
+    typeOf[Int]       -> AvroInt,
+    typeOf[Long]      -> AvroLong,
+    typeOf[String]    -> AvroString
   )
 
   // complex type cache table, initially empty
-  private[scalavro] var complexTypeCache = Map[TypeTag[_], AvroType[_]]()
+  private[scalavro] var complexTypeCache = Map[Type, AvroType[_]]()
 
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
@@ -182,13 +202,13 @@ object AvroType {
       "synthesize an AvroType for  type [%s]" format tt.tpe
     )
 
-    val avroType = primitiveTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+    val avroType = primitiveTypeCache.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
 
       // primitive type cache hit
       case Some(primitive) => primitive
 
       // primitive type cache miss
-      case None => complexTypeCache.collectFirst { case (tag, at) if tt.tpe =:= tag.tpe => at } match {
+      case None => complexTypeCache.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
 
         // complex type cache hit
         case Some(complex) => complex
@@ -232,7 +252,7 @@ object AvroType {
           }
 
           // add the synthesized AvroType to the complex type cache table
-          complexTypeCache += tt -> newComplexType
+          complexTypeCache += tt.tpe -> newComplexType
 
           newComplexType
         }

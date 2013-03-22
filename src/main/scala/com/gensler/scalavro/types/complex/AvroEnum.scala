@@ -9,6 +9,8 @@ import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
 
+import java.io.{InputStream, OutputStream}
+
 class AvroEnum[T: TypeTag](
   val name: String,
   val namespace: Option[String] = None
@@ -16,9 +18,13 @@ class AvroEnum[T: TypeTag](
 
   val typeName = "enum"
 
-  def write(obj: T): Seq[Byte] = ???
+  def write(obj: T, stream: OutputStream) = ???
 
-  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
+  def writeAsJson(obj: T): JsValue = ???
+
+  def read(stream: InputStream) = Try { ???.asInstanceOf[T] }
+
+  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] }
 
   // name, type, fields, symbols, items, values, size
   override def schema() = {

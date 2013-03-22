@@ -1,6 +1,7 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
+
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 

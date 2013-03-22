@@ -68,7 +68,7 @@ Which yields:
 - Schema generation from String-keyed `Map` types.
 - Schema output for Avro protocols.
 - Robustness in the face of cyclic type dependencies (such records are never valid Avro).
-- Conversion to "Canonical Parsing Form"
+- Conversion to "Parsing Canonical Form"
 
 ## Current Limitations
 - IO is not yet implemented (schema generation only).
@@ -80,6 +80,7 @@ Which yields:
 
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
 1. [Scala 2.10 Reflection Overview](http://docs.scala-lang.org/overviews/reflection/overview.html)
+1. [Great article on schema evolution in various serialization systems](http://martin.kleppmann.com/2012/12/05/schema-evolution-in-avro-protocol-buffers-thrift.html)
 
 ## Legal
 

@@ -10,15 +10,21 @@ import scala.reflect.runtime.universe._
 import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
 
+import java.io.{InputStream, OutputStream}
+
 class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
   type ItemType = T
 
   val typeName = "map"
 
-  def write(obj: Map[String, T]): Seq[Byte] = ???
+  def write(obj: Map[String, T], stream: OutputStream) = ???
 
-  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[Map[String, T]] }
+  def writeAsJson(obj: Map[String, T]): JsValue = ???
+
+  def read(stream: InputStream) = Try { ???.asInstanceOf[Map[String, T]] }
+
+  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[Map[String, T]] }
 
   // name, type, fields, symbols, items, values, size
   override def schema() = new JsObject(ListMap(

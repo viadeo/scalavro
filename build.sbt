@@ -22,3 +22,5 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions in Compile ++= Seq("-unchecked", "-deprecation", "-feature")
+
+parallelExecution in Test := false

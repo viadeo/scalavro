@@ -10,6 +10,8 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
 
+import java.io.{InputStream, OutputStream}
+
 class AvroRecord[T <: Product : ru.TypeTag](
   val name: String,
   val fields: Seq[AvroRecord.Field[_]],
@@ -22,9 +24,13 @@ class AvroRecord[T <: Product : ru.TypeTag](
 
   val typeName = "record"
 
-  def write(obj: T): Seq[Byte] = ???
+  def write(obj: T, stream: OutputStream) = ???
 
-  def read(bytes: Seq[Byte]) = Try { ???.asInstanceOf[T] }
+  def writeAsJson(obj: T): JsValue = ???
+
+  def read(stream: InputStream) = Try { ???.asInstanceOf[T] }
+
+  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] }
 
   // name, type, fields, symbols, items, values, size
   override def schema() = {
@@ -104,7 +110,7 @@ object AvroRecord {
       )
 
       val defaultParam = ListMap("default" -> default).collect {
-        case (k, Some(u)) => (k, fieldType.write(u).toJson) }
+        case (k, Some(u)) => (k, fieldType writeAsJson u) }
 
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
@@ -125,7 +131,7 @@ object AvroRecord {
       )
 
       val defaultParam = ListMap("default" -> default).collect {
-        case (k, Some(u)) => (k, fieldType.write(u).toJson) }
+        case (k, Some(u)) => (k, fieldType writeAsJson u) }
 
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }

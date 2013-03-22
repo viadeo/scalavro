@@ -1,8 +1,5 @@
 package com.gensler.scalavro.tests
 
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
-
 import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
@@ -10,11 +7,6 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.AvroProtocol
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-import spray.json.{JsValue, PrettyPrinter}
 
 // for testing AvroRecord below
 case class Person(name: String, age: Int)
@@ -28,15 +20,7 @@ case class B(a: A)
 case class Greeting(message: String)
 case class Curse(message: String)
 
-class AvroTypeSpec extends FlatSpec with ShouldMatchers {
-
-  val log = LoggerFactory.getLogger(getClass.getName)
-
-  private def prettyPrint(json: JsValue) {
-    val buff = new java.lang.StringBuilder
-    PrettyPrinter.print(json, buff)
-    log debug buff.toString
-  }
+class AvroTypeSpec extends AvroSpec {
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
@@ -131,7 +115,9 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
 
   // records
   it should "return valid AvroRecord types for product types" in {
+
     val personType = AvroType.fromType[Person].get
+    val santaListType = AvroType.fromType[SantaList].get
 
     prettyPrint(personType.schema)
     prettyPrint(personType.parsingCanonicalForm)
@@ -141,9 +127,10 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     val personRecord = personType.asInstanceOf[AvroRecord[Person]]
     personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
     personRecord.name should be ("Person")
+    personRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.Person")
+    personType dependsOn personType should be (false)
+    personType dependsOn santaListType should be (false)
  
-    val santaListType = AvroType.fromType[SantaList].get
-
     prettyPrint(santaListType.schema)
     prettyPrint(santaListType.parsingCanonicalForm)
 
@@ -152,7 +139,9 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
     santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
     santaListRecord.name should be ("SantaList")
+    santaListRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.SantaList")
     santaListType dependsOn personType should be (true)
+    santaListType dependsOn santaListType should be (false)
   }
 
   it should "detect dependencies among AvroRecord types" in {
@@ -162,22 +151,20 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "construct protocol definitions" in {
-    import AvroProtocol.Message
 
     val greetingType = AvroType.fromType[Greeting].get.asInstanceOf[AvroRecord[Greeting]]
     val curseType = AvroType.fromType[Curse].get.asInstanceOf[AvroRecord[Curse]]
 
-    // make a simple protocol definition
     val hwProtocol = AvroProtocol(
       protocol = "HelloWorld",
       types    = Seq(greetingType, curseType),
       messages = Map(
-                  "hello" -> Message(
+                  "hello" -> AvroProtocol.Message(
                     request = Map(
                       "greeting" -> greetingType
                     ),
                     response = greetingType,
-                    errors = Some(AvroType.fromType[Either[Curse, String]].get.asInstanceOf[AvroUnion[_, _]]),
+                    errors = Some(AvroType.fromType[Either[Curse, String]].get.asInstanceOf[AvroUnion[_,_]]),
                     doc = Some("Say hello.")
                   )
                  ),
@@ -186,6 +173,9 @@ class AvroTypeSpec extends FlatSpec with ShouldMatchers {
     )
 
     prettyPrint(hwProtocol.schema)
+
+    prettyPrint(hwProtocol.schema)
+
     prettyPrint(hwProtocol.parsingCanonicalForm)
   }
 
