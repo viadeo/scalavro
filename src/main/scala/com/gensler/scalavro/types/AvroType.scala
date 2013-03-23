@@ -257,8 +257,10 @@ object AvroType {
           }
 
           // add the synthesized AvroType to the complex type cache table
+          var tries = 0
           var cacheUpdated = false
-          while (! cacheUpdated) {
+          while (! cacheUpdated && tries < 3) {
+            tries += 1
             val currentCache = complexTypeCache.get
             cacheUpdated = complexTypeCache.compareAndSet(
               currentCache,
