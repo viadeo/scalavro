@@ -168,11 +168,13 @@ object AvroType {
 
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
+  import scala.collection.immutable.ListMap
+  import java.util.concurrent.atomic.AtomicReference
 
   val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
   // primitive type cache table
-  private val primitiveTypeCache: Map[Type, AvroType[_]] = Map(
+  private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
     typeOf[Unit]      -> AvroNull,
     typeOf[Boolean]   -> AvroBoolean,
     typeOf[Seq[Byte]] -> AvroBytes,
@@ -184,7 +186,10 @@ object AvroType {
   )
 
   // complex type cache table, initially empty
-  private[scalavro] var complexTypeCache = Map[Type, AvroType[_]]()
+  private[scalavro] val complexTypeCache =
+    new AtomicReference[ListMap[Type, AvroType[_]]](
+      ListMap[Type, AvroType[_]]()
+    )
 
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
@@ -208,7 +213,7 @@ object AvroType {
       case Some(primitive) => primitive
 
       // primitive type cache miss
-      case None => complexTypeCache.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
+      case None => complexTypeCache.get.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
 
         // complex type cache hit
         case Some(complex) => complex
@@ -252,7 +257,14 @@ object AvroType {
           }
 
           // add the synthesized AvroType to the complex type cache table
-          complexTypeCache += tt.tpe -> newComplexType
+          var cacheUpdated = false
+          while (! cacheUpdated) {
+            val currentCache = complexTypeCache.get
+            cacheUpdated = complexTypeCache.compareAndSet(
+              currentCache,
+              currentCache + (tt.tpe -> newComplexType)
+            )
+          }
 
           newComplexType
         }
