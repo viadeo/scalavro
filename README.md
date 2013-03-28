@@ -71,9 +71,9 @@ Which yields:
 - Conversion to "Parsing Canonical Form"
 
 ## Current Limitations
-- IO is not yet implemented (schema generation only).
+- IO for complex types is not yet implemented (primitive types only).
 - Reading JSON schemas is not yet supported.
-- Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).
+- Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
 - Enums are not yet supported.
 
 ## Reference
