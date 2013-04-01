@@ -5,6 +5,7 @@ import scala.reflect.runtime.universe._
 import spray.json._
 
 abstract class AvroComplexType[T: TypeTag] extends AvroType[T] {
+
   final val isPrimitive = false
 
   override def toString(): String = {

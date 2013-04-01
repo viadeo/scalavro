@@ -1,8 +1,8 @@
 package com.gensler.scalavro.types
 
-import scala.reflect.runtime.universe.TypeTag
+import scala.reflect.runtime.universe._
 
-trait AvroPrimitiveType[T] extends AvroType[T] {
+abstract class AvroPrimitiveType[T: TypeTag] extends AvroType[T] {
   final val isPrimitive = true
   final def dependsOn(thatType: AvroType[_]) = false
 }

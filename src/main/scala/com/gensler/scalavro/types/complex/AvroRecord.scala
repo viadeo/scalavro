@@ -3,16 +3,24 @@ package com.gensler.scalavro.types.complex
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import com.gensler.scalavro.{JsonSchemifiable, CanonicalForm}
 import com.gensler.scalavro.JsonSchemaProtocol._
+import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
+import com.gensler.scalavro.util.ReflectionHelpers._
+
+import org.apache.avro.Schema
+import org.apache.avro.Schema.Parser
+import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter}
+import org.apache.avro.io.EncoderFactory
 
 import spray.json._
 
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.universe._
+import scala.reflect.ClassTag
 import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
 
 import java.io.{InputStream, OutputStream}
 
-class AvroRecord[T <: Product : ru.TypeTag](
+class AvroRecord[T : TypeTag](
   val name: String,
   val fields: Seq[AvroRecord.Field[_]],
   val aliases: Seq[String] = Seq(),
@@ -24,13 +32,43 @@ class AvroRecord[T <: Product : ru.TypeTag](
 
   val typeName = "record"
 
-  def write(obj: T, stream: OutputStream) = ???
+  // result of Apache implementation's Schema.Parser.parse
+  protected lazy val avroSchema: Schema = (new Parser) parse schema.toString
 
-  def writeAsJson(obj: T): JsValue = ???
+  // source of Apache implementation binaryEncoders
+  protected lazy val encoderFactory = EncoderFactory.get
 
-  def read(stream: InputStream) = Try { ???.asInstanceOf[T] }
+  /**
+    * Returns the Apache implementation's GenericRecord representation of this
+    * AvroRecord.
+    */
+  protected[scalavro] def asGenericRecord(obj: T): GenericRecord = {
+    val record = new GenericData.Record(avroSchema)
 
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] }
+    fields.foreach { field =>
+      productElement(obj, field.name)(typeTag[T], field.fieldType.tag) map { value =>
+        record.put(field.name, value) // primitives only for now...
+      }
+    }
+
+    record
+  }
+
+  def write(obj: T, stream: OutputStream) {
+    try {
+      val encoder = encoderFactory.binaryEncoder(stream, null)
+      val datumWriter = new GenericDatumWriter[GenericRecord](avroSchema)
+      datumWriter.write(asGenericRecord(obj), encoder)
+      encoder.flush
+    }
+    catch { case t: Throwable => throw t } //  AvroSerializationException[T](obj) }
+  }
+
+  def read(stream: InputStream) = Try { ???.asInstanceOf[T] } // TODO
+
+  def writeAsJson(obj: T): JsValue = ??? // TODO
+
+  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] } // TODO
 
   // name, type, fields, symbols, items, values, size
   override def schema() = {

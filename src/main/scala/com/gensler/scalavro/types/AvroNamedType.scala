@@ -3,6 +3,7 @@ package com.gensler.scalavro.types
 import com.gensler.scalavro.JsonSchemaProtocol._
 
 import scala.collection.immutable.ListMap
+import scala.reflect.runtime.universe.TypeTag
 
 import spray.json._
 
@@ -10,7 +11,7 @@ import spray.json._
   * Marker trait for "named types".  As of version 1.7.4 of the Avro
   * specification, the named types are `Record`, `Enum`, and `Fixed`.
   */
-trait AvroNamedType[T] extends AvroComplexType[T] {
+abstract class AvroNamedType[T: TypeTag] extends AvroComplexType[T] {
 
   def name(): String
 

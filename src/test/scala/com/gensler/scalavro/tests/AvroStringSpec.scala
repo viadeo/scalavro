@@ -27,10 +27,8 @@ class AvroStringSpec extends AvroSpec {
 
     val out = new ByteArrayOutputStream
     as.write(text, out)
+
     val bytes = out.toByteArray
-
-    println(bytes.length)
-
     val in = new ByteArrayInputStream(bytes)
 
     as.read(in).get should equal (text)

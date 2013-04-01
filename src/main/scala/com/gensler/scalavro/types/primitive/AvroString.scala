@@ -26,7 +26,6 @@ trait AvroString extends AvroPrimitiveType[String] {
 
   def read(stream: InputStream) = Try {
     val length = AvroLong.read(stream).get
-    println(length)
 
     val reader = new InputStreamReader(
       new TruncatedInputStream(stream, length),

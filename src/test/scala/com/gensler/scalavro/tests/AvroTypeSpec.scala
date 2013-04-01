@@ -8,18 +8,6 @@ import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.AvroProtocol
 
-// for testing AvroRecord below
-case class Person(name: String, age: Int)
-case class SantaList(nice: List[Person], naughty: List[Person])
-
-// cyclic dependency to test dependency robustness
-case class A(b: B)
-case class B(a: A)
-
-// types for protocol testing
-case class Greeting(message: String)
-case class Curse(message: String)
-
 class AvroTypeSpec extends AvroSpec {
 
   // primitives

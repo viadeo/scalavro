@@ -16,7 +16,9 @@ import spray.json._
 
 import java.io.{InputStream, OutputStream, DataOutputStream }
 
-trait AvroType[T] extends JsonSchemifiable with CanonicalForm {
+abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm {
+
+  final val tag: TypeTag[T] = typeTag[T]
 
   /**
     * The corresponding Scala type for this Avro type.
@@ -168,10 +170,9 @@ object AvroType {
 
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
+  import com.gensler.scalavro.util.ReflectionHelpers._
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
-
-  val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
   // primitive type cache table
   private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
@@ -240,19 +241,21 @@ object AvroType {
             // case classes
             else if (tt.tpe <:< typeOf[Product] && tt.tpe.typeSymbol.asClass.isCaseClass) {
               tt.tpe match { case TypeRef(prefix, symbol, _) =>
-                new AvroRecord(
+                new AvroRecord[T](
                   name      = symbol.name.toString,
-                  fields    = formalConstructorParamsOf[T].toSeq map { case (name, tag) =>
-                    AvroRecord.Field(name, fromTypeHelper(tag, (processedTypes + tt.tpe)).get)
-                  },
+                  fields    = productParamsOf[T].toSeq map { case (name, tag) => {
+                    val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
+                    AvroRecord.Field(name, fieldType)
+                  }},
                   namespace = Some(prefix.toString.stripSuffix(".type"))
                 )
               }
+
             }
 
             // other types are not handled
             else throw new IllegalArgumentException(
-              "Unable to find or make an AvroType for the supplied type []" format tt.tpe
+              "Unable to find or make an AvroType for the supplied type [%s]" format tt.tpe
             )
           }
 
@@ -275,23 +278,5 @@ object AvroType {
 
     avroType.asInstanceOf[AvroType[T]]
   }
-
-
-  private def formalConstructorParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
-    val tt: TypeTag[T] = typeTag[T]
-    val classSymbol = tt.tpe.typeSymbol.asClass
-    val classMirror = classLoaderMirror reflectClass classSymbol
-    val constructorMethodSymbol = tt.tpe.declaration(nme.CONSTRUCTOR).asMethod
-    constructorMethodSymbol.paramss.reduceLeft( _ ++ _ ).map { sym =>
-      sym.name.toString -> tagForType(tt.tpe.member(sym.name).asMethod.returnType)
-    }.toMap
-  }
-
-  private[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(
-    classLoaderMirror,
-    new TypeCreator {
-      def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
-    }
-  )
 
 }

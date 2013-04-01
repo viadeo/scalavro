@@ -1,6 +1,6 @@
 # Scalavro
 
-An elegant* reflection-based Avro library in pure Scala.
+An elegant* runtime reflection-based Avro library in Scala.
 
 _* but as yet incomplete_
 
@@ -81,6 +81,7 @@ Which yields:
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
 1. [Scala 2.10 Reflection Overview](http://docs.scala-lang.org/overviews/reflection/overview.html)
 1. [Great article on schema evolution in various serialization systems](http://martin.kleppmann.com/2012/12/05/schema-evolution-in-avro-protocol-buffers-thrift.html)
+1. [Wickedly clever technique for representing unboxed union types, proposed by Miles Sabin](http://chuusai.com/2011/06/09/scala-union-types-curry-howard)
 
 ## Legal
 
