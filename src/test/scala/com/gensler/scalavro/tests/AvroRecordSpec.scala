@@ -34,7 +34,7 @@ class AvroRecordSpec extends AvroSpec {
 
     val in = new ByteArrayInputStream(bytes)
 
-    personRecord read in should equal (julius)
+    personRecord read in should equal (Success(julius))
   }
 
 }

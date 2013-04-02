@@ -8,8 +8,8 @@ import com.gensler.scalavro.util.ReflectionHelpers._
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter}
-import org.apache.avro.io.EncoderFactory
+import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter, GenericDatumReader}
+import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import spray.json._
 
@@ -35,9 +35,6 @@ class AvroRecord[T : TypeTag](
   // result of Apache implementation's Schema.Parser.parse
   protected lazy val avroSchema: Schema = (new Parser) parse schema.toString
 
-  // source of Apache implementation binaryEncoders
-  protected lazy val encoderFactory = EncoderFactory.get
-
   /**
     * Returns the Apache implementation's GenericRecord representation of this
     * AvroRecord.
@@ -54,17 +51,40 @@ class AvroRecord[T : TypeTag](
     record
   }
 
+  /**
+    * Writes a binary representation of the supplied object to the supplied
+    * stream.
+    */
   def write(obj: T, stream: OutputStream) {
     try {
-      val encoder = encoderFactory.binaryEncoder(stream, null)
+      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       val datumWriter = new GenericDatumWriter[GenericRecord](avroSchema)
       datumWriter.write(asGenericRecord(obj), encoder)
       encoder.flush
     }
-    catch { case t: Throwable => throw t } //  AvroSerializationException[T](obj) }
+    catch { case t: Throwable => throw new AvroSerializationException[T](obj) }
   }
 
-  def read(stream: InputStream) = Try { ???.asInstanceOf[T] } // TODO
+  /**
+    * Reads a binary representation of the underlying Scala type from the
+    * supplied stream.
+    */
+  def read(stream: InputStream) = Try {
+    val datumReader = new GenericDatumReader[GenericRecord](avroSchema)
+    val decoder = DecoderFactory.get.binaryDecoder(stream, null)
+    val record = datumReader.read(null.asInstanceOf[GenericRecord], decoder)
+
+    println(fields)
+
+    val args = fields map { field => record.get(field.name) match {
+      case utf8: org.apache.avro.util.Utf8 => utf8.toString
+      case other: Any => other
+    }}
+
+    // reverse ??
+
+    instantiateCaseClassWith[T](args).get
+  }
 
   def writeAsJson(obj: T): JsValue = ??? // TODO
 
@@ -89,9 +109,9 @@ class AvroRecord[T : TypeTag](
   }
 
   override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
-    "name"      -> fullyQualifiedName.toJson,
-    "type"      -> typeName.toJson,
-    "fields"    -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
+    "name"   -> fullyQualifiedName.toJson,
+    "type"   -> typeName.toJson,
+    "fields" -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
   ))
 
   def dependsOn(thatType: AvroType[_]) = {

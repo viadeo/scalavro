@@ -12,11 +12,12 @@ trait ReflectionHelpers {
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
+    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod
 
-    val accessorPredicate = (sym: Symbol) => sym.isMethod && sym.asMethod.isCaseAccessor
+    val isAccessor = (sym: Symbol) => sym.isMethod && sym.asMethod.isCaseAccessor
 
-    tpe.members.filter(accessorPredicate).map { sym =>
-      sym.name.toString -> tagForType(sym.asMethod.returnType)
+    constructorSymbol.paramss.reduceLeft( _ ++ _ ).map {
+      sym => sym.name.toString -> tagForType(tpe.member(sym.name).asMethod.returnType)
     }.toMap
   }
 
@@ -31,17 +32,34 @@ trait ReflectionHelpers {
 
     implicit val productClassTag = ClassTag[P](product.getClass)
 
-    val getter = typeOf[P].member(memberName: TermName).asMethod
+    val getterSymbol = typeOf[P].member(memberName: TermName).asMethod
 
-    if (getter.isGetter && getter.returnType =:= typeOf[T]) {
+    if (getterSymbol.isGetter && getterSymbol.returnType =:= typeOf[T]) {
       scala.util.Try {
         val instanceMirror = classLoaderMirror reflect product
-        (instanceMirror reflectMethod getter).apply().asInstanceOf[T]
+        val getterMethod = instanceMirror reflectMethod getterSymbol
+        getterMethod().asInstanceOf[T]
       }.toOption
     }
 
     else None
   }
+
+  protected[scalavro] def instantiateCaseClassWith[T: TypeTag](args: Seq[_]): scala.util.Try[T] =
+    scala.util.Try {
+      val tpe = typeOf[T]
+      val classSymbol = tpe.typeSymbol.asClass
+      
+      if (! (tpe <:< typeOf[Product] && classSymbol.isCaseClass)) throw new IllegalArgumentException(
+        "instantiateCaseClassWith may only be applied to case classes!"
+      )
+
+      val classMirror = classLoaderMirror reflectClass classSymbol
+      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod
+      val constructorMethod = classMirror reflectConstructor constructorSymbol
+
+      constructorMethod(args: _*).asInstanceOf[T]
+    }
 
 }
 
