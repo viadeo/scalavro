@@ -243,7 +243,7 @@ object AvroType {
               tt.tpe match { case TypeRef(prefix, symbol, _) =>
                 new AvroRecord[T](
                   name      = symbol.name.toString,
-                  fields    = productParamsOf[T].toSeq map { case (name, tag) => {
+                  fields    = caseClassParamsOf[T].toSeq map { case (name, tag) => {
                     val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
                     AvroRecord.Field(name, fieldType)
                   }},

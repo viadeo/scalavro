@@ -8,7 +8,11 @@ trait ReflectionHelpers {
 
   protected val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
-  protected[scalavro] def productParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
+  /**
+    * Returns a map from formal parameter names to type tags, containing one
+    * mapping for each constructor argument.
+    */
+  protected[scalavro] def caseClassParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
@@ -21,6 +25,9 @@ trait ReflectionHelpers {
     }.toMap
   }
 
+  /**
+    * Returns a TypeTag in the current runtime universe for the supplied type.
+    */
   protected[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(
     classLoaderMirror,
     new TypeCreator {
@@ -28,13 +35,22 @@ trait ReflectionHelpers {
     }
   )
 
+  /**
+    * Attempts to fetch the value of a named component of a product instance,
+    * while verifying the value conforms to some expected type.
+    *
+    * @tparam P         the type of the product instance in question
+    * @tparam T         the expected type of the value
+    * @param product    an instance of some product type, P
+    * @param membername the arguments to supply to the constructor method
+    */
   protected[scalavro] def productElement[P: TypeTag, T: TypeTag](product: P, memberName: String): Option[T] = {
 
     implicit val productClassTag = ClassTag[P](product.getClass)
 
     val getterSymbol = typeOf[P].member(memberName: TermName).asMethod
 
-    if (getterSymbol.isGetter && getterSymbol.returnType =:= typeOf[T]) {
+    if (getterSymbol.isGetter && getterSymbol.returnType <:< typeOf[T]) {
       scala.util.Try {
         val instanceMirror = classLoaderMirror reflect product
         val getterMethod = instanceMirror reflectMethod getterSymbol
@@ -45,6 +61,13 @@ trait ReflectionHelpers {
     else None
   }
 
+  /**
+    * Attempts to create a new instance of the specified type by calling the
+    * constructor method with the supplied arguments.
+    *
+    * @tparam T   the type of object to construct, which must be a case class
+    * @param args the arguments to supply to the constructor method
+    */
   protected[scalavro] def instantiateCaseClassWith[T: TypeTag](args: Seq[_]): scala.util.Try[T] =
     scala.util.Try {
       val tpe = typeOf[T]
