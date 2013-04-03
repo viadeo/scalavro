@@ -1,12 +1,10 @@
 # Scalavro
 
-An elegant* runtime reflection-based Avro library in Scala.
-
-_* but as yet incomplete_
+A runtime reflection-based Avro library in Scala.
 
 ## Motivation
-1. **We would rather write Scala classes than Avro IDL.**
-2. **We would like to avoid adding a compilation phase to generate IO bindings.**
+1. We would rather write Scala classes than Avro IDL.
+2. We would like to avoid adding a compilation phase to generate IO bindings.
 
 ## Goals
 1. To provide an in-memory representation of avro schemas and protocols.
@@ -15,7 +13,12 @@ _* but as yet incomplete_
 4. To generate Scala bindings for reading and writing Avro-mapped Scala types.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
 
-## Usage
+## General Information
+- Built against Scala 2.10.1 with SBT 0.12.2
+- Depends upon [spray-json](https://github.com/spray/spray-json)
+- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
+
+## Usage: Schema Generation
 
     package com.gensler.scalavro.tests
 
@@ -62,29 +65,56 @@ Which yields:
       "namespace": "com.gensler.scalavro.tests"
     }
 
+## Usage: Binary IO
+
+    package com.gensler.scalavro.tests
+
+    // implicitly augments AvroType instances with `read` and `write`
+    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+
+    import java.io.{ ByteArrayOutputStream, ByteArrayInputStream }
+
+    // define a simple case class for illustration
+    case class Person(name: String, age: Int)
+
+    // create an AvroType[Person] (an AvroRecord object)
+    val personAvroType = AvroType.fromType[Person].get
+
+    // create an instance of [[Person]]
+    val julius = Person("Julius Caesar", 2112)
+
+    val out = new ByteArrayOutputStream
+
+    // implicitly: AvroRecordIO(personAvroType).write(julius, out)
+    personAvroType.write(julius, out)
+
+    val in = new ByteArrayInputStream(out.toByteArray)
+
+    (personAvroType read in) ==  julius // true
+
 ## Current Capabilities
-- Schema generation from basic types.
-- Schema generation from sequences (`List`, `Seq`, `Array`, etc.)
-- Schema generation from String-keyed `Map` types.
-- Schema output for Avro protocols.
-- Robustness in the face of cyclic type dependencies (such records are never valid Avro).
-- Conversion to "Parsing Canonical Form"
+- Schema generation for basic types
+- Schema generation for sequences (`List`, `Seq`, `Array`, etc)
+- Schema generation for String-keyed `Map` types
+- Type-safe Avro protocol definitions and JSON output
+- Robustness in the face of cyclic type dependencies (such records are never valid Avro)
+- Schema conversion to "Parsing Canonical Form"
+- Convenient binary IO for primitive types
 
 ## Current Limitations
-- IO for complex types is not yet implemented (primitive types only).
+- Binary IO for complex types is incomplete.
+- JSON IO is not yet implemented.
 - Reading JSON schemas is not yet supported.
 - Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
 - Enums are not yet supported.
 
 ## Reference
-
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
 1. [Scala 2.10 Reflection Overview](http://docs.scala-lang.org/overviews/reflection/overview.html)
 1. [Great article on schema evolution in various serialization systems](http://martin.kleppmann.com/2012/12/05/schema-evolution-in-avro-protocol-buffers-thrift.html)
 1. [Wickedly clever technique for representing unboxed union types, proposed by Miles Sabin](http://chuusai.com/2011/06/09/scala-union-types-curry-howard)
 
 ## Legal
-
 Apache Avro is a trademark of The Apache Software Foundation.
 
 Scalavro is distributed under the BSD 2-Clause License, the text of which follows:

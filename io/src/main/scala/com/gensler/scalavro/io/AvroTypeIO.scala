@@ -92,12 +92,12 @@ object AvroTypeIO {
       }
 
     // complex types
-    implicit def arrayToIO[T](avroArray: AvroArray[T]): AvroTypeIO[Seq[T]]          = AvroArrayIO(avroArray)
-    implicit def enumToIO[T](avroEnum: AvroEnum[T]): AvroTypeIO[T]                  = AvroEnumIO(avroEnum)
-    implicit def fixedToIO[T](avroFixed: AvroFixed[T]): AvroTypeIO[T]               = AvroFixedIO(avroFixed)
-    implicit def mapToIO[T](avroMap: AvroMap[T]): AvroTypeIO[Map[String, T]]        = AvroMapIO(avroMap)
-    implicit def errorToIO[T](avroError: AvroError[T]): AvroTypeIO[T]               = AvroRecordIO(avroError)
-    implicit def recordToIO[T](avroRecord: AvroRecord[T]): AvroTypeIO[T]            = AvroRecordIO(avroRecord)
+    implicit def arrayToIO[T](avroArray: AvroArray[T]): AvroTypeIO[Seq[T]]             = AvroArrayIO(avroArray)
+    implicit def enumToIO[T](avroEnum: AvroEnum[T]): AvroTypeIO[T]                     = AvroEnumIO(avroEnum)
+    implicit def fixedToIO[T](avroFixed: AvroFixed[T]): AvroTypeIO[T]                  = AvroFixedIO(avroFixed)
+    implicit def mapToIO[T](avroMap: AvroMap[T]): AvroTypeIO[Map[String, T]]           = AvroMapIO(avroMap)
+    implicit def errorToIO[T](avroError: AvroError[T]): AvroTypeIO[T]                  = AvroRecordIO(avroError)
+    implicit def recordToIO[T](avroRecord: AvroRecord[T]): AvroTypeIO[T]               = AvroRecordIO(avroRecord)
     implicit def unionToIO[A, B](avroUnion: AvroUnion[A, B]): AvroTypeIO[Either[A, B]] = AvroUnionIO(avroUnion)
   }
 

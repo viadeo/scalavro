@@ -35,10 +35,7 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
 
     io.write(julius, out)
 
-    val bytes = out.toByteArray
-    // bytes.toSeq should equal (...)
-
-    val in = new ByteArrayInputStream(bytes)
+    val in = new ByteArrayInputStream(out.toByteArray)
 
     io read in should equal (Success(julius))
   }
