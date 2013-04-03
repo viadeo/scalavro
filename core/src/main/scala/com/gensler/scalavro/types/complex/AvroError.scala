@@ -2,10 +2,10 @@ package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.AvroNamedType
 
-import scala.reflect.runtime.{universe => ru}
+import scala.reflect.runtime.universe._
 import scala.util.Try
 
-class AvroError[T <: Product : ru.TypeTag](
+class AvroError[T: TypeTag](
   name: String,
   fields: Seq[AvroRecord.Field[_]],
   aliases: Seq[String] = Seq(),

@@ -18,14 +18,6 @@ class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
   val typeName = "map"
 
-  def write(obj: Map[String, T], stream: OutputStream) = ???
-
-  def writeAsJson(obj: Map[String, T]): JsValue = ???
-
-  def read(stream: InputStream) = Try { ???.asInstanceOf[Map[String, T]] }
-
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[Map[String, T]] }
-
   // name, type, fields, symbols, items, values, size
   override def schema() = new JsObject(ListMap(
     "type"   -> typeName.toJson,

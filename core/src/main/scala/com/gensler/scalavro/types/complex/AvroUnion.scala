@@ -9,28 +9,12 @@ import scala.util.{Try, Success, Failure}
 
 import spray.json._
 
-import java.io.{InputStream, OutputStream}
-
 class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
 
   type LeftType = A
   type RightType = B
 
   val typeName = "union"
-
-  def write(obj: Either[LeftType, RightType], stream: OutputStream) = obj match {
-    case Left(a)  => ???
-    case Right(b) => ???
-  }
-
-  def writeAsJson(obj: Either[LeftType, RightType]): JsValue = obj match {
-    case Left(a)  => ???
-    case Right(b) => ???
-  }
-
-  def read(stream: InputStream) = Try { ???.asInstanceOf[Either[A, B]] }
-
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[Either[A, B]] }
 
   override def schema() = Set(
     typeSchemaOrNull[LeftType],

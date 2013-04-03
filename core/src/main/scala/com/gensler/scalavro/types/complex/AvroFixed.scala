@@ -20,14 +20,6 @@ class AvroFixed[T: TypeTag](
 
   val typeName = "fixed"
 
-  def write(obj: T, stream: OutputStream) = ???
-
-  def writeAsJson(obj: T): JsValue = ???
-
-  def read(stream: InputStream) = Try { ???.asInstanceOf[T] }
-
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] }
-
   // name, type, fields, symbols, items, values, size
   override def schema() = {
     val requiredParams = ListMap(

@@ -7,6 +7,5 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-reflect" % "2.10.0",
   "io.spray" % "spray-json_2.10.0-RC3" % "1.2.3"
 )

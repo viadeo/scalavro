@@ -11,7 +11,7 @@ licenses in ThisBuild := Seq(
 scalaVersion in ThisBuild := "2.10.1"
 
 libraryDependencies in ThisBuild ++= Seq(
-  "org.scala-lang" % "scala-reflect" % "2.10.0",
+  "org.scala-lang" % "scala-reflect" % "2.10.1",
   "ch.qos.logback" % "logback-classic" % "1.0.9",
   "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 )

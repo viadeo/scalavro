@@ -3,24 +3,13 @@ package com.gensler.scalavro.types.complex
 import com.gensler.scalavro.types.{AvroType, AvroNamedType}
 import com.gensler.scalavro.{JsonSchemifiable, CanonicalForm}
 import com.gensler.scalavro.JsonSchemaProtocol._
-import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
-import com.gensler.scalavro.util.ReflectionHelpers._
-
-import org.apache.avro.Schema
-import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter, GenericDatumReader}
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import spray.json._
 
-import scala.reflect.runtime.universe._
-import scala.reflect.ClassTag
-import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
+import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{InputStream, OutputStream}
-
-class AvroRecord[T : TypeTag](
+class AvroRecord[T: TypeTag](
   val name: String,
   val fields: Seq[AvroRecord.Field[_]],
   val aliases: Seq[String] = Seq(),
@@ -31,60 +20,6 @@ class AvroRecord[T : TypeTag](
   import AvroRecord._
 
   val typeName = "record"
-
-  // result of Apache implementation's Schema.Parser.parse
-  protected lazy val avroSchema: Schema = (new Parser) parse schema.toString
-
-  /**
-    * Returns the Apache implementation's GenericRecord representation of this
-    * AvroRecord.
-    */
-  protected[scalavro] def asGenericRecord(obj: T): GenericRecord = {
-    val record = new GenericData.Record(avroSchema)
-
-    fields.foreach { field =>
-      productElement(obj, field.name)(typeTag[T], field.fieldType.tag) map { value =>
-        record.put(field.name, value) // primitives only for now...
-      }
-    }
-
-    record
-  }
-
-  /**
-    * Writes a binary representation of the supplied object to the supplied
-    * stream.
-    */
-  def write(obj: T, stream: OutputStream) {
-    try {
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
-      val datumWriter = new GenericDatumWriter[GenericRecord](avroSchema)
-      datumWriter.write(asGenericRecord(obj), encoder)
-      encoder.flush
-    }
-    catch { case t: Throwable => throw new AvroSerializationException[T](obj) }
-  }
-
-  /**
-    * Reads a binary representation of the underlying Scala type from the
-    * supplied stream.
-    */
-  def read(stream: InputStream) = Try {
-    val datumReader = new GenericDatumReader[GenericRecord](avroSchema)
-    val decoder = DecoderFactory.get.binaryDecoder(stream, null)
-    val record = datumReader.read(null.asInstanceOf[GenericRecord], decoder)
-
-    val args = fields map { field => record.get(field.name) match {
-      case utf8: org.apache.avro.util.Utf8 => utf8.toString
-      case other: Any => other
-    }}
-
-    instantiateCaseClassWith[T](args).get
-  }
-
-  def writeAsJson(obj: T): JsValue = ??? // TODO
-
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[T] } // TODO
 
   // name, type, fields, symbols, items, values, size
   override def schema() = {
@@ -163,8 +98,8 @@ object AvroRecord {
         "type" -> fieldType.schemaOrName
       )
 
-      val defaultParam = ListMap("default" -> default).collect {
-        case (k, Some(u)) => (k, fieldType writeAsJson u) }
+//      val defaultParam = ListMap("default" -> default).collect {
+//        case (k, Some(u)) => (k, fieldType writeAsJson u) }
 
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
@@ -175,7 +110,7 @@ object AvroRecord {
       val docParam = ListMap("doc" -> doc).collect {
         case (k, Some(v)) => (k, v.toJson) }
 
-      new JsObject(requiredParams ++ defaultParam ++ orderParam ++ aliasesParam ++ docParam)
+      new JsObject(requiredParams ++ /* defaultParam ++ */ orderParam ++ aliasesParam ++ docParam)
     }
 
     def parsingCanonicalForm(): JsValue = {
@@ -184,13 +119,13 @@ object AvroRecord {
         "type" -> fieldType.canonicalFormOrFullyQualifiedName
       )
 
-      val defaultParam = ListMap("default" -> default).collect {
-        case (k, Some(u)) => (k, fieldType writeAsJson u) }
+//      val defaultParam = ListMap("default" -> default).collect {
+//        case (k, Some(u)) => (k, fieldType writeAsJson u) }
 
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
 
-      new JsObject(requiredParams ++ defaultParam ++ orderParam)
+      new JsObject(requiredParams ++ /* defaultParam ++ */ orderParam)
     }
 
   }

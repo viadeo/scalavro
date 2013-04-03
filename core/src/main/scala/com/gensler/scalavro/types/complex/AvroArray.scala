@@ -18,14 +18,6 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
   val typeName = "array"
 
-  def write(obj: Seq[T], stream: OutputStream) = ???
-
-  def writeAsJson(obj: Seq[T]): JsValue = ???
-
-  def read(stream: InputStream) = Try { ???.asInstanceOf[Seq[T]] }
-
-  def readFromJson(json: JsValue) = Try { ???.asInstanceOf[Seq[T]] }
-
   // name, type, fields, symbols, items, values, size
   override def schema() = new JsObject(ListMap(
     "type"  -> typeName.toJson,

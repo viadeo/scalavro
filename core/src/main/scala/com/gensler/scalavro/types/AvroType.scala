@@ -36,38 +36,6 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
   def isPrimitive(): Boolean
 
   /**
-    * Writes a serialized representation of the supplied object.  Throws an
-    * AvroSerializationException if writing is unsuccessful. 
-    */
-  @throws[AvroSerializationException[_]]
-  def write(obj: T, stream: OutputStream)
-
-  /**
-    * Returns the JSON serialization of the supplied object.  Throws an
-    * AvroSerializationException if writing is unsuccessful. 
-    */
-  @throws[AvroSerializationException[_]]
-  def writeAsJson(obj: T): JsValue
-
-  /**
-    * Attempts to create an object of type T by reading the required data from
-    * the supplied stream.
-    */
-  def read(stream: InputStream): Try[T]
-
-  /**
-    * Attempts to create an object of type T by reading the required data from
-    * the supplied JSON source.
-    */
-  final def readFromJson(json: String): Try[T] = readFromJson(json.asJson)
-
-  /**
-    * Attempts to create an object of type T by reading the required data from
-    * the supplied JSON.
-    */
-  def readFromJson(json: JsValue): Try[T]
-
-  /**
     * Returns the canonical JSON representation of this Avro type.
     */
   def schema(): spray.json.JsValue = typeName.toJson
@@ -170,7 +138,7 @@ object AvroType {
 
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
-  import com.gensler.scalavro.util.ReflectionHelpers._
+  import com.gensler.scalavro.util.ReflectionHelpers
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
 
@@ -225,17 +193,17 @@ object AvroType {
           val newComplexType = {
             // lists, sequences, etc
             if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
-              case TypeRef(_, _, List(itemType)) => new AvroArray()(tagForType(itemType))
+              case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
             }
 
             // string-keyed maps
             else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
-              case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(tagForType(itemType))
+              case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))
             }
 
             // binary disjunctive unions
             else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
-              case TypeRef(_, _, List(left, right)) => new AvroUnion()(tagForType(left), tagForType(right))
+              case TypeRef(_, _, List(left, right)) => new AvroUnion()(ReflectionHelpers.tagForType(left), ReflectionHelpers.tagForType(right))
             }
 
             // case classes
@@ -243,7 +211,7 @@ object AvroType {
               tt.tpe match { case TypeRef(prefix, symbol, _) =>
                 new AvroRecord[T](
                   name      = symbol.name.toString,
-                  fields    = caseClassParamsOf[T].toSeq map { case (name, tag) => {
+                  fields    = ReflectionHelpers.caseClassParamsOf[T].toSeq map { case (name, tag) => {
                     val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
                     AvroRecord.Field(name, fieldType)
                   }},

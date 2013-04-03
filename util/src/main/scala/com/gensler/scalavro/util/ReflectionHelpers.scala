@@ -5,6 +5,12 @@ import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
+/**
+  * Companion object for [[ReflectionHelpers]]
+  */
+object ReflectionHelpers extends ReflectionHelpers
+
+
 trait ReflectionHelpers {
 
   protected val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
@@ -46,7 +52,9 @@ trait ReflectionHelpers {
     * @param product    an instance of some product type, P
     * @param membername the arguments to supply to the constructor method
     */
-  protected[scalavro] def productElement[P: TypeTag, T: TypeTag](product: P, memberName: String): Option[T] = {
+  protected[scalavro] def productElement[P: TypeTag, T: TypeTag](
+    product: P, memberName: String
+  ): Option[T] = {
 
     implicit val productClassTag = ClassTag[P](product.getClass)
 
@@ -75,9 +83,10 @@ trait ReflectionHelpers {
       val tpe = typeOf[T]
       val classSymbol = tpe.typeSymbol.asClass
       
-      if (! (tpe <:< typeOf[Product] && classSymbol.isCaseClass)) throw new IllegalArgumentException(
-        "instantiateCaseClassWith may only be applied to case classes!"
-      )
+      if (! (tpe <:< typeOf[Product] && classSymbol.isCaseClass))
+        throw new IllegalArgumentException(
+          "instantiateCaseClassWith may only be applied to case classes!"
+        )
 
       val classMirror = classLoaderMirror reflectClass classSymbol
       val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod
@@ -87,5 +96,3 @@ trait ReflectionHelpers {
     }
 
 }
-
-object ReflectionHelpers extends ReflectionHelpers
