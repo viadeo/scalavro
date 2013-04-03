@@ -1,5 +1,6 @@
 package com.gensler.scalavro.util
 
+import scala.collection.immutable.ListMap
 import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -10,9 +11,10 @@ trait ReflectionHelpers {
 
   /**
     * Returns a map from formal parameter names to type tags, containing one
-    * mapping for each constructor argument.
+    * mapping for each constructor argument.  The resulting map (a ListMap)
+    * preserves the order of the primary constructor parameter list.
     */
-  protected[scalavro] def caseClassParamsOf[T: TypeTag]: Map[String, TypeTag[_]] = {
+  protected[scalavro] def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
@@ -20,9 +22,9 @@ trait ReflectionHelpers {
 
     val isAccessor = (sym: Symbol) => sym.isMethod && sym.asMethod.isCaseAccessor
 
-    constructorSymbol.paramss.reduceLeft( _ ++ _ ).map {
+    ListMap[String, TypeTag[_]]() ++ constructorSymbol.paramss.reduceLeft( _ ++ _ ).map {
       sym => sym.name.toString -> tagForType(tpe.member(sym.name).asMethod.returnType)
-    }.toMap
+    }
   }
 
   /**

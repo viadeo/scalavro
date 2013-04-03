@@ -74,14 +74,10 @@ class AvroRecord[T : TypeTag](
     val decoder = DecoderFactory.get.binaryDecoder(stream, null)
     val record = datumReader.read(null.asInstanceOf[GenericRecord], decoder)
 
-    println(fields)
-
     val args = fields map { field => record.get(field.name) match {
       case utf8: org.apache.avro.util.Utf8 => utf8.toString
       case other: Any => other
     }}
-
-    // reverse ??
 
     instantiateCaseClassWith[T](args).get
   }
