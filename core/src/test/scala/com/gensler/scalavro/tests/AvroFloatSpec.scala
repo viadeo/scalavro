@@ -5,9 +5,6 @@ import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
-import com.gensler.scalavro.error._
-
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroFloatSpec extends AvroSpec {
 
@@ -20,19 +17,6 @@ class AvroFloatSpec extends AvroSpec {
 
   it should "be a primitive AvroType" in {
     af.isPrimitive should be (true)
-  }
-
-  it should "read and write Floats" in {
-    val out = new ByteArrayOutputStream
-
-    af.write(5.3F, out)
-    af.write(-88.421F, out)
-
-    val bytes = out.toByteArray
-    val in = new ByteArrayInputStream(bytes)
-
-    af read in should equal (Success(5.3F))
-    af read in should equal (Success(-88.421F))
   }
 
 }

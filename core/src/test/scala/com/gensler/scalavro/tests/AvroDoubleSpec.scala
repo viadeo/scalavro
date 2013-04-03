@@ -5,9 +5,6 @@ import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
-import com.gensler.scalavro.error._
-
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroDoubleSpec extends AvroSpec {
 
@@ -20,21 +17,6 @@ class AvroDoubleSpec extends AvroSpec {
 
   it should "be a primitive AvroType" in {
     ad.isPrimitive should be (true)
-  }
-
-  it should "read and write Doubles" in {
-    val out = new ByteArrayOutputStream
-
-    ad.write(math.Pi, out)
-    ad.write(1.23, out)
-    ad.write(-1500.123, out)
-
-    val bytes = out.toByteArray
-    val in = new ByteArrayInputStream(bytes)
-
-    ad read in should equal (Success(math.Pi))
-    ad read in should equal (Success(1.23))
-    ad read in should equal (Success(-1500.123))
   }
 
 }

@@ -1,7 +1,7 @@
 package com.gensler.scalavro.util
 
 import scala.collection.immutable.ListMap
-import scala.reflect.api.{ Universe, Mirror, TypeCreator }
+import scala.reflect.api.{Universe, Mirror, TypeCreator}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -18,7 +18,7 @@ trait ReflectionHelpers {
   /**
     * Returns a map from formal parameter names to type tags, containing one
     * mapping for each constructor argument.  The resulting map (a ListMap)
-    * preserves the order of the primary constructor parameter list.
+    * preserves the order of the primary constructor's parameter list.
     */
   protected[scalavro] def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
     val tpe = typeOf[T]

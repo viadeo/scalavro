@@ -1,11 +1,13 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.util
+
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.ShouldMatchers
 
 import scala.reflect.runtime.universe._
 
-import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union.{union, prove}
 
-class UnionSpec extends AvroSpec {
+class UnionSpec extends FlatSpec with ShouldMatchers {
 
   "The union type helpers" should "allow one to define unions" in {
 
@@ -16,7 +18,7 @@ class UnionSpec extends AvroSpec {
     unionFunction(55)
     unionFunction("hello")
     unionFunction(false)
-    // unionFunction(math.Pi) // fails to compile
+    // unionFunction(math.Pi) // fails to compile (correct behavior)
   }
 
   it should "wrap union type definitions in a 'friendly' class" in {
@@ -28,10 +30,10 @@ class UnionSpec extends AvroSpec {
 
     wrapped assign 55
     wrapped.value[Int] should be (Some(55))
+    wrapped.value[String] should be (None)
 
     wrapped assign "hi, union!"
     wrapped.value[String] should be (Some("hi, union!"))
-
     wrapped.value[Int] should be (None)
 
     def unionFunction[T : wrapped.containsType] {}

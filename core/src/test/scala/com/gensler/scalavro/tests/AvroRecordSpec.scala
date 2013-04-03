@@ -22,19 +22,4 @@ class AvroRecordSpec extends AvroSpec {
     personRecord.isPrimitive should be (false)
   }
 
-  it should "write and read values to a to/from a stream" in {
-    val out = new ByteArrayOutputStream
-
-    val julius = Person("Julius Caesar", 2112)
-
-    personRecord.write(julius, out)
-
-    val bytes = out.toByteArray
-    // bytes.toSeq should equal (...)
-
-    val in = new ByteArrayInputStream(bytes)
-
-    personRecord read in should equal (Success(julius))
-  }
-
 }

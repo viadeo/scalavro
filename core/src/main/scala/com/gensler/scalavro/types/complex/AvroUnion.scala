@@ -5,7 +5,7 @@ import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 
 import scala.reflect.runtime.universe._
-import scala.util.{Try, Success, Failure}
+import scala.util.Success
 
 import spray.json._
 
@@ -16,19 +16,19 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
 
   val typeName = "union"
 
-  override def schema() = Set(
-    typeSchemaOrNull[LeftType],
-    typeSchemaOrNull[RightType]
-  ).toJson
+  override def schema() =
+    Set(
+      typeSchemaOrNull[LeftType],
+      typeSchemaOrNull[RightType]
+    ).toJson
 
-  override def parsingCanonicalForm(): JsValue = {
+  override def parsingCanonicalForm(): JsValue =
     Set(
       AvroType.fromType[LeftType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema,
       AvroType.fromType[RightType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
     ).toJson
-  }
 
-  def dependsOn(thatType: AvroType[_]) = {
+  def dependsOn(thatType: AvroType[_]) =
     (AvroType.fromType[LeftType], AvroType.fromType[RightType]) match {
       case (Success(leftAvroType), Success(rightAvroType)) => {
         leftAvroType == thatType || rightAvroType == thatType ||
@@ -36,6 +36,5 @@ class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
       }
       case _ => false
     }
-  }
 
 }

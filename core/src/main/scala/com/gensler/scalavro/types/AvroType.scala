@@ -14,7 +14,7 @@ import scala.reflect.runtime.universe._
 
 import spray.json._
 
-import java.io.{InputStream, OutputStream, DataOutputStream }
+import java.io.DataOutputStream
 
 abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm {
 
@@ -203,7 +203,10 @@ object AvroType {
 
             // binary disjunctive unions
             else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
-              case TypeRef(_, _, List(left, right)) => new AvroUnion()(ReflectionHelpers.tagForType(left), ReflectionHelpers.tagForType(right))
+              case TypeRef(_, _, List(left, right)) => new AvroUnion()(
+                ReflectionHelpers.tagForType(left),
+                ReflectionHelpers.tagForType(right)
+              )
             }
 
             // case classes

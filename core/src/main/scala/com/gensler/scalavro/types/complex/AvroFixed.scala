@@ -6,10 +6,7 @@ import com.gensler.scalavro.JsonSchemaProtocol._
 import spray.json._
 
 import scala.reflect.runtime.universe._
-import scala.util.{Try, Success, Failure }
 import scala.collection.immutable.ListMap
-
-import java.io.{InputStream, OutputStream}
 
 class AvroFixed[T: TypeTag](
   val name: String,

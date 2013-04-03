@@ -5,9 +5,6 @@ import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
-import com.gensler.scalavro.error._
-
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroStringSpec extends AvroSpec {
 
@@ -20,18 +17,6 @@ class AvroStringSpec extends AvroSpec {
 
   it should "be a primitive AvroType" in {
     as.isPrimitive should be (true)
-  }
-
-  it should "read and write Strings" in {
-    val text = "The quick brown fox jumped over the lazy dog."
-
-    val out = new ByteArrayOutputStream
-    as.write(text, out)
-
-    val bytes = out.toByteArray
-    val in = new ByteArrayInputStream(bytes)
-
-    as.read(in).get should equal (text)
   }
 
 }

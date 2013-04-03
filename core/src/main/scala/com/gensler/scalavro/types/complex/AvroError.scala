@@ -3,7 +3,6 @@ package com.gensler.scalavro.types.complex
 import com.gensler.scalavro.types.AvroNamedType
 
 import scala.reflect.runtime.universe._
-import scala.util.Try
 
 class AvroError[T: TypeTag](
   name: String,

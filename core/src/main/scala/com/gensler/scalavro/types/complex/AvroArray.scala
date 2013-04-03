@@ -7,10 +7,8 @@ import com.gensler.scalavro.JsonSchemaProtocol._
 import spray.json._
 
 import scala.reflect.runtime.universe._
-import scala.util.{Try, Success, Failure}
 import scala.collection.immutable.ListMap
-
-import java.io.{InputStream, OutputStream}
+import scala.util.Success
 
 class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
