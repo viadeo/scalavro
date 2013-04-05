@@ -69,7 +69,8 @@ Which yields:
 
     import com.gensler.scalavro.AvroType
     import com.gensler.scalavro.io.AvroTypeIO
-    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+    import com.gensler.scalavro.io.AvroTypeIO.Implicits._ // adds IO fxns to AvroType
+    import scala.util.{Try, Success, Failure}
 
     case class Person(name: String, age: Int)
     case class SantaList(nice: Seq[Person], naughty: Seq[Person])
@@ -85,13 +86,16 @@ Which yields:
       )
     )
 
-    val outStream: java.io.OutputStream = // ...
     val santaListType = AvroType.fromType[SantaList].get
+
+    val outStream: java.io.OutputStream = // ...
     santaListType.write(santaList, outStream)
 
     val inStream: java.io.InputStream = // ...
-    val Success(readResult) = santaListType read inStream
-    // readResult is an instance of SantaList
+    santaListType.read(inStream) match {
+      case Success(readResult) => // readResult is an instance of SantaList
+      case Failure(cause)      => // ...
+    }
 
 
 ## Current Capabilities
