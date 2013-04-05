@@ -36,9 +36,17 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
   def isPrimitive(): Boolean
 
   /**
-    * Returns the canonical JSON representation of this Avro type.
+    * Returns the JSON representation of this Avro type schema.
     */
-  def schema(): spray.json.JsValue = typeName.toJson
+  def schema(): spray.json.JsValue
+
+  /**
+    * Returns the fully self-describing JSON representation of this Avro type
+    * schema.
+    */
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ): spray.json.JsValue
 
   /**
     * Returns the schema name if this is an instance of [[AvroNamedType]], or
@@ -70,20 +78,6 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
       this.asInstanceOf[AvroNamedType[_]].fullyQualifiedName.toJson
     }
     else this.parsingCanonicalForm
-
-  /**
-    * == Internal API ==
-    *
-    * Returns the schema name if this is an instance of [[AvroNamedType]], or
-    * the canonical JSON representation of the supplied Avro type, or
-    * the JSON representation of [[AvroNull]] if no corresponding AvroType
-    * can be found for the supplied type.
-    */
-  private[scalavro] def typeSchemaOrNull[A: TypeTag] =
-    AvroType.fromType[A] match {
-      case Success(avroType) => avroType.schemaOrName
-      case Failure(_) => com.gensler.scalavro.types.primitive.AvroNull.schema
-    }
 
   /**
     * Returns the JSON schema for this type in "parsing canonical form".
@@ -191,8 +185,8 @@ object AvroType {
         case None => {
 
           val newComplexType = {
-            // lists, sequences, etc
-            if (tt.tpe <:< typeOf[Seq[_]]) tt.tpe match {
+            // sequences
+            if (tt.tpe.typeConstructor =:= typeOf[Seq[_]].typeConstructor) tt.tpe match {
               case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
             }
 
@@ -221,7 +215,6 @@ object AvroType {
                   namespace = Some(prefix.toString.stripSuffix(".type"))
                 )
               }
-
             }
 
             // other types are not handled

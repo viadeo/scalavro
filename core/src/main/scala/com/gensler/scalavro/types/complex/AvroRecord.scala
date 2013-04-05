@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{AvroType, AvroNamedType}
+import com.gensler.scalavro.types.{AvroType, AvroNamedType, SelfDescribingSchemaHelpers}
 import com.gensler.scalavro.{JsonSchemifiable, CanonicalForm}
 import com.gensler.scalavro.JsonSchemaProtocol._
 
@@ -21,8 +21,7 @@ class AvroRecord[T: TypeTag](
 
   val typeName = "record"
 
-  // name, type, fields, symbols, items, values, size
-  override def schema() = {
+  def schema() = {
     val requiredParams = ListMap(
       "name"      -> name.toJson,
       "type"      -> typeName.toJson,
@@ -35,6 +34,26 @@ class AvroRecord[T: TypeTag](
 
     val docParam = ListMap("doc" -> doc).collect {
       case (k, Some(v)) => (k, v.toJson) }
+
+    new JsObject(requiredParams ++ aliasesParam ++ docParam)
+  }
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = {
+    val requiredParams = ListMap(
+      "name"      -> fullyQualifiedName.toJson,
+      "type"      -> typeName.toJson,
+      "fields"    -> fields.map { _.selfContainedSchema(resolvedSymbols) }.toJson
+    )
+
+    val aliasesParam = ListMap("aliases" -> aliases).collect {
+      case (k, s) if s.nonEmpty => (k, s.toJson) }
+
+    val docParam = ListMap("doc" -> doc).collect {
+      case (k, Some(v)) => (k, v.toJson) }
+
+    resolvedSymbols += this.fullyQualifiedName
 
     new JsObject(requiredParams ++ aliasesParam ++ docParam)
   }
@@ -89,18 +108,14 @@ object AvroRecord {
     order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None
-  ) extends JsonSchemifiable with CanonicalForm {
+  ) extends JsonSchemifiable
+    with CanonicalForm
+    with SelfDescribingSchemaHelpers {
 
-    // name, type, fields, symbols, items, values, size
-    def schema(): spray.json.JsValue = {
-      val requiredParams = ListMap(
-        "name" -> name.toJson,
-        "type" -> fieldType.schemaOrName
-      )
-
-//      val defaultParam = ListMap("default" -> default).collect {
-//        case (k, Some(u)) => (k, fieldType writeAsJson u) }
-
+    def optionalParams = {
+//    val defaultParam = ListMap("default" -> default).collect {
+//      case (k, Some(u)) => (k, fieldType writeAsJson u)
+//    }
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema) }
 
@@ -110,7 +125,25 @@ object AvroRecord {
       val docParam = ListMap("doc" -> doc).collect {
         case (k, Some(v)) => (k, v.toJson) }
 
-      new JsObject(requiredParams ++ /* defaultParam ++ */ orderParam ++ aliasesParam ++ docParam)
+      /* defaultParam ++ */ orderParam ++ aliasesParam ++ docParam
+    }
+
+    def schema(): spray.json.JsValue = {
+      val requiredParams = ListMap(
+        "name" -> name.toJson,
+        "type" -> fieldType.schemaOrName
+      )
+      new JsObject(requiredParams ++ optionalParams)
+    }
+
+    def selfContainedSchema(
+      resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+    ): JsValue = {
+      val requiredParams = ListMap(
+        "name" -> name.toJson,
+        "type" -> selfContainedSchemaOrFullyQualifiedName(fieldType, resolvedSymbols)
+      )
+      new JsObject(requiredParams ++ optionalParams)
     }
 
     def parsingCanonicalForm(): JsValue = {
@@ -118,7 +151,6 @@ object AvroRecord {
         "name" -> name.toJson,
         "type" -> fieldType.canonicalFormOrFullyQualifiedName
       )
-
 //      val defaultParam = ListMap("default" -> default).collect {
 //        case (k, Some(u)) => (k, fieldType writeAsJson u) }
 

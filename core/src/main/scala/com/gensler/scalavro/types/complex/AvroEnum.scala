@@ -16,8 +16,7 @@ class AvroEnum[T: TypeTag](
 
   val typeName = "enum"
 
-  // name, type, fields, symbols, items, values, size
-  override def schema() = {
+  def schema() = {
     val requiredParams = ListMap(
       "name"    -> name.toJson,
       "type"    -> typeName.toJson,
@@ -30,6 +29,10 @@ class AvroEnum[T: TypeTag](
 
     new JsObject(requiredParams ++ optionalParams)
   }
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = schema
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
 

@@ -3,6 +3,8 @@ package com.gensler.scalavro.io
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.types.{AvroType, AvroPrimitiveType}
 
+import org.apache.avro.generic.GenericData
+
 import scala.util.{Try, Success, Failure}
 import java.io.{InputStream, OutputStream}
 
@@ -12,6 +14,16 @@ trait AvroTypeIO[T] {
     * Returns the corresponding AvroType to this AvroTypeIO wrapper.
     */
   def avroType: AvroType[T]
+
+  /**
+    * ...
+    */
+  def asGeneric(obj: T): Any
+
+  /**
+    * ...
+    */
+  def fromGeneric(obj: Any): T
 
   /**
     * Writes a serialized representation of the supplied object.  Throws an
@@ -79,7 +91,7 @@ object AvroTypeIO {
   object Implicits {
 
     // primitive types
-    implicit def avroPrimitiveToIO[T](avroType: AvroPrimitiveType[T]): AvroTypeIO[T] =
+    implicit def avroTypeToIO[T](avroType: AvroPrimitiveType[T]): AvroTypeIO[T] =
       avroType match {
         case AvroBoolean => AvroBooleanIO
         case AvroBytes   => AvroBytesIO
@@ -92,13 +104,29 @@ object AvroTypeIO {
       }
 
     // complex types
-    implicit def arrayToIO[T](avroArray: AvroArray[T]): AvroTypeIO[Seq[T]]             = AvroArrayIO(avroArray)
-    implicit def enumToIO[T](avroEnum: AvroEnum[T]): AvroTypeIO[T]                     = AvroEnumIO(avroEnum)
-    implicit def fixedToIO[T](avroFixed: AvroFixed[T]): AvroTypeIO[T]                  = AvroFixedIO(avroFixed)
-    implicit def mapToIO[T](avroMap: AvroMap[T]): AvroTypeIO[Map[String, T]]           = AvroMapIO(avroMap)
-    implicit def errorToIO[T](avroError: AvroError[T]): AvroTypeIO[T]                  = AvroRecordIO(avroError)
-    implicit def recordToIO[T](avroRecord: AvroRecord[T]): AvroTypeIO[T]               = AvroRecordIO(avroRecord)
-    implicit def unionToIO[A, B](avroUnion: AvroUnion[A, B]): AvroTypeIO[Either[A, B]] = AvroUnionIO(avroUnion)
+    implicit def avroTypeToIO[T](avroArray: AvroArray[T]): AvroArrayIO[T]          = AvroArrayIO(avroArray)
+    implicit def avroTypeToIO[T](avroEnum: AvroEnum[T]): AvroEnumIO[T]              = AvroEnumIO(avroEnum)
+    implicit def avroTypeToIO[T](avroFixed: AvroFixed[T]): AvroFixedIO[T]          = AvroFixedIO(avroFixed)
+    implicit def avroTypeToIO[T](avroMap: AvroMap[T]): AvroMapIO[T]                  = AvroMapIO(avroMap)
+    implicit def avroTypeToIO[T](avroError: AvroError[T]): AvroRecordIO[T]         = AvroRecordIO(avroError)
+    implicit def avroTypeToIO[T](avroRecord: AvroRecord[T]): AvroRecordIO[T]      = AvroRecordIO(avroRecord)
+    implicit def avroTypeToIO[A, B](avroUnion: AvroUnion[A, B]): AvroUnionIO[A, B] = AvroUnionIO(avroUnion)
+
+    import scala.reflect.runtime.universe._
+
+    implicit def avroTypeToIO[T: TypeTag](at: AvroType[T]): AvroTypeIO[T] = {
+      at match {
+        case t: AvroPrimitiveType[T] => avroTypeToIO(t)
+        case t: AvroArray[T]         => avroTypeToIO(t)
+        case t: AvroEnum[T]          => avroTypeToIO(t)
+        case t: AvroFixed[T]         => avroTypeToIO(t)
+        case t: AvroMap[T]           => avroTypeToIO(t)
+        case t: AvroError[T]         => avroTypeToIO(t)
+        case t: AvroRecord[T]        => avroTypeToIO(t)
+        case t: AvroUnion[_, _]      => avroTypeToIO(t)
+      }
+    }.asInstanceOf[AvroTypeIO[T]]
+
   }
 
 }

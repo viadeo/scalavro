@@ -4,22 +4,35 @@ import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
-import com.gensler.scalavro.types.primitive._
+import com.gensler.scalavro.types.complex.AvroRecord
 import com.gensler.scalavro.error._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroRecordSpec extends AvroSpec {
 
-  val personRecord = AvroType.fromType[Person].get
+  val personType = AvroType.fromType[Person].get
+  val santaListType = AvroType.fromType[SantaList].get
 
   "AvroRecord" should "be parameterized with its corresponding Scala type" in {
-    personRecord.isInstanceOf[AvroType[Person]] should be (true)
-    typeOf[personRecord.scalaType] =:= typeOf[Person] should be (true)
+    personType.isInstanceOf[AvroType[Person]] should be (true)
+    typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
   }
 
   it should "be a complex AvroType" in {
-    personRecord.isPrimitive should be (false)
+    personType.isPrimitive should be (false)
+    santaListType.isPrimitive should be (false)
+  }
+
+  it should "output a fully self-contained schema" in {
+
+    santaListType match {
+      case recordType: AvroRecord[_] => {
+        println("santaListType.selfContainedSchema:")
+        println(recordType.selfContainedSchema())
+      }
+    }
+
   }
 
 }

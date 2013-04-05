@@ -9,7 +9,30 @@ import java.io.{InputStream, OutputStream}
 
 case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]] {
 
-  def write(obj: Map[String, T], stream: OutputStream) = ???
+  implicit def itemTypeTag = avroType.itemType.tag
+
+  def asGeneric(map: Map[String, T]): java.util.Map[String, T] =
+    java.util.Collections.unmodifiableMap(
+      scala.collection.JavaConversions mapAsJavaMap map
+    )
+
+  def fromGeneric(obj: Any): Map[String, T] = {
+    import scala.collection.JavaConversions.mapAsScalaMap
+    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+
+    obj match {
+      case map: java.util.Map[_, _] => {
+        val genericMap = mapAsScalaMap(map).asInstanceOf[Map[String, _]]
+        genericMap.map {
+          case (key, value) => key -> avroType.itemType.fromGeneric(value)
+        }
+      }
+      case _ => throw new AvroDeserializationException()(avroType.tag)
+    }
+  }
+
+
+  def write(map: Map[String, T], stream: OutputStream) = ???
 
   def read(stream: InputStream) = Try { ???.asInstanceOf[Map[String, T]] }
 

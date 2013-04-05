@@ -67,30 +67,32 @@ Which yields:
 
 ## Usage: Binary IO
 
-    package com.gensler.scalavro.tests
-
-    // implicitly augments AvroType instances with `read` and `write`
+    import com.gensler.scalavro.AvroType
+    import com.gensler.scalavro.io.AvroTypeIO
     import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-    import java.io.{ ByteArrayOutputStream, ByteArrayInputStream }
-
-    // define a simple case class for illustration
     case class Person(name: String, age: Int)
+    case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
-    // create an AvroType[Person] (an AvroRecord object)
-    val personAvroType = AvroType.fromType[Person].get
+    val santaList = SantaList(
+      nice = Seq(
+        Person("John", 17),
+        Person("Eve", 3)
+      ),
+      naughty = Seq(
+        Person("Jane", 25),
+        Person("Alice", 65)
+      )
+    )
 
-    // create an instance of [[Person]]
-    val julius = Person("Julius Caesar", 2112)
+    val outStream: java.io.OutputStream = // ...
+    val santaListType = AvroType.fromType[SantaList].get
+    santaListType.write(santaList, outStream)
 
-    val out = new ByteArrayOutputStream
+    val inStream: java.io.InputStream = // ...
+    val Success(readResult) = santaListType read inStream
+    // readResult is an instance of SantaList
 
-    // implicitly: AvroRecordIO(personAvroType).write(julius, out)
-    personAvroType.write(julius, out)
-
-    val in = new ByteArrayInputStream(out.toByteArray)
-
-    (personAvroType read in) ==  julius // true
 
 ## Current Capabilities
 - Schema generation for basic types

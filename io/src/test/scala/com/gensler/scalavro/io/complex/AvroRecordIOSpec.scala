@@ -11,33 +11,49 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 // for testing
 case class Person(name: String, age: Int)
 
+// for testing
+case class SantaList(nice: Seq[Person], naughty: Seq[Person])
+
 class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
 
-  val personType = AvroType.fromType[Person].get.asInstanceOf[AvroRecord[Person]]
-  val io = AvroRecordIO(personType)
+  val personType = AvroType.fromType[Person].get
+  val io: AvroTypeIO[Person] = personType
 
   "AvroRecordIO" should "instantiate implicitly from an AvroRecord" in {
-    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
     val avroTypeIO: AvroTypeIO[_] = personType
     avroTypeIO should equal (io)
   }
 
-  it should "write and read values to a to/from a stream" in {
+  it should "read and write simple records" in {
     val out = new ByteArrayOutputStream
-
     val julius = Person("Julius Caesar", 2112)
-
     io.write(julius, out)
+    val in = new ByteArrayInputStream(out.toByteArray)
+    io read in should equal (Success(julius))
+  }
+
+  it should "read and write complex records" in {
+    val sList = SantaList(
+      nice    = Seq(Person("Suzie", 9)),
+      naughty = Seq(Person("Tommy", 7))
+    )
+
+    val santaListType = AvroType.fromType[SantaList].get
+
+    val out = new ByteArrayOutputStream
+    santaListType.write(sList, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
+    val readResult = (santaListType read in).get
 
-    io read in should equal (Success(julius))
+    readResult should equal (sList)
   }
 
 }

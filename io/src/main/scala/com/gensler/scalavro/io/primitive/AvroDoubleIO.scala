@@ -13,6 +13,10 @@ trait AvroDoubleIO extends AvroTypeIO[Double] {
 
   def avroType = AvroDouble
 
+  def asGeneric(value: Double): Double = value
+
+  def fromGeneric(obj: Any): Double = obj.asInstanceOf[Double]
+
   def write(value: Double, stream: OutputStream) = {
     val bits: Long = java.lang.Double doubleToLongBits value
 

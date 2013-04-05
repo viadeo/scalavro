@@ -12,28 +12,28 @@ import scala.util.Success
 
 class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
 
-  type ItemType = T
+  val itemType = AvroType.fromType[T].get
 
   val typeName = "map"
 
-  // name, type, fields, symbols, items, values, size
-  override def schema() = new JsObject(ListMap(
+  def schema() = new JsObject(ListMap(
     "type"   -> typeName.toJson,
-    "values" -> typeSchemaOrNull[T]
+    "values" -> itemType.schema
   ))
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = new JsObject(ListMap(
+    "type"   -> typeName.toJson,
+    "values" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
+  ))    
 
   override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
     "type"   -> typeName.toJson,
-    "values" -> {
-      AvroType.fromType[ItemType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
-    }
+    "values" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
-  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[ItemType] match {
-    case Success(avroTypeOfItems) => {
-      avroTypeOfItems == thatType || (avroTypeOfItems dependsOn thatType)
-    }
-    case _ => false
-  }
+  def dependsOn(thatType: AvroType[_]) =
+    itemType == thatType || (itemType dependsOn thatType)
 
 }

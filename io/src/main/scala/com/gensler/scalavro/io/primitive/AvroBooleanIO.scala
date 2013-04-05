@@ -16,6 +16,13 @@ trait AvroBooleanIO extends AvroTypeIO[Boolean] {
   final val trueByte = 1.toByte
   final val falseByte = 0.toByte
 
+  def asGeneric(value: Boolean): Boolean = value
+
+  def fromGeneric(obj: Any): Boolean = obj match {
+    case booleanValue: Boolean => booleanValue
+    case _ => throw new AvroDeserializationException()(avroType.tag)
+  }
+
   /**
     * a boolean is written as a single byte whose value is either 0 (false) or
     * 1 (true).

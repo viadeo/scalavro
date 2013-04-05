@@ -14,6 +14,10 @@ trait AvroLongIO extends AvroTypeIO[Long] {
 
   def avroType = AvroLong
 
+  def asGeneric(value: Long): Long = value
+
+  def fromGeneric(obj: Any): Long = obj.asInstanceOf[Long]
+
   def write(value: Long, stream: OutputStream) =
     Varint.writeSignedVarLong(value, new DataOutputStream(stream))
 

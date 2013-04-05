@@ -13,6 +13,10 @@ trait AvroFloatIO extends AvroTypeIO[Float] {
 
   def avroType = AvroFloat
 
+  def asGeneric(value: Float): Float = value
+
+  def fromGeneric(obj: Any): Float = obj.asInstanceOf[Float]
+
   def write(value: Float, stream: OutputStream) = {
     val bits: Int = java.lang.Float floatToIntBits value
 

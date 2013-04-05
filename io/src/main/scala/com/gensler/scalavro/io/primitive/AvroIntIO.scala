@@ -13,6 +13,10 @@ trait AvroIntIO extends AvroTypeIO[Int] {
 
   def avroType = AvroInt
 
+  def asGeneric(value: Int): Int = value
+
+  def fromGeneric(obj: Any): Int = obj.asInstanceOf[Int]
+
   def write(value: Int, stream: OutputStream) = AvroLongIO.write(value, stream)
 
   def read(stream: InputStream) = Try {

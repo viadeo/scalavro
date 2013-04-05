@@ -17,8 +17,7 @@ class AvroFixed[T: TypeTag](
 
   val typeName = "fixed"
 
-  // name, type, fields, symbols, items, values, size
-  override def schema() = {
+  def schema() = {
     val requiredParams = ListMap(
       "name" -> name.toJson,
       "type" -> typeName.toJson,
@@ -35,6 +34,10 @@ class AvroFixed[T: TypeTag](
 
     new JsObject(requiredParams ++ namespaceParam ++ aliasesParam)
   }
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = schema
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(withoutDocOrAliases(schema))
 

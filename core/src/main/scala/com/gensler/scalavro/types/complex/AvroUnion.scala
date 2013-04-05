@@ -11,30 +11,32 @@ import spray.json._
 
 class AvroUnion[A: TypeTag, B: TypeTag] extends AvroComplexType[Either[A, B]] {
 
-  type LeftType = A
-  type RightType = B
+  val leftType: AvroType[A] = AvroType.fromType[A].get
+  val rightType: AvroType[B] = AvroType.fromType[B].get
 
   val typeName = "union"
 
-  override def schema() =
+  def schema() =
     Set(
-      typeSchemaOrNull[LeftType],
-      typeSchemaOrNull[RightType]
+      leftType.schema,
+      rightType.schema
     ).toJson
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = Set(
+        selfContainedSchemaOrFullyQualifiedName(leftType, resolvedSymbols),
+        selfContainedSchemaOrFullyQualifiedName(rightType, resolvedSymbols)
+      ).toJson
 
   override def parsingCanonicalForm(): JsValue =
     Set(
-      AvroType.fromType[LeftType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema,
-      AvroType.fromType[RightType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
+      leftType.canonicalFormOrFullyQualifiedName,
+      rightType.canonicalFormOrFullyQualifiedName
     ).toJson
 
   def dependsOn(thatType: AvroType[_]) =
-    (AvroType.fromType[LeftType], AvroType.fromType[RightType]) match {
-      case (Success(leftAvroType), Success(rightAvroType)) => {
-        leftAvroType == thatType || rightAvroType == thatType ||
-        (leftAvroType dependsOn thatType) || (rightAvroType dependsOn thatType)
-      }
-      case _ => false
-    }
+    leftType == thatType || rightType == thatType ||
+    (leftType dependsOn thatType) || (rightType dependsOn thatType)
 
 }

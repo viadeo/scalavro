@@ -13,6 +13,10 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
   def avroType = AvroBytes
 
+  def asGeneric(value: Seq[Byte]): Seq[Byte] = value
+
+  def fromGeneric(obj: Any): Seq[Byte] = obj.asInstanceOf[Seq[Byte]]
+
   def write(bytes: Seq[Byte], stream: OutputStream) = {
     AvroLongIO.write(bytes.length, stream)
     stream.write(bytes.toArray)

@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{AvroType, AvroComplexType}
+import com.gensler.scalavro.types.{AvroType, AvroComplexType, AvroNamedType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 
@@ -12,28 +12,29 @@ import scala.util.Success
 
 class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
-  type ItemType = T
+  val itemType = AvroType.fromType[T].get
 
   val typeName = "array"
 
   // name, type, fields, symbols, items, values, size
-  override def schema() = new JsObject(ListMap(
+  def schema() = new JsObject(ListMap(
     "type"  -> typeName.toJson,
-    "items" -> typeSchemaOrNull[T]
+    "items" -> itemType.schema
+  ))
+
+  def selfContainedSchema(
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = new JsObject(ListMap(
+    "type"  -> typeName.toJson,
+    "items" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
   ))
 
   override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
     "type"  -> typeName.toJson,
-    "items" -> {
-      AvroType.fromType[ItemType].map { _.canonicalFormOrFullyQualifiedName } getOrElse AvroNull.schema
-    }
+    "items" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
-  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[ItemType] match {
-    case Success(avroTypeOfItems) => {
-      avroTypeOfItems == thatType || (avroTypeOfItems dependsOn thatType)
-    }
-    case _ => false
-  }
+  def dependsOn(thatType: AvroType[_]) =
+    itemType == thatType || (itemType dependsOn thatType)
 
 }
