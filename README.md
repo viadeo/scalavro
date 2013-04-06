@@ -18,6 +18,136 @@ A runtime reflection-based Avro library in Scala.
 - Depends upon [spray-json](https://github.com/spray/spray-json)
 - The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
 
+## Type Mapping
+
+### Primitive Types
+
+<table>
+  <thead>
+  	<tr>
+  	  <th>Scala Type</th>
+  	  <th>Avro Type</th>
+  	</tr>
+  </thead>
+<!--
+    Unit      -> AvroNull,
+    Boolean   -> AvroBoolean,
+    Seq[Byte] -> AvroBytes,
+    Double    -> AvroDouble,
+    Float     -> AvroFloat,
+    Int       -> AvroInt,
+    Long      -> AvroLong,
+    String    -> AvroString
+-->
+  <tr>
+    <td><code>
+      Unit
+    </code></td>
+    <td><code>
+      null
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Boolean
+    </code></td>
+    <td><code>
+      boolean
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Int
+    </code></td>
+    <td><code>
+      int
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Long
+    </code></td>
+    <td><code>
+      long
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Double
+    </code></td>
+    <td><code>
+      double
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Float
+    </code></td>
+    <td><code>
+      float
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      String
+    </code></td>
+    <td><code>
+      string
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      scala.collection.Seq[Byte]
+    </code></td>
+    <td><code>
+      bytes
+    </code></td>
+  </tr>
+</table>
+
+### Complex Types
+
+<table>
+  <thead>
+  	<tr>
+  	  <th>Scala Type</th>
+  	  <th>Avro Type</th>
+  	</tr>
+  </thead>
+  <tr>
+    <td><code>
+      scala.collection.Seq[T]
+    </code></td>
+    <td><code>
+      array
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      scala.collection.Map[String, T]
+    </code></td>
+    <td><code>
+      map
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      scala.util.Either[A, B]
+    </code></td>
+    <td><code>
+      union
+    </code></td>
+  </tr>
+  <tr>
+    <td><em>
+      Non-recursive case classes
+    </em></td>
+    <td><code>
+      record
+    </code></td>
+  </tr>
+</table>
+
 ## Usage: Schema Generation
 
     package com.gensler.scalavro.tests
