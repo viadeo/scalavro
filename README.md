@@ -43,7 +43,7 @@ Which yields:
 
 And perhaps more interestingly:
 
-    case class SantaList(nice: List[Person], naughty: List[Person])
+    case class SantaList(nice: Seq[Person], naughty: Seq[Person])
     val Success(santaListAvroType) = AvroType.fromType[SantaList]
     santaListAvroType.schema
 
@@ -88,13 +88,13 @@ Which yields:
 
     val santaListType = AvroType.fromType[SantaList].get
 
-    val outStream: java.io.OutputStream = // ...
+    val outStream: java.io.OutputStream = // some stream...
     santaListType.write(santaList, outStream)
 
-    val inStream: java.io.InputStream = // ...
+    val inStream: java.io.InputStream = // some stream...
     santaListType.read(inStream) match {
       case Success(readResult) => // readResult is an instance of SantaList
-      case Failure(cause)      => // ...
+      case Failure(cause)      => // handle failure...
     }
 
 
