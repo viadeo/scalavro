@@ -57,18 +57,18 @@ A runtime reflection-based Avro library in Scala.
   </tr>
   <tr>
     <td><code>
-      Int
-    </code></td>
-    <td><code>
-      int
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
       Long
     </code></td>
     <td><code>
       long
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      Int
+    </code></td>
+    <td><code>
+      int
     </code></td>
   </tr>
   <tr>

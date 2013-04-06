@@ -16,7 +16,7 @@ import scala.reflect.runtime.universe._
   *
   * type UnionISB = union [Int] #or [String] #or [Boolean] #apply
   *
-  * def unionPrint [T : prove[UnionISB]#isSubtype](t: T) =
+  * def unionPrint[T : prove [UnionISB] #containsType](t: T) =
   *   t match {
   *     case i: Int     => println(i)
   *     case s: String  => println(s)
@@ -56,6 +56,9 @@ class Union[U <: Union.not[_] : TypeTag] {
 
   private var wrappedValue: Value[_] = Value((), typeTag[Unit])
 
+  /**
+    * Returns `true` if the supplied type is a member of this union.
+    */
   def contains[X: TypeTag]: Boolean = typeOf[not[not[X]]] <:< typeOf[U]
 
   def assign[X : TypeTag : containsType](newValue: X) {
