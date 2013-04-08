@@ -29,16 +29,6 @@ A runtime reflection-based Avro library in Scala.
   	  <th>Avro Type</th>
   	</tr>
   </thead>
-<!--
-    Unit      -> AvroNull,
-    Boolean   -> AvroBoolean,
-    Seq[Byte] -> AvroBytes,
-    Double    -> AvroDouble,
-    Float     -> AvroFloat,
-    Int       -> AvroInt,
-    Long      -> AvroLong,
-    String    -> AvroString
--->
   <tr>
     <td><code>
       Unit
@@ -128,6 +118,14 @@ A runtime reflection-based Avro library in Scala.
     </code></td>
     <td><code>
       map
+    </code></td>
+  </tr>
+  <tr>
+    <td><code>
+      scala.Enumeration#Value
+    </code></td>
+    <td><code>
+      enum
     </code></td>
   </tr>
   <tr>
@@ -240,7 +238,7 @@ Which yields:
 
 ## Current Limitations
 - Complex types are incomplete:
-  - `fixed` and `enum` are not yet supported
+  - `fixed` is not yet supported
   - Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
 - JSON IO is not yet implemented.
 
