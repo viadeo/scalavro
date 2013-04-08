@@ -8,12 +8,12 @@ import spray.json._
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 
-class AvroFixed[T: TypeTag](
+class AvroFixed(
   val name: String,
   val size: Int,
   val namespace: Option[String] = None,
   val aliases: Seq[String] = Seq()
-) extends AvroNamedType[T] {
+) extends AvroNamedType[Seq[Byte]] {
 
   val typeName = "fixed"
 

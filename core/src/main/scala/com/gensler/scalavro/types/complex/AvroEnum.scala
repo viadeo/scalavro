@@ -9,10 +9,15 @@ import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 import scala.util.Success
 
-class AvroEnum[T: TypeTag](
+class AvroEnum[E <: Enumeration : TypeTag](
   val name: String,
+  val symbols: Seq[String],
   val namespace: Option[String] = None
-) extends AvroNamedType[T] {
+) extends AvroNamedType[E#Value] {
+
+println(symbols)
+
+  val enumTag = typeTag[E]
 
   val typeName = "enum"
 
@@ -20,7 +25,7 @@ class AvroEnum[T: TypeTag](
     val requiredParams = ListMap(
       "name"    -> name.toJson,
       "type"    -> typeName.toJson,
-      "symbols" -> Seq(1, 2).toJson // TODO: populate symbols!
+      "symbols" -> symbols.toJson // TODO: populate symbols!
     )
 
     val optionalParams = ListMap(
@@ -36,7 +41,7 @@ class AvroEnum[T: TypeTag](
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
 
-  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[T] match {
+  def dependsOn(thatType: AvroType[_]) = AvroType.fromType[E] match {
     case Success(containedType) => {
       containedType == thatType || (containedType dependsOn thatType)
     }
@@ -44,4 +49,3 @@ class AvroEnum[T: TypeTag](
   }
 
 }
-

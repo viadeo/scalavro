@@ -13,11 +13,9 @@ case class AvroUnionIO[A, B](avroType: AvroUnion[A, B]) extends AvroTypeIO[Eithe
   implicit def aTypeTag = avroType.leftType.tag
   implicit def bTypeTag = avroType.rightType.tag
 
-  def asGeneric(obj: Either[A, B]) = {
-    obj match {
-      case Left(a)  => avroType.leftType.asGeneric(a)
-      case Right(b) => avroType.rightType.asGeneric(b)
-    }
+  def asGeneric(obj: Either[A, B]) = obj match {
+    case Left(a)  => avroType.leftType.asGeneric(a)
+    case Right(b) => avroType.rightType.asGeneric(b)
   }
 
   def fromGeneric(obj: Any): Either[A, B] = {

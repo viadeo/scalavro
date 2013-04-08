@@ -16,8 +16,7 @@ case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]] {
 
   implicit def itemTypeTag = avroType.itemType.tag
 
-  lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
-
+  protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
   val itemIO = AvroTypeIO.Implicits.avroTypeToIO(avroType.itemType)
 
   def asGeneric(items: Seq[T]): GenericArray[Any] = {
@@ -40,8 +39,8 @@ case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]] {
 
   def write(obj: Seq[T], stream: OutputStream) = {
     try {
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       val datumWriter = new GenericDatumWriter[GenericArray[_]](avroSchema)
+      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
     }

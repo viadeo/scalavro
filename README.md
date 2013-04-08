@@ -165,8 +165,8 @@ Which yields:
       "name": "Person",
       "type": "record",
       "fields": [
-        {"name": "name","type": "string"},
-        {"name": "age","type": "int"}
+        {"name": "name", "type": "string"},
+        {"name": "age", "type": "int"}
       ],
       "namespace": "com.gensler.scalavro.tests"
     }
@@ -189,7 +189,7 @@ Which yields:
         },
         {
           "name": "naughty",
-          "type": {"type": "array","items": "Person"}
+          "type": {"type": "array", "items": "Person"}
         }
       ],
       "namespace": "com.gensler.scalavro.tests"
@@ -219,14 +219,15 @@ Which yields:
     val santaListType = AvroType.fromType[SantaList].get
 
     val outStream: java.io.OutputStream = // some stream...
+
     santaListType.write(santaList, outStream)
 
     val inStream: java.io.InputStream = // some stream...
+
     santaListType.read(inStream) match {
       case Success(readResult) => // readResult is an instance of SantaList
       case Failure(cause)      => // handle failure...
     }
-
 
 ## Current Capabilities
 - Schema generation for basic types
@@ -238,11 +239,10 @@ Which yields:
 - Convenient binary IO for primitive types
 
 ## Current Limitations
-- Binary IO for complex types is incomplete.
+- Complex types are incomplete:
+  - `fixed` and `enum` are not yet supported
+  - Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
 - JSON IO is not yet implemented.
-- Reading JSON schemas is not yet supported.
-- Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
-- Enums are not yet supported.
 
 ## Reference
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)

@@ -17,9 +17,8 @@ import java.io.{InputStream, OutputStream}
 
 case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T] {
 
-  // result of Apache implementation's Schema.Parser.parse
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
-
+ 
   /**
     * Returns the [[org.apache.avro.generic.GenericRecord]] representation of
     * this AvroRecord.
@@ -52,8 +51,8 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T] {
     */
   def write(obj: T, stream: OutputStream) {
     try {
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       val datumWriter = new GenericDatumWriter[GenericRecord](avroSchema)
+      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
     }

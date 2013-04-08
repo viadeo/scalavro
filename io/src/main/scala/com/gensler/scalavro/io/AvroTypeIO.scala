@@ -104,13 +104,13 @@ object AvroTypeIO {
       }
 
     // complex types
-    implicit def avroTypeToIO[T](avroArray: AvroArray[T]): AvroArrayIO[T]          = AvroArrayIO(avroArray)
-    implicit def avroTypeToIO[T](avroEnum: AvroEnum[T]): AvroEnumIO[T]              = AvroEnumIO(avroEnum)
-    implicit def avroTypeToIO[T](avroFixed: AvroFixed[T]): AvroFixedIO[T]          = AvroFixedIO(avroFixed)
-    implicit def avroTypeToIO[T](avroMap: AvroMap[T]): AvroMapIO[T]                  = AvroMapIO(avroMap)
-    implicit def avroTypeToIO[T](avroError: AvroError[T]): AvroRecordIO[T]         = AvroRecordIO(avroError)
-    implicit def avroTypeToIO[T](avroRecord: AvroRecord[T]): AvroRecordIO[T]      = AvroRecordIO(avroRecord)
-    implicit def avroTypeToIO[A, B](avroUnion: AvroUnion[A, B]): AvroUnionIO[A, B] = AvroUnionIO(avroUnion)
+    implicit def avroTypeToIO[T](avroArray: AvroArray[T]): AvroArrayIO[T]             = AvroArrayIO(avroArray)
+    //implicit def avroTypeToIO[T <: Enumeration#Value](avroEnum: AvroEnum[T]): AvroEnumIO[T] = AvroEnumIO(avroEnum)
+    implicit def avroTypeToIO[T](avroFixed: AvroFixed): AvroFixedIO                   = AvroFixedIO(avroFixed)
+    implicit def avroTypeToIO[T](avroMap: AvroMap[T]): AvroMapIO[T]                   = AvroMapIO(avroMap)
+    implicit def avroTypeToIO[T](avroError: AvroError[T]): AvroRecordIO[T]            = AvroRecordIO(avroError)
+    implicit def avroTypeToIO[T](avroRecord: AvroRecord[T]): AvroRecordIO[T]          = AvroRecordIO(avroRecord)
+    implicit def avroTypeToIO[A, B](avroUnion: AvroUnion[A, B]): AvroUnionIO[A, B]    = AvroUnionIO(avroUnion)
 
     import scala.reflect.runtime.universe._
 
@@ -118,8 +118,8 @@ object AvroTypeIO {
       at match {
         case t: AvroPrimitiveType[T] => avroTypeToIO(t)
         case t: AvroArray[T]         => avroTypeToIO(t)
-        case t: AvroEnum[T]          => avroTypeToIO(t)
-        case t: AvroFixed[T]         => avroTypeToIO(t)
+        //case t: AvroEnum[T]          => avroTypeToIO(t)
+        case t: AvroFixed            => avroTypeToIO(t)
         case t: AvroMap[T]           => avroTypeToIO(t)
         case t: AvroError[T]         => avroTypeToIO(t)
         case t: AvroRecord[T]        => avroTypeToIO(t)

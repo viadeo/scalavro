@@ -53,13 +53,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * the expanded schema otherwise.
     */
   def schemaOrName(): spray.json.JsValue =
-    if (this.isInstanceOf[AvroRecord[_]] ||
-        this.isInstanceOf[AvroError[_]] ||
-        this.isInstanceOf[AvroEnum[_]] ||
-        this.isInstanceOf[AvroFixed[_]]
-    ) {
+    if (typeOf[this.type] <:< typeOf[AvroNamedType[_]])
       this.asInstanceOf[AvroNamedType[_]].name.toJson
-    }
     else this.schema
 
   /**
@@ -70,13 +65,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * otherwise.
     */
   private[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
-    if (this.isInstanceOf[AvroRecord[_]] ||
-        this.isInstanceOf[AvroError[_]] ||
-        this.isInstanceOf[AvroEnum[_]] ||
-        this.isInstanceOf[AvroFixed[_]]
-    ) {
+    if (typeOf[this.type] <:< typeOf[AvroNamedType[_]])
       this.asInstanceOf[AvroNamedType[_]].fullyQualifiedName.toJson
-    }
     else this.parsingCanonicalForm
 
   /**
@@ -170,13 +160,15 @@ object AvroType {
       "synthesize an AvroType for  type [%s]" format tt.tpe
     )
 
-    val avroType = primitiveTypeCache.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
+    val tpe = tt.tpe
+
+    val avroType = primitiveTypeCache.collectFirst { case (cacheTpe, at) if cacheTpe =:= tpe => at } match {
 
       // primitive type cache hit
       case Some(primitive) => primitive
 
       // primitive type cache miss
-      case None => complexTypeCache.get.collectFirst { case (tpe, at) if tpe =:= tt.tpe => at } match {
+      case None => complexTypeCache.get.collectFirst { case (cacheTpe, at) if cacheTpe =:= tpe => at } match {
 
         // complex type cache hit
         case Some(complex) => complex
@@ -186,17 +178,30 @@ object AvroType {
 
           val newComplexType = {
             // sequences
-            if (tt.tpe.typeConstructor =:= typeOf[Seq[_]].typeConstructor) tt.tpe match {
+            if (tpe.typeConstructor =:= typeOf[Seq[_]].typeConstructor) tpe match {
               case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
             }
 
             // string-keyed maps
-            else if (tt.tpe <:< typeOf[Map[String, _]]) tt.tpe match {
+            else if (tpe <:< typeOf[Map[String, _]]) tpe match {
               case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))
             }
 
+            // enumerations
+            else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol)
+              tpe match { case TypeRef(prefix, symbol, _) =>
+
+                val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
+
+                new AvroEnum(
+                  name      = symbol.name.toString,
+                  symbols   = ReflectionHelpers.symbolsOf(enumTypeTag),
+                  namespace = Some(prefix.toString.stripSuffix(".type"))
+                )(enumTypeTag)
+              }
+
             // binary disjunctive unions
-            else if (tt.tpe <:< typeOf[Either[_, _]]) tt.tpe match {
+            else if (tpe <:< typeOf[Either[_, _]]) tpe match {
               case TypeRef(_, _, List(left, right)) => new AvroUnion()(
                 ReflectionHelpers.tagForType(left),
                 ReflectionHelpers.tagForType(right)
@@ -204,8 +209,8 @@ object AvroType {
             }
 
             // case classes
-            else if (tt.tpe <:< typeOf[Product] && tt.tpe.typeSymbol.asClass.isCaseClass) {
-              tt.tpe match { case TypeRef(prefix, symbol, _) =>
+            else if (tpe <:< typeOf[Product] && tpe.typeSymbol.asClass.isCaseClass) {
+              tpe match { case TypeRef(prefix, symbol, _) =>
                 new AvroRecord[T](
                   name      = symbol.name.toString,
                   fields    = ReflectionHelpers.caseClassParamsOf[T].toSeq map { case (name, tag) => {
@@ -219,7 +224,7 @@ object AvroType {
 
             // other types are not handled
             else throw new IllegalArgumentException(
-              "Unable to find or make an AvroType for the supplied type [%s]" format tt.tpe
+              "Unable to find or make an AvroType for the supplied type [%s]" format tpe
             )
           }
 
@@ -230,7 +235,7 @@ object AvroType {
             val currentCache = complexTypeCache.get
             cacheUpdated = complexTypeCache.compareAndSet(
               currentCache,
-              currentCache + (tt.tpe -> newComplexType)
+              currentCache + (tpe -> newComplexType)
             )
             tries += 1
           }

@@ -17,8 +17,7 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
 
   implicit def itemTypeTag = avroType.itemType.tag
 
-  lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
-
+  protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
   val itemIO = AvroTypeIO.Implicits.avroTypeToIO(avroType.itemType)
 
   def asGeneric(map: Map[String, T]): java.util.Map[String, T] =
@@ -44,8 +43,8 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
 
   def write(map: Map[String, T], stream: OutputStream) = {
     try {
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       val datumWriter = new GenericDatumWriter[java.util.Map[String, T]](avroSchema)
+      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(map), encoder)
       encoder.flush
     }

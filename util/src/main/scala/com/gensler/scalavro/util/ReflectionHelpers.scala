@@ -13,7 +13,33 @@ object ReflectionHelpers extends ReflectionHelpers
 
 trait ReflectionHelpers {
 
-  protected val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
+  protected[scalavro] val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
+
+  /**
+    * Returns a sequence of Strings, each of which names a value of the
+    * supplied enumeration type.
+    */
+  protected[scalavro] def symbolsOf[E <: Enumeration : TypeTag]: Seq[String] = {
+    val valueType = typeOf[E#Value]
+
+    val isValueType = (sym: Symbol) => {
+      ! sym.isMethod && ! sym.isType &&
+      sym.typeSignature.baseType(valueType.typeSymbol) =:= valueType
+    }
+
+    typeOf[E].members.collect {
+      case sym: Symbol if isValueType(sym) => sym.name.toString.trim
+    }.toSeq.reverse
+  }
+
+  /**
+    * Returns a type tag for the parent [[scala.Enumeration]] of the supplied 
+    * enumeration value type.
+    */
+  protected[scalavro] def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {
+    val TypeRef(enclosing, _, _) = typeTag[V].tpe
+    tagForType(enclosing).asInstanceOf[TypeTag[_ <: Enumeration]]
+  }
 
   /**
     * Returns a map from formal parameter names to type tags, containing one
