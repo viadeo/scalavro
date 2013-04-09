@@ -52,6 +52,25 @@ class Union[U <: Union.not[_] : TypeTag] {
 
   type containsType[X] = prove [U] #containsType [X]
 
+  /**
+    * Returns the set of member types of the underlying union.
+    */
+  def typeMembers(): Set[Type] = {
+    val ut = typeOf[U]
+    val tParams = ut.typeSymbol.asType.typeParams // List[Symbol]
+    val actualParam = tParams.head.asType.toTypeIn(ut)
+
+    val notType = typeOf[Union.not[_]]
+    var members = Vector[Type]()
+
+    actualParam.foreach { part => if (part <:< notType) {
+      val partParams = part.typeSymbol.asType.typeParams.map { _.asType.toTypeIn(part).normalize }
+      members ++= partParams
+    }}
+
+    members.toSet
+  }
+
   case class Value[T](ref: T, tag: TypeTag[T])
 
   private var wrappedValue: Value[_] = Value((), typeTag[Unit])

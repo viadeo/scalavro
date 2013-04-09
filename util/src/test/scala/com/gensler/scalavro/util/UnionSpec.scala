@@ -41,6 +41,12 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
     unionFunction[String]
   }
 
+  it should "know its member types" in {
+    val wrapped = new Union[union [Int] #or [Double] #apply]
+    val expectedMembers = Set(typeOf[Int], typeOf[Double])
+    wrapped.typeMembers should equal(expectedMembers)
+  }
+
   it should "handle unary unions, no matter how silly that seems" in {
     val unary = new Union[union [Int] #apply]
     unary.contains[Int] should be (true)
