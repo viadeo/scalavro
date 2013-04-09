@@ -148,7 +148,7 @@ A runtime reflection-based Avro library in Scala.
 
 ## Usage Overview: Schema Generation
 
-### scala.collection.Seq[T] :: array
+### Arrays
 
     import com.gensler.scalavro.types.AvroType
     AvroType[Seq[String]].schema
@@ -160,7 +160,7 @@ Which yields:
       "items" : "string"
     }
 
-### scala.collection.Map :: map
+### Maps
 
     import com.gensler.scalavro.types.AvroType
     AvroType[Map[String, Double]].schema
@@ -172,7 +172,7 @@ Which yields:
       "values" : "double"
     }
 
-### scala.Enumeration :: enum
+### Enums
 
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
@@ -194,7 +194,7 @@ Which yields:
       "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
     }
 
-### scala.Either :: union
+### Unions
 
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
@@ -205,7 +205,7 @@ Which yields:
 
     ["int", "boolean"]
 
-### Case Class :: record
+### Records
 
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
