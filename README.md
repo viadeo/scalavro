@@ -288,13 +288,11 @@ Which yields:
     }
 
 ## Current Capabilities
-- Schema generation for basic types
-- Schema generation for sequences (`List`, `Seq`, `Array`, etc)
-- Schema generation for String-keyed `Map` types
+- Schema generation
 - Type-safe Avro protocol definitions and JSON output
 - Robustness in the face of cyclic type dependencies (such records are never valid Avro)
 - Schema conversion to "Parsing Canonical Form"
-- Convenient binary IO for primitive types
+- Convenient binary IO
 
 ## Current Limitations
 - Complex types are incomplete:
