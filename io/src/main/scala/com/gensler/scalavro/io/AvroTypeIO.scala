@@ -11,6 +11,11 @@ import java.io.{InputStream, OutputStream}
 trait AvroTypeIO[T] {
 
   /**
+    * Returns this AvroTypeIO instance.
+    */
+  def io: AvroTypeIO[T] = this
+
+  /**
     * Returns the corresponding AvroType to this AvroTypeIO wrapper.
     */
   def avroType: AvroType[T]
@@ -116,13 +121,13 @@ object AvroTypeIO {
 
     implicit def avroTypeToIO[T: TypeTag](at: AvroType[T]): AvroTypeIO[T] = {
       at match {
-        case t: AvroPrimitiveType[T] => avroTypeToIO(t)
-        case t: AvroArray[T]         => avroTypeToIO(t)
-        case t: AvroEnum[T]          => avroTypeToIO(t)
+        case t: AvroPrimitiveType[_] => avroTypeToIO(t)
+        case t: AvroArray[_]         => avroTypeToIO(t)
+        case t: AvroEnum[_]          => avroTypeToIO(t)
         case t: AvroFixed            => avroTypeToIO(t)
-        case t: AvroMap[T]           => avroTypeToIO(t)
-        case t: AvroError[T]         => avroTypeToIO(t)
-        case t: AvroRecord[T]        => avroTypeToIO(t)
+        case t: AvroMap[_]           => avroTypeToIO(t)
+        case t: AvroError[_]         => avroTypeToIO(t)
+        case t: AvroRecord[_]        => avroTypeToIO(t)
         case t: AvroUnion[_, _]      => avroTypeToIO(t)
       }
     }.asInstanceOf[AvroTypeIO[T]]

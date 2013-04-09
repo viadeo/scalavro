@@ -154,7 +154,8 @@ A runtime reflection-based Avro library in Scala.
     import scala.util.{Try, Success, Failure}
 
     case class Person(name: String, age: Int)
-    val Success(personAvroType) = AvroType.fromType[Person]
+
+    val personAvroType = AvroType[Person]
     personAvroType.schema
 
 Which yields:
@@ -172,7 +173,8 @@ Which yields:
 And perhaps more interestingly:
 
     case class SantaList(nice: Seq[Person], naughty: Seq[Person])
-    val Success(santaListAvroType) = AvroType.fromType[SantaList]
+
+    val santaListAvroType = AvroType[SantaList]
     santaListAvroType.schema
 
 Which yields:
@@ -197,7 +199,7 @@ Which yields:
 
     import com.gensler.scalavro.AvroType
     import com.gensler.scalavro.io.AvroTypeIO
-    import com.gensler.scalavro.io.AvroTypeIO.Implicits._ // adds IO fxns to AvroType
+    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
     import scala.util.{Try, Success, Failure}
 
     case class Person(name: String, age: Int)
@@ -214,15 +216,16 @@ Which yields:
       )
     )
 
-    val santaListType = AvroType.fromType[SantaList].get
+    val santaListType = AvroType[SantaList]
+    val santaListIO = santaListType.io // implicitly: AvroTypeIO[SantaList]
 
     val outStream: java.io.OutputStream = // some stream...
 
-    santaListType.write(santaList, outStream)
+    santaListIO.write(santaList, outStream)
 
     val inStream: java.io.InputStream = // some stream...
 
-    santaListType.read(inStream) match {
+    santaListIO.read(inStream) match {
       case Success(readResult) => // readResult is an instance of SantaList
       case Failure(cause)      => // handle failure...
     }

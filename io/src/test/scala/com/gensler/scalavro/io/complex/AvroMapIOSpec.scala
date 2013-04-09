@@ -16,8 +16,13 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
 
   val intMapType = AvroType.fromType[Map[String, Int]].get
+  val io = intMapType.io
 
-  "AvroMapIO" should "read and write maps" in {
+  "AvroMapIO" should "be available with the AvroTypeIO implicits in scope" in {
+    io.isInstanceOf[AvroMapIO[_]] should be (true)
+  }
+
+  it should "read and write maps" in {
 
     val m1 = Map(
       "uno"     -> 1,
@@ -28,12 +33,12 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
     )
 
     val out = new ByteArrayOutputStream
-    intMapType.write(m1, out)
+    io.write(m1, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
-    val readResult = intMapType read in
-    readResult should equal (Success(m1))
-    readResult.get("cinque") should be (5)
+    val Success(readResult) = io read in
+    readResult should equal (m1)
+    readResult.get("cinque") should be (Some(5))
   }
 
 }

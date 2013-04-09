@@ -15,16 +15,21 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
 
-  val intArrayType = AvroType.fromType[Seq[Int]].get
+  val intArrayType = AvroType[Seq[Int]]
+  val io = intArrayType.io
 
-  "AvroArrayIO" should "read and write arrays" in {
+  "AvroArrayIO" should "be available with the AvroTypeIO implicits in scope" in {
+    io.isInstanceOf[AvroArrayIO[_]] should be (true)
+  }
+
+  it should "read and write arrays" in {
     val s1 = (0 to 1000).toSeq
 
     val out = new ByteArrayOutputStream
-    intArrayType.write(s1, out)
+    io.write(s1, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
-    intArrayType read in should equal (Success(s1))
+    io read in should equal (Success(s1))
   }
 
 }

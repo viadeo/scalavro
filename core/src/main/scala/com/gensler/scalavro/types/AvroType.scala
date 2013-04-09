@@ -128,14 +128,14 @@ object AvroType {
 
   // primitive type cache table
   private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
-    typeOf[Unit]      -> AvroNull,
-    typeOf[Boolean]   -> AvroBoolean,
+    typeOf[Unit]        -> AvroNull,
+    typeOf[Boolean]     -> AvroBoolean,
     typeOf[Seq[Byte]] -> AvroBytes,
-    typeOf[Double]    -> AvroDouble,
-    typeOf[Float]     -> AvroFloat,
-    typeOf[Int]       -> AvroInt,
-    typeOf[Long]      -> AvroLong,
-    typeOf[String]    -> AvroString
+    typeOf[Double]      -> AvroDouble,
+    typeOf[Float]       -> AvroFloat,
+    typeOf[Int]         -> AvroInt,
+    typeOf[Long]        -> AvroLong,
+    typeOf[String]      -> AvroString
   )
 
   // complex type cache table, initially empty
@@ -143,6 +143,12 @@ object AvroType {
     new AtomicReference[ListMap[Type, AvroType[_]]](
       ListMap[Type, AvroType[_]]()
     )
+
+  /**
+    * Returns an `AvroType[T]` for the supplied type `T` if one is available
+    * or throws an exception.
+`   */
+  def apply[T: TypeTag]: AvroType[T] = fromType[T].get
 
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available

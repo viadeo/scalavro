@@ -24,7 +24,7 @@ case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
 
   val personType = AvroType.fromType[Person].get
-  val io: AvroTypeIO[Person] = personType
+  val io = personType.io
 
   "AvroRecordIO" should "instantiate implicitly from an AvroRecord" in {
     val avroTypeIO: AvroTypeIO[_] = personType
@@ -46,12 +46,13 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
     )
 
     val santaListType = AvroType.fromType[SantaList].get
+    val santaIO = santaListType.io
 
     val out = new ByteArrayOutputStream
-    santaListType.write(sList, out)
+    santaIO.write(sList, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
-    val readResult = (santaListType read in).get
+    val Success(readResult) = santaIO read in
 
     readResult should equal (sList)
   }

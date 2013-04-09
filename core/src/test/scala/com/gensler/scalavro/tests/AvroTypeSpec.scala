@@ -12,19 +12,19 @@ class AvroTypeSpec extends AvroSpec {
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
-    AvroType.fromType[Boolean] should be (Success(AvroBoolean))
-    AvroType.fromType[Seq[Byte]] should be (Success(AvroBytes))
-    AvroType.fromType[Double] should be (Success(AvroDouble))
-    AvroType.fromType[Float] should be (Success(AvroFloat))
-    AvroType.fromType[Int] should be (Success(AvroInt))
-    AvroType.fromType[Long] should be (Success(AvroLong))
-    AvroType.fromType[Unit] should be (Success(AvroNull))
-    AvroType.fromType[String] should be (Success(AvroString))
+    AvroType[Boolean] should be (Success(AvroBoolean))
+    AvroType[Seq[Byte]] should be (Success(AvroBytes))
+    AvroType[Double] should be (Success(AvroDouble))
+    AvroType[Float] should be (Success(AvroFloat))
+    AvroType[Int] should be (Success(AvroInt))
+    AvroType[Long] should be (Success(AvroLong))
+    AvroType[Unit] should be (Success(AvroNull))
+    AvroType[String] should be (Success(AvroString))
   }
 
   // arrays
   it should "return valid AvroArray types" in {
-    AvroType.fromType[Seq[Int]] match {
+    AvroType[Seq[Int]] match {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
 

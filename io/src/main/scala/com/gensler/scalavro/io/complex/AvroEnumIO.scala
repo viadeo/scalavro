@@ -53,7 +53,9 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
     val decoder = DecoderFactory.get.binaryDecoder(stream, null)
 
-    enumeration(com.gensler.scalavro.io.primitive.AvroIntIO.read(stream).get)
+    enumeration(
+      com.gensler.scalavro.io.primitive.AvroIntIO.read(stream).get
+    )
 
     // the following *should* work, but it appears to read too many bytes...
     // a bug in the reference implementation?

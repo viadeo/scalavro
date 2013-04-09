@@ -10,6 +10,7 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
@@ -20,10 +21,14 @@ object Direction extends Enumeration {
 
 class AvroEnumIOSpec extends FlatSpec with ShouldMatchers {
 
-  val enumType = AvroType.fromType[Direction.type#Direction].get
-  val io = AvroEnumIO(enumType.asInstanceOf[AvroEnum[Direction.type]])
+  val enumType = AvroType[Direction.type#Direction]
+  val io = enumType.io
 
-  "AvroEnumIO" should "read and write enumerations" in {
+  "AvroEnumIO" should "be available with the AvroTypeIO implicits in scope" in {
+    io.isInstanceOf[AvroEnumIO[_]] should be (true)
+  }
+
+  it should "read and write enumerations" in {
     val out = new ByteArrayOutputStream
     io.write(Direction.NORTH, out)
     io.write(Direction.SOUTH, out)
