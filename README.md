@@ -146,12 +146,69 @@ A runtime reflection-based Avro library in Scala.
   </tr>
 </table>
 
-## Usage: Schema Generation
+## Usage Overview: Schema Generation
+
+### scala.collection.Seq[T] :: array
+
+    import com.gensler.scalavro.types.AvroType
+    AvroType[Seq[String]].schema
+
+Which yields:
+
+    {
+      "type" : "array",
+      "items" : "string"
+    }
+
+### scala.collection.Map :: map
+
+    import com.gensler.scalavro.types.AvroType
+    AvroType[Map[String, Double]].schema
+
+Which yields:
+
+    {
+      "type" : "map",
+      "values" : "double"
+    }
+
+### scala.Enumeration :: enum
 
     package com.gensler.scalavro.tests
+    import com.gensler.scalavro.types.AvroType
 
-    import com.gensler.scalavro.types._
-    import scala.util.{Try, Success, Failure}
+    object CardinalDirection extends Enumeration {
+      type CardinalDirection = Value
+      val N, NE, E, SE, S, SW, W, NW = Value
+    }
+
+    import CardinalDirection._
+    AvroType[CardinalDirection].schema
+
+Which yields:
+
+    {
+      "name" : "CardinalDirection",
+      "type" : "enum",
+      "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
+      "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
+    }
+
+### scala.Either :: union
+
+    package com.gensler.scalavro.tests
+    import com.gensler.scalavro.types.AvroType
+
+    AvroType[Either[Int, Boolean]].schema
+
+Which yields:
+
+    ["int", "boolean"]
+
+### Case Class :: record
+
+    package com.gensler.scalavro.tests
+    import com.gensler.scalavro.types.AvroType
 
     case class Person(name: String, age: Int)
 
@@ -195,7 +252,7 @@ Which yields:
       "namespace": "com.gensler.scalavro.tests"
     }
 
-## Usage: Binary IO
+## Usage Overview: Binary IO
 
     import com.gensler.scalavro.AvroType
     import com.gensler.scalavro.io.AvroTypeIO
