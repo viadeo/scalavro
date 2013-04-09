@@ -28,8 +28,8 @@ class AvroRecordSpec extends AvroSpec {
 
     santaListType match {
       case recordType: AvroRecord[_] => {
-        println("santaListType.selfContainedSchema:")
-        println(recordType.selfContainedSchema())
+        // println("santaListType.selfContainedSchema:")
+        // println(recordType.selfContainedSchema())
       }
     }
 

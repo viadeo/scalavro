@@ -37,7 +37,7 @@ trait ReflectionHelpers {
     * enumeration value type.
     */
   protected[scalavro] def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {
-    val TypeRef(enclosing, _, _) = typeTag[V].tpe
+    val TypeRef(enclosing, _, _) = typeOf[V]
     tagForType(enclosing).asInstanceOf[TypeTag[_ <: Enumeration]]
   }
 

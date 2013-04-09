@@ -16,8 +16,8 @@ import java.io.{InputStream, OutputStream}
 case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeIO[E#Value] {
 
   // AvroEnum exposes two TypeTags:
-  //   `tag` is the TypeTag for the enum values
-  //   `enumTag` is the TypeTag of the enum itself
+  //   `AvroEnum.tag` is the TypeTag for the enum values
+  //   `AvroEnum.enumTag` is the TypeTag of the enum itself
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
 

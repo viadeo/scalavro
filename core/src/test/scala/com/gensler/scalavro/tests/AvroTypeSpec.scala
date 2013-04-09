@@ -26,7 +26,7 @@ class AvroTypeSpec extends AvroSpec {
   it should "return valid AvroArray types" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Seq[Int]] should be (true)
@@ -34,22 +34,12 @@ class AvroTypeSpec extends AvroSpec {
       case _ => fail
     }
 
-    AvroType.fromType[List[Boolean]] match {
+    AvroType.fromType[Seq[Seq[Seq[Byte]]]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[List[Boolean]] should be (true)
-      }
-      case _ => fail
-    }
-
-    AvroType.fromType[List[List[Seq[Byte]]]] match {
-      case Success(avroType) => {
-        log debug avroType.schema.toString
-
-        avroType.isInstanceOf[AvroArray[_]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[List[List[Seq[Byte]]]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[Seq[Seq[Seq[Byte]]]] should be (true)
       }
       case _ => fail
     }
@@ -59,7 +49,7 @@ class AvroTypeSpec extends AvroSpec {
   it should "return valid AvroMap types" in {
     AvroType.fromType[Map[String, Int]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroMap[_]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Map[String, Int]] should be (true)
@@ -67,12 +57,12 @@ class AvroTypeSpec extends AvroSpec {
       case _ => fail
     }
 
-    AvroType.fromType[Map[String, List[Double]]] match {
+    AvroType.fromType[Map[String, Seq[Double]]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroMap[_]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[Map[String, List[Double]]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[Map[String, Seq[Double]]] should be (true)
       }
       case _ => fail
     }
@@ -82,7 +72,7 @@ class AvroTypeSpec extends AvroSpec {
   it should "return valid AvroUnion types for disjoint unions of two types" in {
     AvroType.fromType[Either[Double, Int]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Either[Double, Int]] should be (true)
@@ -90,12 +80,12 @@ class AvroTypeSpec extends AvroSpec {
       case _ => fail
     }
 
-    AvroType.fromType[Either[List[Double], Map[String, Seq[Int]]]] match {
+    AvroType.fromType[Either[Seq[Double], Map[String, Seq[Int]]]] match {
       case Success(avroType) => {
-        log debug avroType.schema.toString
+        // prettyPrint(avroType.schema)
 
         avroType.isInstanceOf[AvroUnion[_, _]] should be (true)
-        typeOf[avroType.scalaType] =:= typeOf[Either[List[Double], Map[String, Seq[Int]]]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[Either[Seq[Double], Map[String, Seq[Int]]]] should be (true)
       }
       case _ => fail
     }
@@ -107,8 +97,8 @@ class AvroTypeSpec extends AvroSpec {
     val personType = AvroType.fromType[Person].get
     val santaListType = AvroType.fromType[SantaList].get
 
-    prettyPrint(personType.schema)
-    prettyPrint(personType.parsingCanonicalForm)
+    // prettyPrint(personType.schema)
+    // prettyPrint(personType.parsingCanonicalForm)
 
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
@@ -119,8 +109,8 @@ class AvroTypeSpec extends AvroSpec {
     personType dependsOn personType should be (false)
     personType dependsOn santaListType should be (false)
  
-    prettyPrint(santaListType.schema)
-    prettyPrint(santaListType.parsingCanonicalForm)
+    // prettyPrint(santaListType.schema)
+    // prettyPrint(santaListType.parsingCanonicalForm)
 
     santaListType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
@@ -144,8 +134,11 @@ class AvroTypeSpec extends AvroSpec {
     val curseType = AvroType.fromType[Curse].get.asInstanceOf[AvroRecord[Curse]]
 
     val hwProtocol = AvroProtocol(
+
       protocol = "HelloWorld",
+
       types    = Seq(greetingType, curseType),
+
       messages = Map(
                   "hello" -> AvroProtocol.Message(
                     request = Map(
@@ -156,15 +149,15 @@ class AvroTypeSpec extends AvroSpec {
                     doc = Some("Say hello.")
                   )
                  ),
+
       namespace = Some("com.gensler.scalavro.tests"),
+
       doc       = Some("Protocol Greetings")
+
     )
 
-    prettyPrint(hwProtocol.schema)
-
-    prettyPrint(hwProtocol.schema)
-
-    prettyPrint(hwProtocol.parsingCanonicalForm)
+    // prettyPrint(hwProtocol.schema)
+    // prettyPrint(hwProtocol.parsingCanonicalForm)
   }
 
 }

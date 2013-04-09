@@ -30,10 +30,7 @@ class AvroEnumIOSpec extends FlatSpec with ShouldMatchers {
     io.write(Direction.WEST, out)
     io.write(Direction.EAST, out)
 
-    println(out.toByteArray.toSeq)
-
     val in = new ByteArrayInputStream(out.toByteArray)
-
     io read in should equal (Success(Direction.NORTH))
     io read in should equal (Success(Direction.SOUTH))
     io read in should equal (Success(Direction.WEST))

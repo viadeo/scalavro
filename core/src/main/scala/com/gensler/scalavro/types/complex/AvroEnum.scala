@@ -15,8 +15,6 @@ class AvroEnum[E <: Enumeration : TypeTag](
   val namespace: Option[String] = None
 ) extends AvroNamedType[E#Value] {
 
-println(symbols)
-
   val enumTag = typeTag[E]
 
   val typeName = "enum"
