@@ -42,9 +42,20 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "know its member types" in {
-    val wrapped = new Union[union [Int] #or [Double] #apply]
-    val expectedMembers = Set(typeOf[Int], typeOf[Double])
-    wrapped.typeMembers should equal(expectedMembers)
+    val wrapped = new Union[union [Int] #or [Double] #or [String] #or [Float] #apply]
+    val expectedMembers = Set(typeOf[Int], typeOf[Double], typeOf[String], typeOf[Float])
+    val actualMembers = wrapped.typeMembers
+
+    def typeSubsetOf(a: Set[Type], b: Set[Type]): Boolean = {
+      a.foldLeft(true) { (result, tpe) =>
+        result && b.exists { _ =:= tpe}
+      }
+    }
+
+    // A subset B AND B subset A => A == B
+    typeSubsetOf(expectedMembers, actualMembers) should be (true)
+    typeSubsetOf(actualMembers, expectedMembers) should be (true)
+
   }
 
   it should "handle unary unions, no matter how silly that seems" in {
