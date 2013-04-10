@@ -11,8 +11,8 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroRecordSpec extends AvroSpec {
 
-  val personType = AvroType.fromType[Person].get
-  val santaListType = AvroType.fromType[SantaList].get
+  val personType = AvroType[Person]
+  val santaListType = AvroType[SantaList]
 
   "AvroRecord" should "be parameterized with its corresponding Scala type" in {
     personType.isInstanceOf[AvroType[Person]] should be (true)

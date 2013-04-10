@@ -129,6 +129,13 @@ A runtime reflection-based Avro library in Scala.
     </code></td>
   </tr>
   <tr>
+    <td>
+      <code>enum</code> (Java)</td>
+    <td><code>
+      enum
+    </code></td>
+  </tr>
+  <tr>
     <td><code>
       scala.util.Either[A, B]
     </code></td>
@@ -174,6 +181,8 @@ Which yields:
 
 ### Enums
 
+#### scala.Enumeration
+
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
@@ -192,6 +201,29 @@ Which yields:
       "type" : "enum",
       "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
       "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
+    }
+
+#### Java `enum`
+
+Definition (Java):
+
+    package com.gensler.scalavro.tests;
+    enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
+
+Use (Scala):
+
+    import com.gensler.scalavro.types.AvroType
+
+    import com.gensler.scalavro.tests.JCardinalDirection
+    AvroType[JCardinalDirection].schema
+
+Which yields:
+
+    {
+      "name" : "JCardinalDirection",
+      "type" : "enum",
+      "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
+      "namespace" : "com.gensler.scalavro.tests"
     }
 
 ### Unions

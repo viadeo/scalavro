@@ -12,19 +12,19 @@ class AvroTypeSpec extends AvroSpec {
 
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
-    AvroType[Boolean] should be (Success(AvroBoolean))
-    AvroType[Seq[Byte]] should be (Success(AvroBytes))
-    AvroType[Double] should be (Success(AvroDouble))
-    AvroType[Float] should be (Success(AvroFloat))
-    AvroType[Int] should be (Success(AvroInt))
-    AvroType[Long] should be (Success(AvroLong))
-    AvroType[Unit] should be (Success(AvroNull))
-    AvroType[String] should be (Success(AvroString))
+    AvroType[Boolean] should be (AvroBoolean)
+    AvroType[Seq[Byte]] should be (AvroBytes)
+    AvroType[Double] should be (AvroDouble)
+    AvroType[Float] should be (AvroFloat)
+    AvroType[Int] should be (AvroInt)
+    AvroType[Long] should be (AvroLong)
+    AvroType[Unit] should be (AvroNull)
+    AvroType[String] should be (AvroString)
   }
 
   // arrays
   it should "return valid AvroArray types" in {
-    AvroType[Seq[Int]] match {
+    AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
 
@@ -145,7 +145,7 @@ class AvroTypeSpec extends AvroSpec {
                       "greeting" -> greetingType
                     ),
                     response = greetingType,
-                    errors = Some(AvroType.fromType[Either[Curse, String]].get.asInstanceOf[AvroUnion[_,_]]),
+                    errors = Some(AvroType.fromType[Either[Curse, String]].get.asInstanceOf[AvroUnion[_, _]]),
                     doc = Some("Say hello.")
                   )
                  ),

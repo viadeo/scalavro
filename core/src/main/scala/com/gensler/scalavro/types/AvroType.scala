@@ -193,8 +193,8 @@ object AvroType {
               case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))
             }
 
-            // enumerations
-            else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol)
+            // Scala enumerations
+            else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol) {
               tpe match { case TypeRef(prefix, symbol, _) =>
 
                 val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
@@ -205,6 +205,17 @@ object AvroType {
                   namespace = Some(prefix.toString.stripSuffix(".type"))
                 )(enumTypeTag)
               }
+            }
+
+            // Java enums
+            else if (ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass).isEnum) {
+              val enumClass = ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass)
+              new AvroJEnum[T](
+                name      = enumClass.getSimpleName,
+                symbols   = enumClass.getEnumConstants.map(_.toString),
+                namespace = Some(enumClass.getPackage.getName)
+              )
+            }
 
             // binary disjunctive unions
             else if (tpe <:< typeOf[Either[_, _]]) tpe match {
