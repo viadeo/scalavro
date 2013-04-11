@@ -2,14 +2,11 @@ package com.gensler.scalavro.io.primitive
 
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroLong
+import com.gensler.scalavro.util.Varint
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
-
 import scala.util.{Try, Success, Failure}
-import scala.reflect.runtime.universe.TypeTag
-
-import java.io.{InputStream, OutputStream}
+import java.io.{InputStream, OutputStream, DataInputStream, DataOutputStream}
 
 object AvroLongIO extends AvroLongIO
 
@@ -17,18 +14,15 @@ trait AvroLongIO extends AvroTypeIO[Long] {
 
   def avroType = AvroLong
 
-  protected[scalavro] def asGeneric[L <: Long : TypeTag](value: L): Long = value
+  def asGeneric(value: Long): Long = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Long = obj.asInstanceOf[Long]
+  def fromGeneric(obj: Any): Long = obj.asInstanceOf[Long]
 
-  def write[L <: Long : TypeTag](value: L, stream: OutputStream) = {
-    val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
-    encoder writeLong value
-  }
+  def write(value: Long, stream: OutputStream) =
+    Varint.writeSignedVarLong(value, new DataOutputStream(stream))
 
   def read(stream: InputStream) = Try {
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    decoder.readLong
+    Varint.readSignedVarLong(new DataInputStream(stream))
   }
 
 }

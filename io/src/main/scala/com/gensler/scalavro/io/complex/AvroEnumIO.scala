@@ -11,8 +11,6 @@ import org.apache.avro.generic.{GenericData, GenericEnumSymbol, GenericDatumWrit
 import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import scala.util.{Try, Success, Failure}
-import scala.reflect.runtime.universe.TypeTag
-
 import java.io.{InputStream, OutputStream}
 
 case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeIO[E#Value] {
@@ -29,17 +27,17 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
 
   val enumeration = moduleMirror.instance.asInstanceOf[E]
 
-  protected[scalavro] def asGeneric[T <: E#Value : TypeTag](obj: T): GenericEnumSymbol = obj match {
+  def asGeneric(obj: E#Value): GenericEnumSymbol = obj match {
     case value: E#Value => new GenericData.EnumSymbol(avroSchema, value.toString)
-    case _ => throw new AvroSerializationException(obj)
+    case _ => throw new AvroSerializationException(obj)(avroType.tag)
   }
 
-  protected[scalavro] def fromGeneric(obj: Any): E#Value = obj match {
+  def fromGeneric(obj: Any): E#Value = obj match {
     case genericEnumSymbol: GenericEnumSymbol => enumeration withName genericEnumSymbol.toString
     case _ => throw new AvroDeserializationException[E#Value]()(avroType.tag)
   }
 
-  def write[T <: E#Value : TypeTag](obj: T, stream: OutputStream) = {
+  def write(obj: E#Value, stream: OutputStream) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericEnumSymbol](avroSchema)
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
@@ -47,14 +45,23 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
       encoder.flush
     }
     catch { case cause: Throwable => 
-      throw new AvroSerializationException(obj, cause)
+      throw new AvroSerializationException(obj, cause)(avroType.tag)
     }
   }
 
   def read(stream: InputStream) = Try {
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    val decoder = DecoderFactory.get.binaryDecoder(stream, null)
+
+    enumeration(
+      com.gensler.scalavro.io.primitive.AvroIntIO.read(stream).get
+    )
+
+    // the following *should* work, but it appears to read too many bytes...
+    // a bug in the reference implementation?
+
+//  this fromGeneric datumReader.read(null, decoder)
+
   }
 
 }

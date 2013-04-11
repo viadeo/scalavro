@@ -5,8 +5,6 @@ import com.gensler.scalavro.types.primitive.AvroBytes
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
 import scala.util.{Try, Success, Failure}
-import scala.reflect.runtime.universe.TypeTag
-
 import java.io.{InputStream, OutputStream}
 
 object AvroBytesIO extends AvroBytesIO
@@ -15,12 +13,12 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
   def avroType = AvroBytes
 
-  protected[scalavro] def asGeneric[B <: Seq[Byte] : TypeTag](value: B): Seq[Byte] = value
+  def asGeneric(value: Seq[Byte]): Seq[Byte] = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Seq[Byte] = obj.asInstanceOf[Seq[Byte]]
+  def fromGeneric(obj: Any): Seq[Byte] = obj.asInstanceOf[Seq[Byte]]
 
-  def write[B <: Seq[Byte] : TypeTag](bytes: B, stream: OutputStream) = {
-    AvroLongIO.write(bytes.length.toLong, stream)
+  def write(bytes: Seq[Byte], stream: OutputStream) = {
+    AvroLongIO.write(bytes.length, stream)
     stream.write(bytes.toArray)
   }
 

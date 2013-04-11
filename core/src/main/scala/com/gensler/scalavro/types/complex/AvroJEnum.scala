@@ -28,7 +28,7 @@ class AvroJEnum[E: TypeTag](
     val requiredParams = ListMap(
       "name"    -> name.toJson,
       "type"    -> typeName.toJson,
-      "symbols" -> symbols.toJson
+      "symbols" -> symbols.toJson // TODO: populate symbols!
     )
 
     val optionalParams = ListMap(

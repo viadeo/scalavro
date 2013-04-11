@@ -11,7 +11,7 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
 
   "The union type helpers" should "allow one to define unions" in {
 
-    type ISB = union [Int] #or [String] #or [Boolean]
+    type ISB = union [Int] #or [String] #or [Boolean] #apply
 
     def unionFunction[T : prove [ISB] #containsType](t: T) {}
 
@@ -22,7 +22,7 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "wrap union type definitions in a 'friendly' class" in {
-    val wrapped = new Union[union [Int] #or [String]]
+    val wrapped = new Union[union [Int] #or [String] #apply]
 
     wrapped.contains[Int] should be (true)
     wrapped.contains[String] should be (true)
@@ -42,7 +42,7 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "know its member types" in {
-    val wrapped = new Union[union [Int] #or [Double] #or [String] #or [Float]]
+    val wrapped = new Union[union [Int] #or [Double] #or [String] #or [Float] #apply]
     val expectedMembers = Set(typeOf[Int], typeOf[Double], typeOf[String], typeOf[Float])
     val actualMembers = wrapped.typeMembers
 
