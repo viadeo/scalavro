@@ -250,6 +250,24 @@ object AvroType {
               }
             }
 
+            // binary unions via scala.Option[T]
+            else if (tpe <:< typeOf[Option[_]]) tpe match {
+              case TypeRef(_, _, List(innerType)) => {
+                import com.gensler.scalavro.util.Union._
+                import ReflectionHelpers._
+
+                val unary = Union.unary(tagForType(innerType))
+                val binary = unary.newUnionWithType(typeTag[Unit])
+
+                new AvroUnion[binary.underlying](
+                  binary.asInstanceOf[Union[binary.underlying]]
+                )(
+                  binary.underlyingTypeTag.asInstanceOf[TypeTag[binary.underlying]]
+                )
+
+              }
+            }
+
             // N-ary unions
             else if (tpe <:< typeOf[Union.not[_]]) {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]))
