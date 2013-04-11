@@ -144,6 +144,14 @@ A runtime reflection-based Avro library in Scala.
     </code></td>
   </tr>
   <tr>
+    <td><code>
+      scala.util.Option[T]
+    </code></td>
+    <td><code>
+      union
+    </code></td>
+  </tr>
+  <tr>
     <td><em>
       Non-recursive case classes
     </em></td>
