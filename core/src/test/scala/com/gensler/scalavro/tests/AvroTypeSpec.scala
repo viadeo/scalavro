@@ -156,8 +156,9 @@ class AvroTypeSpec extends AvroSpec {
     evaluating { AvroType[B] } should produce [CyclicTypeDependencyException]
   }
 
-/*
   it should "construct protocol definitions" in {
+
+    import com.gensler.scalavro.util.Union._
 
     val greetingType = AvroType[Greeting].asInstanceOf[AvroRecord[Greeting]]
     val curseType = AvroType[Curse].asInstanceOf[AvroRecord[Curse]]
@@ -170,12 +171,18 @@ class AvroTypeSpec extends AvroSpec {
 
       messages = Map(
                   "hello" -> AvroProtocol.Message(
-                    request = Map(
+
+                    request  = Map(
                       "greeting" -> greetingType
                     ),
+
                     response = greetingType,
-                    errors = Some(AvroType[Either[Curse, String]].asInstanceOf[AvroUnion[_]]),
-                    doc = Some("Say hello.")
+
+                    errors   = AvroType.fromType[union [Curse] #apply].map{
+                      _.asInstanceOf[AvroUnion[_]]
+                    }.toOption,
+
+                    doc      = Some("Say hello.")
                   )
                  ),
 
@@ -188,5 +195,5 @@ class AvroTypeSpec extends AvroSpec {
     // prettyPrint(hwProtocol.schema)
     // prettyPrint(hwProtocol.parsingCanonicalForm)
   }
-*/
+
 }

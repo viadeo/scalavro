@@ -64,10 +64,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * [[AvroNamedType]], or the parsing canonical form of this type schema
     * otherwise.
     */
-  private[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
-    if (typeOf[this.type] <:< typeOf[AvroNamedType[_]])
-      this.asInstanceOf[AvroNamedType[_]].fullyQualifiedName.toJson
-    else this.parsingCanonicalForm
+  protected[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
+    this.parsingCanonicalForm
 
   /**
     * Returns the JSON schema for this type in "parsing canonical form".
