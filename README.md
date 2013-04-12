@@ -244,6 +244,8 @@ Which yields:
 
 ### Unions
 
+#### scala.Either
+
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
@@ -252,6 +254,44 @@ Which yields:
 Which yields:
 
     ["int", "boolean"]
+
+and
+
+    AvroType[Either[Seq[Double], Map[String, Seq[Int]]]].schema
+
+Which yields:
+
+    [{
+      "type" : "array",
+      "items" : "double"
+    },
+    {
+      "type" : "map",
+      "values" : {
+        "type" : "array",
+        "items" : "int"
+      }
+    }]
+
+#### scala.Option
+
+    package com.gensler.scalavro.tests
+    import com.gensler.scalavro.types.AvroType
+
+    AvroType[Option[String]].schema
+
+Which yields:
+
+    ["string", "null"]
+
+#### com.gensler.scalavro.util.Union.union
+
+    import com.gensler.scalavro.util.Union._
+    AvroType[union [Int] #or [String] #or [Boolean]].schema
+
+Which yields:
+
+    ["int", "string", "boolean"]
 
 ### Records
 
