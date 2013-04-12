@@ -385,7 +385,7 @@ Which yields:
 ## Current Limitations
 - Complex types are incomplete:
   - `fixed` is not yet supported
-  - Only binary disjunctive union types are currently supported (via `scala.Either[A, B]`).  We are working on potentially representing these types as unboxed union type definitions.
+  - binary IO for union types is not yet supported
 - JSON IO is not yet implemented.
 
 ## Reference
