@@ -43,6 +43,40 @@ object Union extends UnionTypeHelpers {
     */
   def unary[T: TypeTag] = new Union[union [T] #apply]
 
+  /**
+    * == INTERNAL API ==
+    *
+    * Returns a new Union constructed from a conjunction of Union.not[_] types
+    * and an additional type to add to the conjunction.
+    *
+    * Given `C = not[A] with not[B]` and `T`, this method returns a Union
+    * wrapping the equivalent of `union[A] #or [B] #or [T]`.
+    *
+    * A `TypeTag` describing the conjunction of negations unwrapped from the
+    * underlying union type is readily available via its
+    * `underlyingConjunctionTag` method.
+    *
+    * Usage:
+    * 
+    * {{{
+    * val binaryUnion = new Union[union [Int] #or [String]]
+    *
+    * val ternaryUnion = Union.combine(
+    *   binaryUnion.underlyingConjunctionTag,
+    *   typeTag[Boolean]
+    * )
+    *
+    * ternaryUnion.typeMembers // yields Vector(Int, String, Boolean)
+    *
+    * }}}
+    *
+    * @tparam C the starting conjunction of negations
+    * @tparam T the type to add to the conjunction before negation
+    */
+  protected[scalavro] def combine[C : TypeTag, T : TypeTag] = {
+    new Union()(typeTag[Union.not[C with Union.not[T]]])
+  }
+
 }
 
 private[scalavro] trait UnionTypeHelpers {
@@ -50,6 +84,7 @@ private[scalavro] trait UnionTypeHelpers {
   sealed trait not[-A] {
     type or[B] = Disjunction[A] #or[B] #apply
     type apply = not[A]
+    type unapply = A
   }
 
   trait Disjunction[A] {
@@ -66,7 +101,17 @@ class Union[U <: Union.not[_] : TypeTag] {
 
   type containsType[X] = prove [U] #containsType [X]
 
-  val underlyingTypeTag = typeTag[U]
+  val underlyingTag = typeTag[U]
+
+  val underlyingConjunctionTag = {
+    val ut = typeOf[U]
+    val tParams = ut.typeSymbol.asType.typeParams // List[Symbol]
+    ReflectionHelpers.tagForType(tParams.head.asType.toTypeIn(ut))
+  }
+
+  case class Value[T](ref: T, tag: TypeTag[T])
+
+  protected var wrappedValue: Value[_] = Value((), typeTag[Unit])
 
   /**
     * Returns the set of member types of the underlying union.
@@ -86,18 +131,6 @@ class Union[U <: Union.not[_] : TypeTag] {
 
     members.distinct.toIndexedSeq
   }
-
-  /**
-    * Returns a new Union instance which includes all of the type members
-    * of this instance plus the supplied type.
-    */
-  def newUnionWithType[T](implicit newTypeTag: TypeTag[T]): Union[_] = {
-    new Union[underlying #or [T]]
-  }
-
-  case class Value[T](ref: T, tag: TypeTag[T])
-
-  private var wrappedValue: Value[_] = Value((), typeTag[Unit])
 
   /**
     * Returns `true` if the supplied type is a member of this union.

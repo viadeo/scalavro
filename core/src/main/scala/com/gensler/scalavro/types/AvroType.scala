@@ -64,10 +64,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * [[AvroNamedType]], or the parsing canonical form of this type schema
     * otherwise.
     */
-  private[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
-    if (typeOf[this.type] <:< typeOf[AvroNamedType[_]])
-      this.asInstanceOf[AvroNamedType[_]].fullyQualifiedName.toJson
-    else this.parsingCanonicalForm
+  protected[scalavro] def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
+    this.parsingCanonicalForm
 
   /**
     * Returns the JSON schema for this type in "parsing canonical form".
@@ -234,20 +232,22 @@ object AvroType {
 
             // binary unions via scala.Either[A, B]
             else if (tpe <:< typeOf[Either[_, _]]) tpe match {
-              case TypeRef(_, _, List(left, right)) => {
-                import com.gensler.scalavro.util.Union._
-                import ReflectionHelpers._
-
-                val unary = Union.unary(tagForType(left))
-                val binary = unary.newUnionWithType(tagForType(right))
-
-                new AvroUnion[binary.underlying](
-                  binary.asInstanceOf[Union[binary.underlying]]
-                )(
-                  binary.underlyingTypeTag.asInstanceOf[TypeTag[binary.underlying]]
+              case TypeRef(_, _, List(left, right)) => new AvroUnion(
+                Union.combine(
+                  Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
+                  ReflectionHelpers.tagForType(right)
                 )
+              )
+            }
 
-              }
+            // binary unions via scala.Option[T]
+            else if (tpe <:< typeOf[Option[_]]) tpe match {
+              case TypeRef(_, _, List(innerType)) => new AvroUnion(
+                Union.combine(
+                  Union.unary(ReflectionHelpers.tagForType(innerType)).underlyingConjunctionTag,
+                  typeTag[Unit]
+                )
+              )
             }
 
             // N-ary unions
@@ -255,13 +255,27 @@ object AvroType {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]))
             }
 
-            // Supertypes of case classes
-            // TODO...
+            else {
+              // last-ditch attempt: union of case class subtypes of T
+              import ReflectionHelpers._
 
-            // other types are not handled
-            else throw new IllegalArgumentException(
-              "Unable to find or make an AvroType for the supplied type [%s]" format tpe
-            )
+              val subTypes = caseClassSubTypesOf[T]
+              if (subTypes.nonEmpty) {
+                var u = Union.unary(tagForType(subTypes.head))
+                subTypes.tail.foreach { subType =>
+                  u = Union.combine(
+                    u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
+                    tagForType(subType)
+                  )
+                }
+                new AvroUnion(u)
+              }
+
+              // other types are not handled
+              else throw new IllegalArgumentException(
+                "Unable to find or make an AvroType for the supplied type [%s]" format tpe
+              )
+            }
           }
 
           // add the synthesized AvroType to the complex type cache table

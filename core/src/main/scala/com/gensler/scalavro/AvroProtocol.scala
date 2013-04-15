@@ -162,7 +162,7 @@ object AvroProtocol {
       )
 
       val errorParam = Map("errors" -> errors) collect {
-        case (k, Some(union)) => (k, union.parsingCanonicalForm)
+        case (k, Some(union)) => (k, union.canonicalFormOrFullyQualifiedName)
       }
 
       val oneWayParam = Map("one-way" -> oneWay) collect {

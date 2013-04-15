@@ -12,7 +12,7 @@ import scala.util.Success
 
 import spray.json._
 
-class AvroUnion[U <: Union.not[_]: TypeTag](union: Union[U]) extends AvroComplexType[U] {
+class AvroUnion[U <: Union.not[_]: TypeTag](val union: Union[U]) extends AvroComplexType[U] {
 
   val memberAvroTypes = union.typeMembers.map {
     tpe => AvroType.fromType(ReflectionHelpers tagForType tpe).get
