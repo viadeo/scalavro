@@ -49,6 +49,13 @@ trait ReflectionHelpers {
     val classFilter = new FilterBuilder
     classFilter.excludePackage("java")
     classFilter.excludePackage("scala")
+    classFilter.excludePackage("ch.qos.logback")
+    classFilter.excludePackage("org.slf4j")
+    classFilter.excludePackage("org.reflections")
+    classFilter.excludePackage("spray.json")
+    classFilter.excludePackage("com.google.common")
+    classFilter.excludePackage("org.parboiled")
+    classFilter.excludePackage("org.scalatest")
 
     val urls = getClass.getClassLoader.asInstanceOf[java.net.URLClassLoader].getURLs
 

@@ -17,3 +17,5 @@ abstract class Beta extends Alpha
 case class Gamma() extends Alpha
 case class Delta() extends Beta
 case class Epsilon[T]() extends Beta
+
+case class AlphaWrapper(inner: Alpha)

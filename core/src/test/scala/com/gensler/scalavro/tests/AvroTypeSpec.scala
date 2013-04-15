@@ -133,6 +133,15 @@ class AvroTypeSpec extends AvroSpec {
     }
   }
 
+  it should "return valid AvroRecord types for case classes with abstract signatures" in {
+    val avroType = AvroType[AlphaWrapper]
+
+    // prettyPrint(avroType.schema)
+
+    avroType.isInstanceOf[AvroRecord[_]] should be (true)
+    typeOf[avroType.scalaType] =:= typeOf[AlphaWrapper] should be (true)
+  }
+
   // records
   it should "return valid AvroRecord types for product types" in {
 
