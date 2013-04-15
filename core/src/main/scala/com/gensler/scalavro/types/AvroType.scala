@@ -123,6 +123,7 @@ object AvroType {
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
   import com.gensler.scalavro.util.ReflectionHelpers
+  import com.gensler.scalavro.util.Union
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
 
@@ -217,14 +218,6 @@ object AvroType {
               )
             }
 
-            // binary disjunctive unions
-            else if (tpe <:< typeOf[Either[_, _]]) tpe match {
-              case TypeRef(_, _, List(left, right)) => new AvroUnion()(
-                ReflectionHelpers.tagForType(left),
-                ReflectionHelpers.tagForType(right)
-              )
-            }
-
             // case classes
             else if (tpe <:< typeOf[Product] && tpe.typeSymbol.asClass.isCaseClass) {
               tpe match { case TypeRef(prefix, symbol, _) =>
@@ -238,6 +231,32 @@ object AvroType {
                 )
               }
             }
+
+            // binary unions via scala.Either[A, B]
+            else if (tpe <:< typeOf[Either[_, _]]) tpe match {
+              case TypeRef(_, _, List(left, right)) => {
+                import com.gensler.scalavro.util.Union._
+                import ReflectionHelpers._
+
+                val unary = Union.unary(tagForType(left))
+                val binary = unary.newUnionWithType(tagForType(right))
+
+                new AvroUnion[binary.underlying](
+                  binary.asInstanceOf[Union[binary.underlying]]
+                )(
+                  binary.underlyingTypeTag.asInstanceOf[TypeTag[binary.underlying]]
+                )
+
+              }
+            }
+
+            // N-ary unions
+            else if (tpe <:< typeOf[Union.not[_]]) {
+              new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]))
+            }
+
+            // Supertypes of case classes
+            // TODO...
 
             // other types are not handled
             else throw new IllegalArgumentException(
