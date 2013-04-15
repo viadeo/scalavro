@@ -133,12 +133,6 @@ class Union[U <: Union.not[_] : TypeTag] {
   }
 
   /**
-    * Returns a new Union instance which includes all of the type members
-    * of this instance plus the supplied type.
-    */
-  def withType[T: TypeTag]: Union[_] = new Union[underlying #or [T]]
-
-  /**
     * Returns `true` if the supplied type is a member of this union.
     */
   def contains[X: TypeTag]: Boolean = typeOf[not[not[X]]] <:< typeOf[U]

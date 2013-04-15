@@ -76,9 +76,9 @@ class UnionSpec extends FlatSpec with ShouldMatchers {
     ternary.contains[String] should be (true)
     ternary.contains[Float] should be (true)
 
+    // A subset B AND B subset A => A == B
     typeSubsetOf(ternary.typeMembers, t2.typeMembers) should be (true)
     typeSubsetOf(t2.typeMembers, ternary.typeMembers) should be (true)
-    
   }
 
 }

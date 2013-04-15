@@ -161,7 +161,15 @@ A runtime reflection-based Avro library in Scala.
   </tr>
   <tr>
     <td><em>
-      Non-recursive case classes
+      Supertypes of non-recursive case classes without type parameters
+    </em></td>
+    <td><code>
+      union
+    </code></td>
+  </tr>
+  <tr>
+    <td><em>
+      Non-recursive case classes without type parameters
     </em></td>
     <td><code>
       record
@@ -292,6 +300,43 @@ Which yields:
 Which yields:
 
     ["int", "string", "boolean"]
+
+### Supertypes of case classes
+
+Given:
+
+    class Alpha
+    abstract class Beta extends Alpha
+    case class Gamma() extends Alpha
+    case class Delta() extends Beta
+    case class Epsilon[T]() extends Beta
+
+Usage:
+
+    import com.gensler.scalavro.AvroType
+    AvroType[Alpha].schema
+
+Which yields:
+
+    [
+      {
+        "name" : "Delta",
+        "type" : "record",
+        "fields" : [],
+        "namespace" : "com.gensler.scalavro.tests"
+      },
+      {
+        "name" : "Gamma",
+        "type" : "record",
+        "fields" : [],
+        "namespace" : "com.gensler.scalavro.tests"
+      }
+    ]
+
+Note that in the above example:
+
+- `Beta` is excluded from the union because it is not a case class
+- `Epsilon` is excluded from the union because it takes type parameters
 
 ### Records
 

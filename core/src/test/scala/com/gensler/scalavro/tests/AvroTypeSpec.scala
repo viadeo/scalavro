@@ -8,6 +8,7 @@ import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.AvroProtocol
 
+
 class AvroTypeSpec extends AvroSpec {
 
   // primitives
@@ -114,6 +115,19 @@ class AvroTypeSpec extends AvroSpec {
         avroType.union.contains[Int] should be (true)
         avroType.union.contains[String] should be (true)
         avroType.union.contains[Boolean] should be (true)
+      }
+      case _ => fail
+    }
+  }
+
+  it should "return valid AvroUnion types supertypes of case classes" in {
+    AvroType[Alpha] match {
+      case avroType: AvroUnion[_] => {
+         // prettyPrint(avroType.schema)
+
+        avroType.union.typeMembers should have size (2)
+        avroType.union.contains[Gamma] should be (true)
+        avroType.union.contains[Delta] should be (true)
       }
       case _ => fail
     }

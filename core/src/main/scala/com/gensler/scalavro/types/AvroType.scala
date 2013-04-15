@@ -255,13 +255,27 @@ object AvroType {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]))
             }
 
-            // Supertypes of case classes
-            // TODO...
+            else {
+              // last-ditch attempt: union of case class subtypes of T
+              import ReflectionHelpers._
 
-            // other types are not handled
-            else throw new IllegalArgumentException(
-              "Unable to find or make an AvroType for the supplied type [%s]" format tpe
-            )
+              val subTypes = caseClassSubTypesOf[T]
+              if (subTypes.nonEmpty) {
+                var u = Union.unary(tagForType(subTypes.head))
+                subTypes.tail.foreach { subType =>
+                  u = Union.combine(
+                    u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
+                    tagForType(subType)
+                  )
+                }
+                new AvroUnion(u)
+              }
+
+              // other types are not handled
+              else throw new IllegalArgumentException(
+                "Unable to find or make an AvroType for the supplied type [%s]" format tpe
+              )
+            }
           }
 
           // add the synthesized AvroType to the complex type cache table
