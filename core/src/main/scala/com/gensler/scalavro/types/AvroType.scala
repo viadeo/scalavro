@@ -261,6 +261,13 @@ object AvroType {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
             }
 
+            // N-ary unions
+            else if (tpe <:< typeOf[Union[_]]) {
+              val TypeRef(_, _, List(notType)) = tpe
+              val notTypeTag = ReflectionHelpers.tagForType(notType).asInstanceOf[TypeTag[Union.not[_]]]
+              new AvroUnion(new Union()(notTypeTag), tt)
+            }
+
             else {
               // last-ditch attempt: union of case class subtypes of T
               import ReflectionHelpers._

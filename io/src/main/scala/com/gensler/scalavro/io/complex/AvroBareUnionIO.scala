@@ -34,13 +34,15 @@ private[scalavro] case class AvroBareUnionIO[
     ??? // throws NotImplementedException
   }
 
-  def write[X <: T : TypeTag](obj: X, stream: OutputStream) = {
+  def write[X <: T : TypeTag](obj: X, stream: OutputStream) = ???
+
+  def writeBare[X : prove [T] #containsType : TypeTag](obj: X, stream: OutputStream) = {
     avroType.memberAvroTypes.indexWhere { at => typeOf[X] <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
         AvroLongIO.write(index.toLong, stream)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
-        memberType.write(obj, stream)
+        memberType.write(obj.asInstanceOf[T], stream)
       }
     }
   }

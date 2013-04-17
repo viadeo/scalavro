@@ -18,10 +18,10 @@ import java.io.{InputStream, OutputStream}
 object AvroUnionIO {
   def apply[U <: Union.not[_]: TypeTag, T: TypeTag](avroType: AvroUnion[U, T]): AvroUnionIO[U, T] = {
 
-    val isEitherUnion = avroType.tag.tpe <:< typeOf[Either[_, _]]
-    val isOptionUnion = avroType.tag.tpe <:< typeOf[Option[_]]
-    val isBareUnion   = avroType.tag.tpe <:< typeOf[Union[_]]
-    val isClassUnion  = !isEitherUnion && !isOptionUnion && !isBareUnion
+    val isEitherUnion  = avroType.originalType.tpe <:< typeOf[Either[_, _]]
+    val isOptionUnion  = avroType.originalType.tpe <:< typeOf[Option[_]]
+    val isBareUnion = avroType.originalType.tpe <:< typeOf[Union[_]] || avroType.originalType.tpe <:< typeOf[Union.not[_]]
+    val isClassUnion   = !isEitherUnion && !isOptionUnion && !isBareUnion
 
     if (isEitherUnion) {
       val castedUnion: AvroUnion[U, Either[_, _]] = avroType.asInstanceOf[AvroUnion[U, Either[_, _]]]

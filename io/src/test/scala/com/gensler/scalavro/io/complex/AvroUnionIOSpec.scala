@@ -26,6 +26,8 @@ case class Epsilon[T]() extends Beta
 
 class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
 
+  type ISB = union [Int] #or [String] #or [Boolean]
+
   val unionType = AvroType[Either[Int, String]]
   val io = unionType.io
 
@@ -55,22 +57,19 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     (optionType read in).get should equal (None)
   }
 
-/*
   it should "read and write union members derived from bare Unions" in {
-    import com.gensler.scalavro.util.Union._
-    val bareType = AvroType[union [Int] #or [String] #or [Boolean]]
+    val bareIO = AvroType[ISB].io.asInstanceOf[AvroBareUnionIO[ISB, ISB]]
 
     val out = new ByteArrayOutputStream
-    bareType.write(555, out)
-    bareType.write(false, out)
-    bareType.write("Unboxed unions!", out)
+    bareIO.writeBare(555, out)
+    bareIO.writeBare(false, out)
+    bareIO.writeBare("Unboxed unions!", out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
-    (bareType read in).get should equal (555)
-    (bareType read in).get should equal (false)
-    (bareType read in).get should equal ("Unboxed unions!")
+    (bareIO read in).get should equal (555)
+    (bareIO read in).get should equal (false)
+    (bareIO read in).get should equal ("Unboxed unions!")
   }
-*/
 
   it should "read and write union members derived from class hierarchies" in {
     val classUnion = AvroType[Alpha]
