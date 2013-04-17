@@ -15,7 +15,7 @@ class AvroUnionSpec extends AvroSpec {
 
   "AvroUnion" should "be parameterized with its corresponding Scala type" in {
     u1 match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
 
         println(avroType.union.typeMembers)
 

@@ -10,7 +10,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{InputStream, OutputStream}
 
-trait AvroTypeIO[T] {
+abstract class AvroTypeIO[T : TypeTag] {
 
   type writeType = T
 
@@ -114,14 +114,14 @@ object AvroTypeIO {
       }
 
     // complex types
-    implicit def avroTypeToIO[T](array: AvroArray[T]): AvroArrayIO[T]                 = AvroArrayIO(array)
-    implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T]     = AvroEnumIO(enum)
-    implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T]                  = AvroJEnumIO(enum)
-    implicit def avroTypeToIO[T](fixed: AvroFixed): AvroFixedIO                       = AvroFixedIO(fixed)
-    implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T]                       = AvroMapIO(map)
-    implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T]                = AvroRecordIO(error)
-    implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T]              = AvroRecordIO(record)
-    implicit def avroTypeToIO[U <: Union.not[_]](union: AvroUnion[U]): AvroUnionIO[U] = AvroUnionIO(union)
+    implicit def avroTypeToIO[T](array: AvroArray[T]): AvroArrayIO[T]                          = AvroArrayIO(array)
+    implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T]              = AvroEnumIO(enum)
+    implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T]                           = AvroJEnumIO(enum)
+    implicit def avroTypeToIO[T](fixed: AvroFixed): AvroFixedIO                                = AvroFixedIO(fixed)
+    implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T]                                = AvroMapIO(map)
+    implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T]                         = AvroRecordIO(error)
+    implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T]                       = AvroRecordIO(record)
+    implicit def avroTypeToIO[U <: Union.not[_], T](union: AvroUnion[U, T]): AvroUnionIO[U, T] = AvroUnionIO(union)(union.union.underlyingTag, union.tag)
 
     import scala.reflect.runtime.universe._
 
@@ -135,7 +135,7 @@ object AvroTypeIO {
         case t: AvroMap[_]           => avroTypeToIO(t)
         case t: AvroError[_]         => avroTypeToIO(t)
         case t: AvroRecord[_]        => avroTypeToIO(t)
-        case t: AvroUnion[_]         => avroTypeToIO(t)
+        case t: AvroUnion[_, _]      => avroTypeToIO(t)
       }
     }.asInstanceOf[AvroTypeIO[T]]
 

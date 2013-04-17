@@ -123,7 +123,7 @@ object AvroProtocol {
   case class Message(
     request: Map[String, AvroRecord[_ <: Product]],
     response: AvroType[_],
-    errors: Option[AvroUnion[_]] = None,
+    errors: Option[AvroUnion[_, _]] = None,
     doc: Option[String] = None,
     oneWay: Option[Boolean] = None
   ) extends JsonSchemifiable with CanonicalForm {

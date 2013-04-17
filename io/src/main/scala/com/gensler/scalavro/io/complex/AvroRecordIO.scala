@@ -17,7 +17,7 @@ import scala.reflect.runtime.universe.{TypeTag, typeTag}
 
 import java.io.{InputStream, OutputStream}
 
-case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T] {
+case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avroType.tag) {
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
  
@@ -68,9 +68,8 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T] {
     * supplied stream.
     */
   def read(stream: InputStream) = Try {
-    val datumReader = new GenericDatumReader[GenericRecord](avroSchema)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    val args = avroType.fields map { field => field.fieldType.read(stream).get }
+    ReflectionHelpers.instantiateCaseClassWith(args)(avroType.tag).get
   }
 
 }

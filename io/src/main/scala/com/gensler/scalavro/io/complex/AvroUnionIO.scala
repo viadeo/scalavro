@@ -1,69 +1,48 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
-import com.gensler.scalavro.io.primitive.AvroLongIO
-import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
-import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import com.gensler.scalavro.util.Union
+import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter, GenericDatumReader}
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import scala.util.{Try, Success, Failure}
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
+import scala.reflect.runtime.universe._
 
 import java.io.{InputStream, OutputStream}
 
-case class AvroUnionIO[U <: Union.not[_]](avroType: AvroUnion[U]) extends AvroTypeIO[U] {
+object AvroUnionIO {
+  def apply[U <: Union.not[_]: TypeTag, T: TypeTag](avroType: AvroUnion[U, T]): AvroUnionIO[U, T] = {
 
+    val isEitherUnion = avroType.tag.tpe <:< typeOf[Either[_, _]]
+    val isOptionUnion = avroType.tag.tpe <:< typeOf[Option[_]]
+    val isBareUnion   = avroType.tag.tpe <:< typeOf[Union[_]]
+    val isClassUnion  = !isEitherUnion && !isOptionUnion && !isBareUnion
+
+    if (isEitherUnion) {
+      val castedUnion: AvroUnion[U, Either[_, _]] = avroType.asInstanceOf[AvroUnion[U, Either[_, _]]]
+      val eitherUnionIO = AvroEitherUnionIO(castedUnion)(typeTag[U], typeTag[T].asInstanceOf[TypeTag[Either[_, _]]])
+      eitherUnionIO.asInstanceOf[AvroUnionIO[U, T]]
+    }
+
+    else if (isOptionUnion) {
+      val castedUnion: AvroUnion[U, Option[_]] = avroType.asInstanceOf[AvroUnion[U, Option[_]]]
+      val optionUnionIO = AvroOptionUnionIO(castedUnion)(typeTag[U], typeTag[T].asInstanceOf[TypeTag[Option[_]]])
+      optionUnionIO.asInstanceOf[AvroUnionIO[U, T]]
+    }
+
+    else if (isBareUnion) AvroBareUnionIO(avroType)(typeTag[U], typeTag[T])
+
+    else if (isClassUnion) AvroClassUnionIO(avroType)(typeTag[U], typeTag[T])
+
+    else throw new IllegalArgumentException("The provided AvroUnion is unrecognized!")
+  }
+}
+
+abstract class AvroUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag] extends AvroTypeIO[T] {
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
-
-  protected[scalavro] def asGeneric[T <: U : TypeTag](obj: T) = {
-    avroType.memberAvroTypes.find { at => typeOf[T] <:< at.tag.tpe } match {
-      case Some(memberType) => {
-        memberType.asInstanceOf[AvroType[T]].asGeneric(obj)
-      }
-      case None => throw new AvroSerializationException(obj)
-    }
-  }
-
-  protected[scalavro] def fromGeneric(obj: Any): U = {
-
-    println("AvroUnionIO.fromGeneric -- received an object of type" format obj.getClass.getName)
-
-    // get union index, look up proper type, call its fromGeneric
-    // Not sure yet how the Apache implementation reads generic unions...
-
-    ???
-  }
-
-  def write[T <: U : TypeTag](obj: T, stream: OutputStream) = {
-    avroType.memberAvroTypes.indexWhere { at => typeOf[T] <:< at.tag.tpe } match {
-      case -1    => throw new AvroSerializationException(obj)
-      case index => {
-        try {
-          val datumWriter = new GenericDatumWriter[Any](avroSchema)
-          val encoder = EncoderFactory.get.binaryEncoder(stream, null)
-
-          AvroLongIO.write(index.toLong, stream)
-          datumWriter.write(asGeneric(obj), encoder)
-          encoder.flush
-        }
-        catch { case cause: Throwable =>
-          throw new AvroSerializationException(obj, cause)
-        }
-      }
-    }
-  }
-
-  def read(stream: InputStream) = Try {
-    val index = AvroLongIO.read(stream).get
-    avroType.memberAvroTypes(index.toInt).read(stream).get.asInstanceOf[U]
-  }
-
 }

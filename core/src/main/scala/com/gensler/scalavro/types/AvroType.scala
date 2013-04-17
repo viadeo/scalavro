@@ -217,7 +217,11 @@ object AvroType {
             }
 
             // case classes
-            else if (tpe <:< typeOf[Product] && tpe.typeSymbol.asClass.isCaseClass) {
+            else if (
+              tpe <:< typeOf[Product] &&
+              tpe.typeSymbol.asClass.isCaseClass &&
+              tpe.typeSymbol.asClass.typeParams.isEmpty
+            ) {
               tpe match { case TypeRef(prefix, symbol, _) =>
                 new AvroRecord[T](
                   name      = symbol.name.toString,
@@ -236,7 +240,8 @@ object AvroType {
                 Union.combine(
                   Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
                   ReflectionHelpers.tagForType(right)
-                )
+                ),
+                tt
               )
             }
 
@@ -246,13 +251,14 @@ object AvroType {
                 Union.combine(
                   Union.unary(ReflectionHelpers.tagForType(innerType)).underlyingConjunctionTag,
                   typeTag[Unit]
-                )
+                ),
+                tt
               )
             }
 
             // N-ary unions
             else if (tpe <:< typeOf[Union.not[_]]) {
-              new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]))
+              new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
             }
 
             else {
@@ -268,7 +274,7 @@ object AvroType {
                     tagForType(subType)
                   )
                 }
-                new AvroUnion(u)
+                new AvroUnion(u, tt)
               }
 
               // other types are not handled

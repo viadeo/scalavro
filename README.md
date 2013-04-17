@@ -29,70 +29,72 @@ A runtime reflection-based Avro library in Scala.
   	  <th>Avro Type</th>
   	</tr>
   </thead>
-  <tr>
-    <td><code>
-      Unit
-    </code></td>
-    <td><code>
-      null
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      Boolean
-    </code></td>
-    <td><code>
-      boolean
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      Long
-    </code></td>
-    <td><code>
-      long
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      Int
-    </code></td>
-    <td><code>
-      int
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      Double
-    </code></td>
-    <td><code>
-      double
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      Float
-    </code></td>
-    <td><code>
-      float
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      String
-    </code></td>
-    <td><code>
-      string
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      scala.collection.Seq[Byte]
-    </code></td>
-    <td><code>
-      bytes
-    </code></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td><code>
+        Unit
+      </code></td>
+      <td><code>
+        null
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Boolean
+      </code></td>
+      <td><code>
+        boolean
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Long
+      </code></td>
+      <td><code>
+        long
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Int
+      </code></td>
+      <td><code>
+        int
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Double
+      </code></td>
+      <td><code>
+        double
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Float
+      </code></td>
+      <td><code>
+        float
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        String
+      </code></td>
+      <td><code>
+        string
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        scala.collection.Seq[Byte]
+      </code></td>
+      <td><code>
+        bytes
+      </code></td>
+    </tr>
+  </tbody>
 </table>
 
 ### Complex Types
@@ -104,77 +106,79 @@ A runtime reflection-based Avro library in Scala.
   	  <th>Avro Type</th>
   	</tr>
   </thead>
-  <tr>
-    <td><code>
-      scala.collection.Seq[T]
-    </code></td>
-    <td><code>
-      array
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      scala.collection.Map[String, T]
-    </code></td>
-    <td><code>
-      map
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      scala.Enumeration#Value
-    </code></td>
-    <td><code>
-      enum
-    </code></td>
-  </tr>
-  <tr>
-    <td>
-      <code>enum</code> (Java)</td>
-    <td><code>
-      enum
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      scala.util.Either[A, B]
-    </code></td>
-    <td><code>
-      union
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      scala.util.Option[T]
-    </code></td>
-    <td><code>
-      union
-    </code></td>
-  </tr>
-  <tr>
-    <td><code>
-      com.gensler.scalavro.util.Union[U]
-    </code></td>
-    <td><code>
-      union
-    </code></td>
-  </tr>
-  <tr>
-    <td><em>
-      Supertypes of non-recursive case classes without type parameters
-    </em></td>
-    <td><code>
-      union
-    </code></td>
-  </tr>
-  <tr>
-    <td><em>
-      Non-recursive case classes without type parameters
-    </em></td>
-    <td><code>
-      record
-    </code></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td><code>
+        scala.collection.Seq[T]
+      </code></td>
+      <td><code>
+        array
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        scala.collection.Map[String, T]
+      </code></td>
+      <td><code>
+        map
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        scala.Enumeration#Value
+      </code></td>
+      <td><code>
+        enum
+      </code></td>
+    </tr>
+    <tr>
+      <td>
+        <code>enum</code> (Java)</td>
+      <td><code>
+        enum
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        scala.util.Either[A, B]
+      </code></td>
+      <td><code>
+        union
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        scala.util.Option[T]
+      </code></td>
+      <td><code>
+        union
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        com.gensler.scalavro.util.Union[U]
+      </code></td>
+      <td><code>
+        union
+      </code></td>
+    </tr>
+    <tr>
+      <td><em>
+        Supertypes of non-recursive case classes without type parameters
+      </em></td>
+      <td><code>
+        union
+      </code></td>
+    </tr>
+    <tr>
+      <td><em>
+        Non-recursive case classes without type parameters
+      </em></td>
+      <td><code>
+        record
+      </code></td>
+    </tr>
+  </tbody>
 </table>
 
 ## Usage Overview: Schema Generation
@@ -336,7 +340,7 @@ Which yields:
 Note that in the above example:
 
 - `Beta` is excluded from the union because it is not a case class
-- `Epsilon` is excluded from the union because it takes type parameters
+- `Epsilon` is excluded from the union because it is abstract and because it takes type parameters
 
 ### Records
 

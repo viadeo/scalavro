@@ -15,7 +15,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{InputStream, OutputStream}
 
-case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeIO[E#Value] {
+case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeIO[E#Value]()(avroType.tag) {
 
   // AvroEnum exposes two TypeTags:
   //   `AvroEnum.tag` is the TypeTag for the enum values

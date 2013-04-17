@@ -1,6 +1,8 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+import com.gensler.scalavro.io.primitive.AvroLongIO
 import com.gensler.scalavro.types.complex.AvroArray
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
@@ -14,7 +16,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{InputStream, OutputStream}
 
-case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]] {
+case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]]()(avroType.tag) {
 
   implicit def itemTypeTag = avroType.itemType.tag
 
@@ -52,9 +54,19 @@ case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]] {
   }
 
   def read(stream: InputStream) = Try {
-    val datumReader = new GenericDatumReader[GenericArray[_]](avroSchema)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    val items = new scala.collection.mutable.ArrayBuffer[T]
+
+    def readBlock(): Long = {
+      val numItems = (AvroLongIO read stream).get
+      val absNumItems = math abs numItems
+      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read stream).get }
+      (0L until absNumItems) foreach { _ => items += avroType.itemType.read(stream).get }
+      absNumItems
+    }
+
+    var itemsRead = readBlock()
+    while (itemsRead != 0L) { itemsRead = readBlock() }
+    items.toSeq
   }
 
 }

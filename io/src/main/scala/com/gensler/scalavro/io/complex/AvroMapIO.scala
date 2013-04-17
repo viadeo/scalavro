@@ -1,6 +1,8 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+import com.gensler.scalavro.io.primitive.{AvroLongIO, AvroStringIO}
 import com.gensler.scalavro.types.complex.AvroMap
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
@@ -15,17 +17,15 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{InputStream, OutputStream}
 
-case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]] {
+case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]()(avroType.tag) {
 
   implicit def itemTypeTag = avroType.itemType.tag
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
   val itemIO = AvroTypeIO.Implicits.avroTypeToIO(avroType.itemType)
 
-  protected[scalavro] def asGeneric[M <: Map[String, T] : TypeTag](map: M): java.util.Map[String, T] =
-    java.util.Collections.unmodifiableMap(
-      scala.collection.JavaConversions mapAsJavaMap map
-    )
+  protected[scalavro] def asGeneric[M <: Map[String, T] : TypeTag](map: M): java.util.Map[String, _] =
+    scala.collection.JavaConversions mapAsJavaMap map.map { case (key, value) => key -> itemIO.asGeneric(value) }
 
   protected[scalavro] def fromGeneric(obj: Any): Map[String, T] = {
     import scala.collection.JavaConversions.mapAsScalaMap
@@ -44,7 +44,7 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
 
   def write[M <: Map[String, T] : TypeTag](map: M, stream: OutputStream) = {
     try {
-      val datumWriter = new GenericDatumWriter[java.util.Map[String, T]](avroSchema)
+      val datumWriter = new GenericDatumWriter[java.util.Map[String, _]](avroSchema)
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(map), encoder)
       encoder.flush
@@ -55,9 +55,19 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
   }
 
   def read(stream: InputStream) = Try {
-    val datumReader = new GenericDatumReader[java.util.Map[String, T]](avroSchema)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    val items = new scala.collection.mutable.ArrayBuffer[(String, T)]
+
+    def readBlock(): Long = {
+      val numItems = (AvroLongIO read stream).get
+      val absNumItems = math abs numItems
+      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read stream).get }
+      (0L until absNumItems) foreach { _ => items += AvroStringIO.read(stream).get -> avroType.itemType.read(stream).get }
+      absNumItems
+    }
+
+    var itemsRead = readBlock()
+    while (itemsRead != 0L) { itemsRead = readBlock() }
+    items.toMap
   }
 
 }

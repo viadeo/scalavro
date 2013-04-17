@@ -72,7 +72,7 @@ class AvroTypeSpec extends AvroSpec {
   // unions
   it should "return valid AvroUnion types subtypes of Either[A, B]" in {
     AvroType[Either[Double, Int]] match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
         avroType.union.contains[Double] should be (true)
@@ -82,7 +82,7 @@ class AvroTypeSpec extends AvroSpec {
     }
 
     AvroType[Either[Seq[Double], Map[String, Seq[Int]]]] match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
         
         avroType.union.contains[Seq[Double]] should be (true)
@@ -94,7 +94,7 @@ class AvroTypeSpec extends AvroSpec {
 
   it should "return valid AvroUnion types subtypes of Option[T]" in {
     AvroType[Option[String]] match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
         avroType.union.contains[String] should be (true)
@@ -107,7 +107,7 @@ class AvroTypeSpec extends AvroSpec {
   it should "return valid AvroUnion types subtypes of Union.not[A]" in {
     import com.gensler.scalavro.util.Union._
     AvroType[union [Int] #or [String] #or [Boolean]] match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
         avroType.union.typeMembers should have size (3)
@@ -122,7 +122,7 @@ class AvroTypeSpec extends AvroSpec {
 
   it should "return valid AvroUnion types supertypes of case classes" in {
     AvroType[Alpha] match {
-      case avroType: AvroUnion[_] => {
+      case avroType: AvroUnion[_, _] => {
          // prettyPrint(avroType.schema)
 
         avroType.union.typeMembers should have size (2)
@@ -202,7 +202,7 @@ class AvroTypeSpec extends AvroSpec {
                     response = greetingType,
 
                     errors   = AvroType.fromType[union [Curse] #apply].map{
-                      _.asInstanceOf[AvroUnion[_]]
+                      _.asInstanceOf[AvroUnion[_, _]]
                     }.toOption,
 
                     doc      = Some("Say hello.")
