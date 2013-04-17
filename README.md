@@ -13,12 +13,7 @@ A runtime reflection-based Avro library in Scala.
 4. To generate Scala bindings for reading and writing Avro-mapped Scala types.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
 
-## General Information
-- Built against Scala 2.10.1 with SBT 0.12.2
-- Depends upon [spray-json](https://github.com/spray/spray-json)
-- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
-
-## Type Mapping
+## Type Mapping Strategy
 
 ### Primitive Types
 
@@ -181,7 +176,24 @@ A runtime reflection-based Avro library in Scala.
   </tbody>
 </table>
 
-## Usage Overview: Schema Generation
+## General Information
+- Built against Scala 2.10.1 with SBT 0.12.2
+- Depends upon [spray-json](https://github.com/spray/spray-json)
+- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
+
+## Current Capabilities
+- Schema generation
+- Type-safe Avro protocol definitions and JSON output
+- Robustness in the face of cyclic type dependencies (such records are never valid Avro)
+- Schema conversion to "Parsing Canonical Form"
+- Convenient binary IO
+
+## Current Limitations
+- `fixed` data is not yet supported
+- JSON IO is not yet implemented
+- Schema resolution (taking the writer's schema into account when reading) is not yet implemented
+
+## Scalavro by Example: Schema Generation
 
 ### Arrays
 
@@ -389,7 +401,7 @@ Which yields:
       "namespace": "com.gensler.scalavro.tests"
     }
 
-## Usage Overview: Binary IO
+## Scalavro by Example: Binary IO
 
     import com.gensler.scalavro.AvroType
     import com.gensler.scalavro.io.AvroTypeIO
@@ -423,19 +435,6 @@ Which yields:
       case Success(readResult) => // readResult is an instance of SantaList
       case Failure(cause)      => // handle failure...
     }
-
-## Current Capabilities
-- Schema generation
-- Type-safe Avro protocol definitions and JSON output
-- Robustness in the face of cyclic type dependencies (such records are never valid Avro)
-- Schema conversion to "Parsing Canonical Form"
-- Convenient binary IO
-
-## Current Limitations
-- Complex types are incomplete:
-  - `fixed` is not yet supported
-  - binary IO for union types is not yet supported
-- JSON IO is not yet implemented.
 
 ## Reference
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
