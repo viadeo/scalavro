@@ -189,6 +189,11 @@ object AvroType {
               case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
             }
 
+            // sets
+            else if (tpe.typeConstructor =:= typeOf[Set[_]].typeConstructor) tpe match {
+              case TypeRef(_, _, List(itemType)) => new AvroSet()(ReflectionHelpers.tagForType(itemType))
+            }
+
             // string-keyed maps
             else if (tpe <:< typeOf[Map[String, _]]) tpe match {
               case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))

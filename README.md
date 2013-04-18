@@ -9,7 +9,6 @@ A runtime reflection-based Avro library in Scala.
 ## Goals
 1. To provide an in-memory representation of avro schemas and protocols.
 2. To generate avro schemas and protocols automatically from Scala types.
-3. To produce flat (.avsc) Avro schema files.
 4. To generate Scala bindings for reading and writing Avro-mapped Scala types.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
 
@@ -112,6 +111,14 @@ A runtime reflection-based Avro library in Scala.
     </tr>
     <tr>
       <td><code>
+        scala.collection.Set[T]
+      </code></td>
+      <td><code>
+        array
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
         scala.collection.Map[String, T]
       </code></td>
       <td><code>
@@ -197,8 +204,22 @@ A runtime reflection-based Avro library in Scala.
 
 ### Arrays
 
+#### scala.Seq
+
     import com.gensler.scalavro.types.AvroType
     AvroType[Seq[String]].schema
+
+Which yields:
+
+    {
+      "type" : "array",
+      "items" : "string"
+    }
+
+#### scala.Set
+
+    import com.gensler.scalavro.types.AvroType
+    AvroType[Set[String]].schema
 
 Which yields:
 

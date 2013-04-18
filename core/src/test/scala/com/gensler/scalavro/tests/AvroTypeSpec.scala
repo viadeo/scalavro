@@ -24,7 +24,7 @@ class AvroTypeSpec extends AvroSpec {
   }
 
   // arrays
-  it should "return valid AvroArray types" in {
+  it should "return valid AvroArray types for Seqs" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
@@ -41,6 +41,19 @@ class AvroTypeSpec extends AvroSpec {
 
         avroType.isInstanceOf[AvroArray[_]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Seq[Seq[Seq[Byte]]]] should be (true)
+      }
+      case _ => fail
+    }
+  }
+
+  // sets
+  it should "return valid AvroArray types for Sets" in {
+    AvroType.fromType[Set[Int]] match {
+      case Success(avroType) => {
+        // prettyPrint(avroType.schema)
+
+        avroType.isInstanceOf[AvroSet[_]] should be (true)
+        typeOf[avroType.scalaType] =:= typeOf[Set[Int]] should be (true)
       }
       case _ => fail
     }
