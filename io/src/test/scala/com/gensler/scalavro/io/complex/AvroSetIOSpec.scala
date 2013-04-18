@@ -15,15 +15,22 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
 
-  val intSetType = AvroType[Set[Int]]
-  val io = intSetType.io
+  val setType = AvroType[Set[Person]]
+  val io = setType.io
 
   "AvroSetIO" should "be available with the AvroTypeIO implicits in scope" in {
     io.isInstanceOf[AvroSetIO[_]] should be (true)
   }
 
   it should "read and write sets" in {
-    val s1 = (0 to 1000).toSet
+    val s1 = Set(
+      Person("Russel", 45),
+      Person("Whitehead", 53),
+      Person("Wittgenstein", 22),
+      Person("Godel", 37),
+      Person("Church", 17),
+      Person("Turing", 24)
+    )
 
     val out = new ByteArrayOutputStream
     io.write(s1, out)

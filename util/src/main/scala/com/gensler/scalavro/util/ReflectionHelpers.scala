@@ -98,7 +98,16 @@ trait ReflectionHelpers {
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
     val classMirror = classLoaderMirror reflectClass classSymbol
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod
+    val constructorSymbol =
+      try {
+        tpe.declaration(nme.CONSTRUCTOR).asMethod
+      }
+      catch {
+        case sre: ScalaReflectionException => {
+          val ctors = tpe.declaration(nme.CONSTRUCTOR).asTerm.alternatives
+          ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
+        }
+      }
 
     val isAccessor = (sym: Symbol) => sym.isMethod && sym.asMethod.isCaseAccessor
 
