@@ -49,8 +49,8 @@ case class AvroProtocol(
     def compare(t1: AvroNamedType[_], t2: AvroNamedType[_]) = {
       ((t1 dependsOn t2), (t2 dependsOn t1)) match {
         case (false, false) => 0  // no dependencies, order doesn't matter
-        case (true, false)  => -1 // t1 needs to be declared before t2
-        case (false, true)  => 1  // t2 needs to be declared before t1
+        case (true, false)  => 1 // t1 needs to be declared before t2
+        case (false, true)  => -1  // t2 needs to be declared before t1
         case (true, true)   => throw new IllegalArgumentException(
           "Detected a symmetric dependency between types [%s] and [%s].".format(t1, t2)
         )
