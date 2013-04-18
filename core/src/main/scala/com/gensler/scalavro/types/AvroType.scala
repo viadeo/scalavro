@@ -122,19 +122,21 @@ object AvroType {
   import com.gensler.scalavro.types.complex._
   import com.gensler.scalavro.util.ReflectionHelpers
   import com.gensler.scalavro.util.Union
+  import scala.collection.immutable
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
 
   // primitive type cache table
   private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
-    typeOf[Unit]        -> AvroNull,
-    typeOf[Boolean]     -> AvroBoolean,
-    typeOf[Seq[Byte]] -> AvroBytes,
-    typeOf[Double]      -> AvroDouble,
-    typeOf[Float]       -> AvroFloat,
-    typeOf[Int]         -> AvroInt,
-    typeOf[Long]        -> AvroLong,
-    typeOf[String]      -> AvroString
+    typeOf[Unit]                -> AvroNull,
+    typeOf[Boolean]             -> AvroBoolean,
+    typeOf[Seq[Byte]]           -> AvroBytes,
+    typeOf[immutable.Seq[Byte]] -> AvroBytes,
+    typeOf[Double]              -> AvroDouble,
+    typeOf[Float]               -> AvroFloat,
+    typeOf[Int]                 -> AvroInt,
+    typeOf[Long]                -> AvroLong,
+    typeOf[String]              -> AvroString
   )
 
   // complex type cache table, initially empty
