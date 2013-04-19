@@ -96,22 +96,15 @@ trait ReflectionHelpers {
     */
   protected[scalavro] def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
     val tpe = typeOf[T]
-    val classSymbol = tpe.typeSymbol.asClass
-    val classMirror = classLoaderMirror reflectClass classSymbol
-    val constructorSymbol =
-      try {
-        tpe.declaration(nme.CONSTRUCTOR).asMethod
-      }
-      catch {
-        case sre: ScalaReflectionException => {
-          val ctors = tpe.declaration(nme.CONSTRUCTOR).asTerm.alternatives
-          ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
-        }
+    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val defaultConstructor =
+      if (constructorSymbol.isMethod) constructorSymbol.asMethod
+      else {
+        val ctors = constructorSymbol.asTerm.alternatives
+        ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
       }
 
-    val isAccessor = (sym: Symbol) => sym.isMethod && sym.asMethod.isCaseAccessor
-
-    ListMap[String, TypeTag[_]]() ++ constructorSymbol.paramss.reduceLeft( _ ++ _ ).map {
+    ListMap[String, TypeTag[_]]() ++ defaultConstructor.paramss.reduceLeft(_ ++ _).map {
       sym => sym.name.toString -> tagForType(tpe.member(sym.name).asMethod.returnType)
     }
   }
