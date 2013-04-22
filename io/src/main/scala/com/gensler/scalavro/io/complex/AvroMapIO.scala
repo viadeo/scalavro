@@ -8,7 +8,7 @@ import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializati
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter, GenericDatumReader}
+import org.apache.avro.generic.{GenericData, GenericDatumWriter}
 import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 import org.apache.avro.util.Utf8
 
@@ -26,21 +26,6 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
 
   protected[scalavro] def asGeneric[M <: Map[String, T] : TypeTag](map: M): java.util.Map[String, _] =
     scala.collection.JavaConversions mapAsJavaMap map.map { case (key, value) => key -> itemIO.asGeneric(value) }
-
-  protected[scalavro] def fromGeneric(obj: Any): Map[String, T] = {
-    import scala.collection.JavaConversions.mapAsScalaMap
-    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
-
-    obj match {
-      case map: java.util.Map[_, _] => {
-        val genericMap = mapAsScalaMap(map).asInstanceOf[scala.collection.Map[Utf8, _]]
-        genericMap.map {
-          case (key, value) => key.toString -> avroType.itemType.fromGeneric(value)
-        }.toIndexedSeq.toMap
-      }
-      case _ => throw new AvroDeserializationException()(avroType.tag)
-    }
-  }
 
   def write[M <: Map[String, T] : TypeTag](map: M, stream: OutputStream) = {
     try {

@@ -22,11 +22,6 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
   protected[scalavro] def asGeneric[T <: E : TypeTag](obj: T): GenericEnumSymbol =
     new GenericData.EnumSymbol(avroSchema, obj.toString)
 
-  def fromGeneric(obj: Any): E = obj match {
-    case genericEnumSymbol: GenericEnumSymbol => avroType.symbolMap.get(genericEnumSymbol.toString).get
-    case _ => throw new AvroDeserializationException[E]()(avroType.tag)
-  }
-
   def write[T <: E : TypeTag](obj: T, stream: OutputStream) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericEnumSymbol](avroSchema)
@@ -42,7 +37,10 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
   def read(stream: InputStream) = Try {
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
     val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    datumReader.read(null, decoder) match {
+      case genericEnumSymbol: GenericEnumSymbol => avroType.symbolMap.get(genericEnumSymbol.toString).get
+      case _ => throw new AvroDeserializationException[E]()(avroType.tag)
+    }
   }
 
 }

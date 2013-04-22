@@ -34,11 +34,6 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
     case _ => throw new AvroSerializationException(obj)
   }
 
-  protected[scalavro] def fromGeneric(obj: Any): E#Value = obj match {
-    case genericEnumSymbol: GenericEnumSymbol => enumeration withName genericEnumSymbol.toString
-    case _ => throw new AvroDeserializationException[E#Value]()(avroType.tag)
-  }
-
   def write[T <: E#Value : TypeTag](obj: T, stream: OutputStream) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericEnumSymbol](avroSchema)
@@ -54,7 +49,10 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
   def read(stream: InputStream) = Try {
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
     val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    this fromGeneric datumReader.read(null, decoder)
+    datumReader.read(null, decoder) match {
+      case genericEnumSymbol: GenericEnumSymbol => enumeration withName genericEnumSymbol.toString
+      case _ => throw new AvroDeserializationException[E#Value]()(avroType.tag)
+    }
   }
 
 }

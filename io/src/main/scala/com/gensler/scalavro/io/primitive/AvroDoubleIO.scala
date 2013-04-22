@@ -19,8 +19,6 @@ trait AvroDoubleIO extends AvroTypeIO[Double] {
 
   protected[scalavro] def asGeneric[D <: Double : TypeTag](value: D): Double = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Double = obj.asInstanceOf[Double]
-
   def write[D <: Double: TypeTag](value: D, stream: OutputStream) = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     encoder writeDouble value

@@ -8,7 +8,7 @@ import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializati
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter, GenericDatumReader}
+import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter}
 import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import scala.util.{Try, Success, Failure}
@@ -28,17 +28,6 @@ case class AvroArrayIO[T](avroType: AvroArray[T]) extends AvroTypeIO[Seq[T]]()(a
     val genericArray = new GenericData.Array[Any](items.size, avroSchema)
     genericArray addAll seqAsJavaList(items map { itemIO.asGeneric })
     genericArray
-  }
-
-  protected[scalavro] def fromGeneric(obj: Any): Seq[T] = {
-    import scala.collection.JavaConversions.asScalaBuffer
-    obj match {
-      case genericArray: GenericArray[_] => {
-        val genericSeq = asScalaBuffer(genericArray)
-        genericSeq.map { itemIO.fromGeneric }
-      }
-      case _ => throw new AvroDeserializationException()(avroType.tag)
-    }
   }
 
   def write[G <: Seq[T] : TypeTag](obj: G, stream: OutputStream) = {

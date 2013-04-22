@@ -19,8 +19,6 @@ trait AvroLongIO extends AvroTypeIO[Long] {
 
   protected[scalavro] def asGeneric[L <: Long : TypeTag](value: L): Long = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Long = obj.asInstanceOf[Long]
-
   def write[L <: Long : TypeTag](value: L, stream: OutputStream) = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     encoder writeLong value

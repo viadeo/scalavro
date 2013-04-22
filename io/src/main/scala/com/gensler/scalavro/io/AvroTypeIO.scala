@@ -12,8 +12,6 @@ import java.io.{InputStream, OutputStream}
 
 abstract class AvroTypeIO[T : TypeTag] {
 
-  type writeType = T
-
   /**
     * Returns this AvroTypeIO instance.
     */
@@ -25,17 +23,14 @@ abstract class AvroTypeIO[T : TypeTag] {
   def avroType: AvroType[T]
 
   /**
-    * ...
+    * Returns the `org.apache.avro.generic.GenericData` or primitive type
+    * representation of the supplied object.
     */
   protected[scalavro] def asGeneric[G <: T : TypeTag](obj: G): Any
 
   /**
-    * ...
-    */
-  protected[scalavro] def fromGeneric(obj: Any): T
-
-  /**
-    * Writes a serialized representation of the supplied object.  Throws an
+    * Writes a serialized representation of the supplied object according to
+    * the Avro specification for binary encoding.  Throws an
     * AvroSerializationException if writing is unsuccessful. 
     */
   @throws[AvroSerializationException[_]]
@@ -43,27 +38,27 @@ abstract class AvroTypeIO[T : TypeTag] {
 
   /**
     * Attempts to create an object of type T by reading the required data from
-    * the supplied stream.
+    * the supplied binary stream.
     */
   @throws[AvroDeserializationException[_]]
   def read(stream: InputStream): Try[T]
 
   /**
-    * Returns the JSON serialization of the supplied object.  Throws an
+    * Writes a JSON serialization of the supplied object.  Throws an
     * AvroSerializationException if writing is unsuccessful. 
     */
 /*
   @throws[AvroSerializationException[_]]
-  def writeAsJson(obj: T): JsValue
+  def writeJson[G <: T : TypeTag](obj: G, stream: OutputStream)
 */
 
   /**
     * Attempts to create an object of type T by reading the required data from
-    * the supplied JSON source.
+    * the supplied JSON stream.
     */
 /*
   @throws[AvroDeserializationException[_]]
-  def readFromJson(json: String): Try[T]
+  def readJson(stream: InputStream): Try[T]
 */
 
 }
@@ -123,8 +118,6 @@ object AvroTypeIO {
     implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T]                         = AvroRecordIO(error)
     implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T]                       = AvroRecordIO(record)
     implicit def avroTypeToIO[U <: Union.not[_], T](union: AvroUnion[U, T]): AvroUnionIO[U, T] = AvroUnionIO(union)(union.union.underlyingTag, union.tag)
-
-    import scala.reflect.runtime.universe._
 
     implicit def avroTypeToIO[T: TypeTag](at: AvroType[T]): AvroTypeIO[T] = {
       at match {

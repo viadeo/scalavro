@@ -3,7 +3,6 @@ package com.gensler.scalavro.io.complex
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
-
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 

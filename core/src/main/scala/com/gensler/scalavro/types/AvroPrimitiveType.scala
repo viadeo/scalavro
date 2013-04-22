@@ -4,6 +4,9 @@ import scala.reflect.runtime.universe._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+/**
+  * Parent class of all simple Avro types.
+  */
 abstract class AvroPrimitiveType[T: TypeTag] extends AvroType[T] {
 
   final val isPrimitive = true

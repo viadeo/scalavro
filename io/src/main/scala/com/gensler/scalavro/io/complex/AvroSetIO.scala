@@ -8,8 +8,8 @@ import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializati
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter, GenericDatumReader}
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
+import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter}
+import org.apache.avro.io.EncoderFactory
 
 import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe.TypeTag
@@ -28,17 +28,6 @@ case class AvroSetIO[T](avroType: AvroSet[T]) extends AvroTypeIO[Set[T]]()(avroT
     val genericArray = new GenericData.Array[Any](items.size, avroSchema)
     genericArray addAll seqAsJavaList(items.toSeq map { itemIO.asGeneric })
     genericArray
-  }
-
-  protected[scalavro] def fromGeneric(obj: Any): Set[T] = {
-    import scala.collection.JavaConversions.asScalaBuffer
-    obj match {
-      case genericArray: GenericArray[_] => {
-        val genericSeq = asScalaBuffer(genericArray)
-        genericSeq.map { itemIO.fromGeneric }.toSet
-      }
-      case _ => throw new AvroDeserializationException()(avroType.tag)
-    }
   }
 
   def write[G <: Set[T] : TypeTag](obj: G, stream: OutputStream) = {

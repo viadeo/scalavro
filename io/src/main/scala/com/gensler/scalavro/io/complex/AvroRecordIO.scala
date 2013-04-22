@@ -8,8 +8,8 @@ import com.gensler.scalavro.util.ReflectionHelpers
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter, GenericDatumReader}
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
+import org.apache.avro.generic.{GenericRecord, GenericData, GenericDatumWriter}
+import org.apache.avro.io.EncoderFactory
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import scala.util.{Try, Success, Failure}
@@ -22,8 +22,8 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
  
   /**
-    * Returns the [[org.apache.avro.generic.GenericRecord]] representation of
-    * this AvroRecord.
+    * Returns the `org.apache.avro.generic.GenericRecord` representation of
+    * the supplied object.
     */
   protected[scalavro] def asGeneric[R <: T : TypeTag](obj: R): GenericRecord = {
     val record = new GenericData.Record(avroSchema)
@@ -34,17 +34,6 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
       }
     }
     return record
-  }
-
-  protected[scalavro] def fromGeneric(obj: Any): T = obj match {
-    case record: GenericRecord => {
-      ReflectionHelpers.instantiateCaseClassWith(
-        avroType.fields map { field =>
-          field.fieldType fromGeneric record.get(field.name)
-        }
-      )(avroType.tag).get
-    }
-    case _ => throw new AvroDeserializationException()(avroType.tag)
   }
 
   /**

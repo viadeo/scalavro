@@ -19,8 +19,6 @@ trait AvroFloatIO extends AvroTypeIO[Float] {
 
   protected[scalavro] def asGeneric[F <: Float : TypeTag](value: F): Float = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Float = obj.asInstanceOf[Float]
-
   def write[F <: Float : TypeTag](value: F, stream: OutputStream) = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     encoder writeFloat value

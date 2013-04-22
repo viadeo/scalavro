@@ -29,11 +29,6 @@ private[scalavro] case class AvroBareUnionIO[
     }
   }
 
-  protected[scalavro] def fromGeneric(obj: Any): T = {
-    println("AvroBareUnionIO.fromGeneric -- received an object of type [%s]" format obj.getClass.getName)
-    ??? // throws NotImplementedException
-  }
-
   def write[X <: T : TypeTag](obj: X, stream: OutputStream) = ???
 
   def writeBare[X : prove [T] #containsType : TypeTag](obj: X, stream: OutputStream) = {

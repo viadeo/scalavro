@@ -5,6 +5,9 @@ import scala.reflect.runtime.universe._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+/**
+  * Parent class of all composite and parameterized Avro types.
+  */
 abstract class AvroComplexType[T: TypeTag]
          extends AvroType[T]
          with SelfDescribingSchemaHelpers {

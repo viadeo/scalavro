@@ -17,8 +17,6 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
   protected[scalavro] def asGeneric[B <: Seq[Byte] : TypeTag](value: B): Seq[Byte] = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Seq[Byte] = obj.asInstanceOf[Seq[Byte]]
-
   def write[B <: Seq[Byte] : TypeTag](bytes: B, stream: OutputStream) = {
     AvroLongIO.write(bytes.length.toLong, stream)
     stream.write(bytes.toArray)

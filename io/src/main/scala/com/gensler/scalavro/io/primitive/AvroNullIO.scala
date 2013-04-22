@@ -19,8 +19,6 @@ trait AvroNullIO extends AvroTypeIO[Unit] {
 
   protected[scalavro] def asGeneric[U <: Unit : TypeTag](value: U): Unit = Unit
 
-  protected[scalavro] def fromGeneric(obj: Any): Unit = obj.asInstanceOf[Unit]
-
   // null is written as zero bytes.
   def write[U <: Unit : TypeTag](value: U, stream: OutputStream) {}
 

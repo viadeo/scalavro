@@ -2,7 +2,6 @@ package com.gensler.scalavro.io.primitive
 
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroString
-import com.gensler.scalavro.util.TruncatedInputStream
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
 import org.apache.avro.generic.GenericData
@@ -20,12 +19,6 @@ trait AvroStringIO extends AvroTypeIO[String] {
   def avroType = AvroString
 
   protected[scalavro] def asGeneric[S <: String : TypeTag](value: S): String = value
-
-  protected[scalavro] def fromGeneric(obj: Any): String = obj match {
-    case stringValue: String             => stringValue
-    case utf8: org.apache.avro.util.Utf8 => utf8.toString
-    case _ => throw new AvroDeserializationException()(avroType.tag)
-  }
 
   def write[S <: String : TypeTag](value: S, stream: OutputStream) = {
     val encoder = EncoderFactory.get.binaryEncoder(stream, null)

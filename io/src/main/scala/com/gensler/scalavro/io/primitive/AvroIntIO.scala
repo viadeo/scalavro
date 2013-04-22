@@ -19,8 +19,6 @@ trait AvroIntIO extends AvroTypeIO[Int] {
 
   protected[scalavro] def asGeneric[I <: Int : TypeTag](value: I): Int = value
 
-  protected[scalavro] def fromGeneric(obj: Any): Int = obj.asInstanceOf[Int]
-
   def write[I <: Int : TypeTag](value: I, stream: OutputStream) = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     encoder writeInt value

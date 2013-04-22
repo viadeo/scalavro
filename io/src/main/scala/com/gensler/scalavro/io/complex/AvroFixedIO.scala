@@ -21,14 +21,6 @@ case class AvroFixedIO(avroType: AvroFixed) extends AvroTypeIO[Seq[Byte]] {
   protected[scalavro] def asGeneric[T <: Seq[Byte] : TypeTag](bytes: T): GenericFixed =
     new GenericData.Fixed(avroSchema, bytes.asInstanceOf[Seq[Byte]].toArray)
 
-  protected[scalavro] def fromGeneric(obj: Any): Seq[Byte] = obj match {
-    case genericFixed: GenericFixed => {
-      if (genericFixed.bytes.length == avroType.size) genericFixed.bytes.toSeq
-      else throw new AvroDeserializationException()(avroType.tag)
-    }
-    case _ => throw new AvroDeserializationException()(avroType.tag)
-  }
-
   def write[T <: Seq[Byte] : TypeTag](obj: T, stream: OutputStream) = ???
 
   def read(stream: InputStream) = Try { ???.asInstanceOf[Seq[Byte]] }

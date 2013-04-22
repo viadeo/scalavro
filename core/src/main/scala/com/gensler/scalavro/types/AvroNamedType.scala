@@ -8,7 +8,7 @@ import scala.reflect.runtime.universe.TypeTag
 import spray.json._
 
 /**
-  * Marker trait for "named types".  As of version 1.7.4 of the Avro
+  * Parent class of all "named types".  As of version 1.7.4 of the Avro
   * specification, the named types are `Record`, `Enum`, and `Fixed`.
   */
 abstract class AvroNamedType[T: TypeTag] extends AvroComplexType[T] {

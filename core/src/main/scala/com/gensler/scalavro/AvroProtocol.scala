@@ -75,6 +75,9 @@ case class AvroProtocol(
     (requiredParams ++ optionalParams).toJson
   }
 
+  /**
+    * Returns the JSON schema for this protocol in "parsing canonical form".
+    */
   def parsingCanonicalForm(): JsValue = {
     val fullyQualifiedName = namespace.map { _ + "." }.getOrElse("") + protocol
     ListMap(
@@ -84,7 +87,11 @@ case class AvroProtocol(
     ).toJson
   }
 
-  def fingerprint(): Array[Byte] = {
+  /**
+    * Returns the result of computing MD5 over this protocol's parsing
+    * canonical form.
+    */
+  final lazy val fingerprint: Array[Byte] = {
     val MD5 = MessageDigest.getInstance("MD5")
     MD5.digest(parsingCanonicalForm.toString.getBytes)
   }
@@ -152,6 +159,9 @@ object AvroProtocol {
       new JsObject(requiredParams ++ errorParam ++ docParam ++ oneWayParam)
     }
 
+    /**
+      * Returns the JSON schema for this message in "parsing canonical form".
+      */
     def parsingCanonicalForm(): JsValue = {
       val requiredParams = Map(
         "request" -> request.toSeq.map {

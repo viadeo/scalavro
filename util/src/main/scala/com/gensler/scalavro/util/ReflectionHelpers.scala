@@ -33,7 +33,7 @@ trait ReflectionHelpers {
   }
 
   /**
-    * Returns a type tag for the parent [[scala.Enumeration]] of the supplied 
+    * Returns a type tag for the parent `scala.Enumeration` of the supplied 
     * enumeration value type.
     */
   protected[scalavro] def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {

@@ -15,7 +15,22 @@ import scala.reflect.runtime.universe._
 import spray.json._
 
 import java.io.DataOutputStream
+import java.security.MessageDigest
 
+/**
+  * Abstract parent class of all Avro types.  An [[AvroType]] wraps a
+  * corresponding type from the Scala type system.
+  *
+  * To obtain an `AvroType` instance use the `apply` or `fromType` method,
+  * defined on the `AvroType` companion object.
+  *
+  * {{{
+  *   import com.gensler.scalavro.types.AvroType
+  *
+  *   val avroString = AvroType[String]
+  *   avroString.schema
+  * }}}
+  */
 abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm {
 
   final val tag: TypeTag[T] = typeTag[T]
@@ -110,12 +125,24 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
   }
 
   /**
+    * Returns the result of computing MD5 over this type's parsing canonical
+    * form.
+    */
+  final lazy val fingerprint: Array[Byte] = {
+    val MD5 = MessageDigest.getInstance("MD5")
+    MD5.digest(parsingCanonicalForm.toString.getBytes)
+  }
+
+  /**
     * Returns true if this type depends upon the supplied type.
     */
   def dependsOn(thatType: AvroType[_]): Boolean
 
 }
 
+/**
+  * Companion object for [[AvroType]].
+  */
 object AvroType {
 
   import com.gensler.scalavro.types.primitive._

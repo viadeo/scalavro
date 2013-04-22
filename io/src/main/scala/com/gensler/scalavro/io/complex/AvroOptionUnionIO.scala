@@ -6,14 +6,8 @@ import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
-
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
-
-import org.apache.avro.Schema
-import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter, GenericDatumReader}
-import org.apache.avro.io.{EncoderFactory, DecoderFactory}
 
 import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
@@ -37,11 +31,6 @@ private[scalavro] case class AvroOptionUnionIO[
   private def asGenericHelper[X <: T : TypeTag, A: TypeTag](obj: X) = obj match {
     case Some(value) => innerAvroType.asInstanceOf[AvroType[A]].asGeneric(value.asInstanceOf[A])
     case None => Unit
-  }
-
-  protected[scalavro] def fromGeneric(obj: Any): T = {
-    println("AvroOptionUnionIO.fromGeneric -- received an object of type [%s]" format obj.getClass.getName)
-    ??? // throws NotImplementedException
   }
 
   def write[X <: T : TypeTag](obj: X, stream: OutputStream) = {
