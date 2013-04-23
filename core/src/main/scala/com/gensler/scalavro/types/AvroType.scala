@@ -238,7 +238,9 @@ object AvroType {
                     namespace = Some(prefix.toString.stripSuffix(".type"))
                   )(enumTypeTag)
               }
-            } // Java enums
+            }
+
+            // Java enums
             else if (ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass).isEnum) {
               val enumClass = ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass)
               new AvroJEnum[T](
@@ -246,7 +248,9 @@ object AvroType {
                 symbols = enumClass.getEnumConstants.map(_.toString),
                 namespace = Some(enumClass.getPackage.getName)
               )
-            } // case classes
+            }
+
+            // case classes
             else if (tpe <:< typeOf[Product] &&
               tpe.typeSymbol.asClass.isCaseClass &&
               tpe.typeSymbol.asClass.typeParams.isEmpty) {
@@ -263,7 +267,9 @@ object AvroType {
                     namespace = Some(prefix.toString.stripSuffix(".type"))
                   )
               }
-            } // binary unions via scala.Either[A, B]
+            }
+
+            // binary unions via scala.Either[A, B]
             else if (tpe <:< typeOf[Either[_, _]]) tpe match {
               case TypeRef(_, _, List(left, right)) => new AvroUnion(
                 Union.combine(
@@ -288,12 +294,16 @@ object AvroType {
             // N-ary unions
             else if (tpe <:< typeOf[Union.not[_]]) {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
-            } // N-ary unions
+            }
+
+            // N-ary unions
             else if (tpe <:< typeOf[Union[_]]) {
               val TypeRef(_, _, List(notType)) = tpe
               val notTypeTag = ReflectionHelpers.tagForType(notType).asInstanceOf[TypeTag[Union.not[_]]]
               new AvroUnion(new Union()(notTypeTag), tt)
-            } else {
+            }
+
+            else {
               // last-ditch attempt: union of case class subtypes of T
               import ReflectionHelpers._
 

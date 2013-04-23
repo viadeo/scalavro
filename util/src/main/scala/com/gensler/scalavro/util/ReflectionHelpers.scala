@@ -140,7 +140,8 @@ trait ReflectionHelpers {
         val getterMethod = instanceMirror reflectMethod getterSymbol
         getterMethod().asInstanceOf[T]
       }.toOption
-    } else None
+    }
+    else None
   }
 
   /**

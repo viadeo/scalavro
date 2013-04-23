@@ -49,6 +49,7 @@ object ScalavroBuild extends Build {
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
       .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, true)
       .setPreference(PreserveDanglingCloseParenthesis, true)
+      .setPreference(CompactControlReadability, true)
       .setPreference(AlignSingleLineCaseStatements, true)
       .setPreference(PreserveSpaceBeforeArguments, true)
       .setPreference(SpaceBeforeColon, false)
@@ -56,7 +57,6 @@ object ScalavroBuild extends Build {
       .setPreference(SpaceInsideParentheses, false)
       .setPreference(SpacesWithinPatternBinders, true)
       .setPreference(FormatXml, true)
-
   )
 
 }

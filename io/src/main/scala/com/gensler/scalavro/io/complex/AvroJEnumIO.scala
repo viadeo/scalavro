@@ -28,7 +28,8 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
-    } catch {
+    }
+    catch {
       case cause: Throwable =>
         throw new AvroSerializationException(obj, cause)
     }

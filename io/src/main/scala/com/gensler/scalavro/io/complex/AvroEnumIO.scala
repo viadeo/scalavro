@@ -40,7 +40,8 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
-    } catch {
+    }
+    catch {
       case cause: Throwable =>
         throw new AvroSerializationException(obj, cause)
     }

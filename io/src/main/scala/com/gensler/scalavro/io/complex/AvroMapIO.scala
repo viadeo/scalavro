@@ -33,7 +33,8 @@ case class AvroMapIO[T](avroType: AvroMap[T]) extends AvroTypeIO[Map[String, T]]
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(map), encoder)
       encoder.flush
-    } catch {
+    }
+    catch {
       case cause: Throwable =>
         throw new AvroSerializationException(map, cause)
     }

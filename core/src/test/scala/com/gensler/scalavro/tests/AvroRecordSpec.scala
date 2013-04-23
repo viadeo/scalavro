@@ -1,13 +1,13 @@
 package com.gensler.scalavro.tests
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex.AvroRecord
 import com.gensler.scalavro.error._
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
 class AvroRecordSpec extends AvroSpec {
 

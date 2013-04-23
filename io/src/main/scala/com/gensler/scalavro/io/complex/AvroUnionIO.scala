@@ -26,11 +26,13 @@ object AvroUnionIO {
       val castedUnion: AvroUnion[U, Either[_, _]] = avroType.asInstanceOf[AvroUnion[U, Either[_, _]]]
       val eitherUnionIO = AvroEitherUnionIO(castedUnion)(typeTag[U], typeTag[T].asInstanceOf[TypeTag[Either[_, _]]])
       eitherUnionIO.asInstanceOf[AvroUnionIO[U, T]]
-    } else if (isOptionUnion) {
+    }
+    else if (isOptionUnion) {
       val castedUnion: AvroUnion[U, Option[_]] = avroType.asInstanceOf[AvroUnion[U, Option[_]]]
       val optionUnionIO = AvroOptionUnionIO(castedUnion)(typeTag[U], typeTag[T].asInstanceOf[TypeTag[Option[_]]])
       optionUnionIO.asInstanceOf[AvroUnionIO[U, T]]
-    } else if (isBareUnion) AvroBareUnionIO(avroType)(typeTag[U], typeTag[T])
+    }
+    else if (isBareUnion) AvroBareUnionIO(avroType)(typeTag[U], typeTag[T])
 
     else if (isClassUnion) AvroClassUnionIO(avroType)(typeTag[U], typeTag[T])
 

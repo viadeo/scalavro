@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.primitive
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -12,7 +12,7 @@ import com.gensler.scalavro.error._
 
 import com.gensler.scalavro.io.AvroTypeIO
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
 class AvroIntIOSpec extends FlatSpec with ShouldMatchers {
 

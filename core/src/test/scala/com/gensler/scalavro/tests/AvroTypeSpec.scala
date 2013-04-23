@@ -1,13 +1,12 @@
 package com.gensler.scalavro.tests
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.AvroProtocol
-
 
 class AvroTypeSpec extends AvroSpec {
 
@@ -97,7 +96,7 @@ class AvroTypeSpec extends AvroSpec {
     AvroType[Either[Seq[Double], Map[String, Seq[Int]]]] match {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
-        
+
         avroType.union.contains[Seq[Double]] should be (true)
         avroType.union.contains[Map[String, Seq[Int]]] should be (true)
       }
@@ -119,7 +118,7 @@ class AvroTypeSpec extends AvroSpec {
 
   it should "return valid AvroUnion types subtypes of Union.not[A]" in {
     import com.gensler.scalavro.util.Union._
-    AvroType[union [Int] #or [String] #or [Boolean]] match {
+    AvroType[union[Int]#or[String]#or[Boolean]] match {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
@@ -136,7 +135,7 @@ class AvroTypeSpec extends AvroSpec {
   it should "return valid AvroUnion types supertypes of case classes" in {
     AvroType[Alpha] match {
       case avroType: AvroUnion[_, _] => {
-         // prettyPrint(avroType.schema)
+        // prettyPrint(avroType.schema)
 
         avroType.union.typeMembers should have size (2)
         avroType.union.contains[Gamma] should be (true)
@@ -172,7 +171,7 @@ class AvroTypeSpec extends AvroSpec {
     personRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.Person")
     personType dependsOn personType should be (false)
     personType dependsOn santaListType should be (false)
- 
+
     // prettyPrint(santaListType.schema)
     // prettyPrint(santaListType.parsingCanonicalForm)
 
@@ -188,8 +187,8 @@ class AvroTypeSpec extends AvroSpec {
 
   it should "detect dependencies among AvroRecord types" in {
     import com.gensler.scalavro.error.CyclicTypeDependencyException
-    evaluating { AvroType[A] } should produce [CyclicTypeDependencyException]
-    evaluating { AvroType[B] } should produce [CyclicTypeDependencyException]
+    evaluating { AvroType[A] } should produce[CyclicTypeDependencyException]
+    evaluating { AvroType[B] } should produce[CyclicTypeDependencyException]
   }
 
   it should "construct protocol definitions" in {
@@ -203,28 +202,28 @@ class AvroTypeSpec extends AvroSpec {
 
       protocol = "HelloWorld",
 
-      types    = Seq(greetingType, curseType),
+      types = Seq(greetingType, curseType),
 
       messages = Map(
-                  "hello" -> AvroProtocol.Message(
+        "hello" -> AvroProtocol.Message(
 
-                    request  = Map(
-                      "greeting" -> greetingType
-                    ),
+          request = Map(
+            "greeting" -> greetingType
+          ),
 
-                    response = greetingType,
+          response = greetingType,
 
-                    errors   = AvroType.fromType[union [Curse] #apply].map{
-                      _.asInstanceOf[AvroUnion[_, _]]
-                    }.toOption,
+          errors = AvroType.fromType[union[Curse]#apply].map{
+            _.asInstanceOf[AvroUnion[_, _]]
+          }.toOption,
 
-                    doc      = Some("Say hello.")
-                  )
-                 ),
+          doc = Some("Say hello.")
+        )
+      ),
 
       namespace = Some("com.gensler.scalavro.tests"),
 
-      doc       = Some("Protocol Greetings")
+      doc = Some("Protocol Greetings")
 
     )
 
