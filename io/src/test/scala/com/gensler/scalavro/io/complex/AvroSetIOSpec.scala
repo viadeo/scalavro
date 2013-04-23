@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.complex
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -11,7 +11,7 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -29,7 +29,8 @@ class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
       Person("Wittgenstein", 22),
       Person("Godel", 37),
       Person("Church", 17),
-      Person("Turing", 24))
+      Person("Turing", 24)
+    )
 
     val out = new ByteArrayOutputStream
     io.write(s1, out)

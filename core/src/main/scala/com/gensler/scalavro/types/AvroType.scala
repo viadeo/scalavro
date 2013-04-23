@@ -7,7 +7,7 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.JsonSchemaProtocol._
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.language.existentials
 import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.runtime.universe._
@@ -60,7 +60,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * schema.
     */
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()): spray.json.JsValue
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ): spray.json.JsValue
 
   /**
     * Returns the schema name if this is an instance of [[AvroNamedType]], or
@@ -73,7 +74,7 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
 
   /**
     * == Internal API ==
-    *
+    * 
     * Returns the fully qualified schema name if this is an instance of
     * [[AvroNamedType]], or the parsing canonical form of this type schema
     * otherwise.
@@ -154,26 +155,27 @@ object AvroType {
 
   // primitive type cache table
   private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
-    typeOf[Unit] -> AvroNull,
-    typeOf[Boolean] -> AvroBoolean,
-    typeOf[Seq[Byte]] -> AvroBytes,
+    typeOf[Unit]                -> AvroNull,
+    typeOf[Boolean]             -> AvroBoolean,
+    typeOf[Seq[Byte]]           -> AvroBytes,
     typeOf[immutable.Seq[Byte]] -> AvroBytes,
-    typeOf[Double] -> AvroDouble,
-    typeOf[Float] -> AvroFloat,
-    typeOf[Int] -> AvroInt,
-    typeOf[Long] -> AvroLong,
-    typeOf[String] -> AvroString)
+    typeOf[Double]              -> AvroDouble,
+    typeOf[Float]               -> AvroFloat,
+    typeOf[Int]                 -> AvroInt,
+    typeOf[Long]                -> AvroLong,
+    typeOf[String]              -> AvroString
+  )
 
   // complex type cache table, initially empty
   private[scalavro] val complexTypeCache =
     new AtomicReference[ListMap[Type, AvroType[_]]](
-      ListMap[Type, AvroType[_]]())
+      ListMap[Type, AvroType[_]]()
+    )
 
   /**
     * Returns an `AvroType[T]` for the supplied type `T` if one is available
     * or throws an exception.
-    * `
-    */
+`   */
   def apply[T: TypeTag]: AvroType[T] = fromType[T].get
 
   /**
@@ -184,11 +186,13 @@ object AvroType {
 
   private def fromTypeHelper[T](
     implicit tt: TypeTag[T],
-    processedTypes: Set[Type] = Set[Type]()): Try[AvroType[T]] = Try {
+    processedTypes: Set[Type] = Set[Type]()
+  ): Try[AvroType[T]] = Try {
 
     if (processedTypes exists { _ =:= tt.tpe }) throw new CyclicTypeDependencyException(
       "A cyclic type dependency was detected while attempting to " +
-        "synthesize an AvroType for  type [%s]" format tt.tpe)
+      "synthesize an AvroType for  type [%s]" format tt.tpe
+    )
 
     val tpe = tt.tpe
 
@@ -224,46 +228,55 @@ object AvroType {
 
             // Scala enumerations
             else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol) {
-              tpe match {
-                case TypeRef(prefix, symbol, _) =>
+              tpe match { case TypeRef(prefix, symbol, _) =>
 
-                  val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
+                val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
 
-                  new AvroEnum(
-                    name = symbol.name.toString,
-                    symbols = ReflectionHelpers.symbolsOf(enumTypeTag),
-                    namespace = Some(prefix.toString.stripSuffix(".type")))(enumTypeTag)
+                new AvroEnum(
+                  name      = symbol.name.toString,
+                  symbols   = ReflectionHelpers.symbolsOf(enumTypeTag),
+                  namespace = Some(prefix.toString.stripSuffix(".type"))
+                )(enumTypeTag)
               }
-            } // Java enums
+            }
+
+            // Java enums
             else if (ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass).isEnum) {
               val enumClass = ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass)
               new AvroJEnum[T](
-                name = enumClass.getSimpleName,
-                symbols = enumClass.getEnumConstants.map(_.toString),
-                namespace = Some(enumClass.getPackage.getName))
-            } // case classes
-            else if (tpe <:< typeOf[Product] &&
+                name      = enumClass.getSimpleName,
+                symbols   = enumClass.getEnumConstants.map(_.toString),
+                namespace = Some(enumClass.getPackage.getName)
+              )
+            }
+
+            // case classes
+            else if (
+              tpe <:< typeOf[Product] &&
               tpe.typeSymbol.asClass.isCaseClass &&
-              tpe.typeSymbol.asClass.typeParams.isEmpty) {
-              tpe match {
-                case TypeRef(prefix, symbol, _) =>
-                  new AvroRecord[T](
-                    name = symbol.name.toString,
-                    fields = ReflectionHelpers.caseClassParamsOf[T].toSeq map {
-                      case (name, tag) => {
-                        val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
-                        AvroRecord.Field(name, fieldType)
-                      }
-                    },
-                    namespace = Some(prefix.toString.stripSuffix(".type")))
+              tpe.typeSymbol.asClass.typeParams.isEmpty
+            ) {
+              tpe match { case TypeRef(prefix, symbol, _) =>
+                new AvroRecord[T](
+                  name      = symbol.name.toString,
+                  fields    = ReflectionHelpers.caseClassParamsOf[T].toSeq map { case (name, tag) => {
+                    val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
+                    AvroRecord.Field(name, fieldType)
+                  }},
+                  namespace = Some(prefix.toString.stripSuffix(".type"))
+                )
               }
-            } // binary unions via scala.Either[A, B]
+            }
+
+            // binary unions via scala.Either[A, B]
             else if (tpe <:< typeOf[Either[_, _]]) tpe match {
               case TypeRef(_, _, List(left, right)) => new AvroUnion(
                 Union.combine(
                   Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
-                  ReflectionHelpers.tagForType(right)),
-                tt)
+                  ReflectionHelpers.tagForType(right)
+                ),
+                tt
+              )
             }
 
             // binary unions via scala.Option[T]
@@ -271,19 +284,25 @@ object AvroType {
               case TypeRef(_, _, List(innerType)) => new AvroUnion(
                 Union.combine(
                   Union.unary(ReflectionHelpers.tagForType(innerType)).underlyingConjunctionTag,
-                  typeTag[Unit]),
-                tt)
+                  typeTag[Unit]
+                ),
+                tt
+              )
             }
 
             // N-ary unions
             else if (tpe <:< typeOf[Union.not[_]]) {
               new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
-            } // N-ary unions
+            }
+
+            // N-ary unions
             else if (tpe <:< typeOf[Union[_]]) {
               val TypeRef(_, _, List(notType)) = tpe
               val notTypeTag = ReflectionHelpers.tagForType(notType).asInstanceOf[TypeTag[Union.not[_]]]
               new AvroUnion(new Union()(notTypeTag), tt)
-            } else {
+            }
+
+            else {
               // last-ditch attempt: union of case class subtypes of T
               import ReflectionHelpers._
 
@@ -293,23 +312,28 @@ object AvroType {
                 subTypes.tail.foreach { subType =>
                   u = Union.combine(
                     u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
-                    tagForType(subType))
+                    tagForType(subType)
+                  )
                 }
                 new AvroUnion(u, tt)
-              } // other types are not handled
+              }
+
+              // other types are not handled
               else throw new IllegalArgumentException(
-                "Unable to find or make an AvroType for the supplied type [%s]" format tpe)
+                "Unable to find or make an AvroType for the supplied type [%s]" format tpe
+              )
             }
           }
 
           // add the synthesized AvroType to the complex type cache table
           var tries = 0
           var cacheUpdated = false
-          while (!cacheUpdated && tries < 3) {
+          while (! cacheUpdated && tries < 3) {
             val currentCache = complexTypeCache.get
             cacheUpdated = complexTypeCache.compareAndSet(
               currentCache,
-              currentCache + (tpe -> newComplexType))
+              currentCache + (tpe -> newComplexType)
+            )
             tries += 1
           }
 

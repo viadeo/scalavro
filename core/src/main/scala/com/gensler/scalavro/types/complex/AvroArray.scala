@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{ AvroType, AvroComplexType, AvroNamedType }
+import com.gensler.scalavro.types.{AvroType, AvroComplexType, AvroNamedType}
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 
@@ -18,17 +18,21 @@ class AvroArray[T: TypeTag] extends AvroComplexType[Seq[T]] {
 
   // name, type, fields, symbols, items, values, size
   def schema() = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "items" -> itemType.schema))
+    "type"  -> typeName.toJson,
+    "items" -> itemType.schema
+  ))
 
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "items" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)))
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
+  ) = new JsObject(ListMap(
+    "type"  -> typeName.toJson,
+    "items" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
+  ))
 
   override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "items" -> itemType.canonicalFormOrFullyQualifiedName))
+    "type"  -> typeName.toJson,
+    "items" -> itemType.canonicalFormOrFullyQualifiedName
+  ))
 
   def dependsOn(thatType: AvroType[_]) =
     itemType == thatType || (itemType dependsOn thatType)

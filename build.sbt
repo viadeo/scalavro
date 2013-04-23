@@ -1,3 +1,5 @@
+import scalariform.formatter.preferences._
+
 organization in ThisBuild := "com.gensler"
 
 name := "scalavro"
@@ -23,3 +25,18 @@ scalacOptions in (ThisBuild, Compile) ++= Seq(
 )
 
 parallelExecution in (ThisBuild, Test) := false
+
+ScalariformKeys.preferences in ThisBuild := FormattingPreferences()
+  .setPreference(IndentWithTabs, false)
+  .setPreference(IndentSpaces, 2)
+  .setPreference(DoubleIndentClassDeclaration, false)
+  .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
+  .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, true)
+  .setPreference(PreserveDanglingCloseParenthesis, false)
+  .setPreference(AlignSingleLineCaseStatements, true)
+  .setPreference(PreserveSpaceBeforeArguments, true)
+  .setPreference(SpaceBeforeColon, false)
+  .setPreference(SpaceInsideBrackets, false)
+  .setPreference(SpaceInsideParentheses, false)
+  .setPreference(SpacesWithinPatternBinders, true)
+  .setPreference(FormatXml, true)

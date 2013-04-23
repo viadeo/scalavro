@@ -4,17 +4,17 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.io.primitive.AvroLongIO
 import com.gensler.scalavro.types.complex.AvroSet
-import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
+import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
-import org.apache.avro.generic.{ GenericData, GenericArray, GenericDatumWriter }
+import org.apache.avro.generic.{GenericData, GenericArray, GenericDatumWriter}
 import org.apache.avro.io.EncoderFactory
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
 
 case class AvroSetIO[T](avroType: AvroSet[T]) extends AvroTypeIO[Set[T]]()(avroType.tag) {
 
@@ -23,22 +23,22 @@ case class AvroSetIO[T](avroType: AvroSet[T]) extends AvroTypeIO[Set[T]]()(avroT
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
   val itemIO = AvroTypeIO.Implicits.avroTypeToIO(avroType.itemType)
 
-  protected[scalavro] def asGeneric[G <: Set[T]: TypeTag](items: G): GenericArray[Any] = {
+  protected[scalavro] def asGeneric[G <: Set[T] : TypeTag](items: G): GenericArray[Any] = {
     import scala.collection.JavaConversions.seqAsJavaList
     val genericArray = new GenericData.Array[Any](items.size, avroSchema)
     genericArray addAll seqAsJavaList(items.toSeq map { itemIO.asGeneric })
     genericArray
   }
 
-  def write[G <: Set[T]: TypeTag](obj: G, stream: OutputStream) = {
+  def write[G <: Set[T] : TypeTag](obj: G, stream: OutputStream) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericArray[_]](avroSchema)
       val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
-    } catch {
-      case cause: Throwable =>
-        throw new AvroSerializationException(obj, cause)
+    }
+    catch { case cause: Throwable => 
+      throw new AvroSerializationException(obj, cause)
     }
   }
 

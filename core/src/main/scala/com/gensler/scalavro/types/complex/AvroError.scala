@@ -9,11 +9,13 @@ class AvroError[T: TypeTag](
   fields: Seq[AvroRecord.Field[_]],
   aliases: Seq[String] = Seq(),
   namespace: Option[String] = None,
-  doc: Option[String] = None) extends AvroRecord[T](
+  doc: Option[String] = None
+) extends AvroRecord[T](
   name,
   fields,
   aliases,
   namespace,
-  doc) {
+  doc
+) {
   override val typeName = "error"
 }

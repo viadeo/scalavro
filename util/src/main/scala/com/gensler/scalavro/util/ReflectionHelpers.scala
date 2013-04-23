@@ -1,7 +1,7 @@
 package com.gensler.scalavro.util
 
 import scala.collection.immutable.ListMap
-import scala.reflect.api.{ Universe, Mirror, TypeCreator }
+import scala.reflect.api.{Universe, Mirror, TypeCreator}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -9,6 +9,7 @@ import scala.reflect.runtime.universe._
   * Companion object for [[ReflectionHelpers]]
   */
 object ReflectionHelpers extends ReflectionHelpers
+
 
 trait ReflectionHelpers {
 
@@ -18,12 +19,12 @@ trait ReflectionHelpers {
     * Returns a sequence of Strings, each of which names a value of the
     * supplied enumeration type.
     */
-  protected[scalavro] def symbolsOf[E <: Enumeration: TypeTag]: Seq[String] = {
+  protected[scalavro] def symbolsOf[E <: Enumeration : TypeTag]: Seq[String] = {
     val valueType = typeOf[E#Value]
 
     val isValueType = (sym: Symbol) => {
-      !sym.isMethod && !sym.isType &&
-        sym.typeSignature.baseType(valueType.typeSymbol) =:= valueType
+      ! sym.isMethod && ! sym.isType &&
+      sym.typeSignature.baseType(valueType.typeSymbol) =:= valueType
     }
 
     typeOf[E].members.collect {
@@ -32,7 +33,7 @@ trait ReflectionHelpers {
   }
 
   /**
-    * Returns a type tag for the parent `scala.Enumeration` of the supplied
+    * Returns a type tag for the parent `scala.Enumeration` of the supplied 
     * enumeration value type.
     */
   protected[scalavro] def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {
@@ -42,7 +43,7 @@ trait ReflectionHelpers {
 
   private lazy val reflections = {
     import org.reflections.Reflections
-    import org.reflections.util.{ ConfigurationBuilder, FilterBuilder }
+    import org.reflections.util.{ConfigurationBuilder, FilterBuilder}
     import org.reflections.scanners.SubTypesScanner
 
     val classFilter = new FilterBuilder
@@ -70,16 +71,17 @@ trait ReflectionHelpers {
   /**
     * Returns all currently loaded case class subtypes of the supplied type.
     */
-  protected[scalavro] def caseClassSubTypesOf[S: TypeTag]: Seq[Type] = {
+  protected[scalavro] def caseClassSubTypesOf[S : TypeTag]: Seq[Type] = {
     import scala.collection.JavaConversions.asScalaSet
     import java.lang.reflect.Modifier
 
     // filter out abstract classes
     val subClassSymbols = asScalaSet(
-      reflections.getSubTypesOf(classLoaderMirror.runtimeClass(typeOf[S]))).collect {
-        case clazz: Class[_] if !Modifier.isAbstract(clazz.getModifiers) =>
-          classLoaderMirror classSymbol clazz
-      }
+      reflections.getSubTypesOf(classLoaderMirror.runtimeClass(typeOf[S]))
+    ).collect {
+      case clazz: Class[_] if ! Modifier.isAbstract(clazz.getModifiers) =>
+        classLoaderMirror classSymbol clazz
+    }
 
     // filter class symbols to include only case classes with no type parameters
     subClassSymbols.collect {
@@ -114,7 +116,8 @@ trait ReflectionHelpers {
     classLoaderMirror,
     new TypeCreator {
       def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
-    })
+    }
+  )
 
   /**
     * Attempts to fetch the value of a named component of a product instance,
@@ -126,7 +129,8 @@ trait ReflectionHelpers {
     * @param membername the arguments to supply to the constructor method
     */
   protected[scalavro] def productElement[P: TypeTag, T: TypeTag](
-    product: P, memberName: String): Option[T] = {
+    product: P, memberName: String
+  ): Option[T] = {
 
     implicit val productClassTag = ClassTag[P](product.getClass)
 
@@ -138,7 +142,9 @@ trait ReflectionHelpers {
         val getterMethod = instanceMirror reflectMethod getterSymbol
         getterMethod().asInstanceOf[T]
       }.toOption
-    } else None
+    }
+
+    else None
   }
 
   /**
@@ -152,10 +158,11 @@ trait ReflectionHelpers {
     scala.util.Try {
       val tpe = typeOf[T]
       val classSymbol = tpe.typeSymbol.asClass
-
-      if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass))
+      
+      if (! (tpe <:< typeOf[Product] && classSymbol.isCaseClass))
         throw new IllegalArgumentException(
-          "instantiateCaseClassWith may only be applied to case classes!")
+          "instantiateCaseClassWith may only be applied to case classes!"
+        )
 
       val classMirror = classLoaderMirror reflectClass classSymbol
       val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod

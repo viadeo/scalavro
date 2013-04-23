@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.complex
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -12,7 +12,7 @@ import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.util.Union._
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 // mock types:
 case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
@@ -26,7 +26,7 @@ case class Epsilon[T]() extends Beta
 
 class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
 
-  type ISB = union[Int]#or[String]#or[Boolean]
+  type ISB = union [Int] #or [String] #or [Boolean]
 
   val unionType = AvroType[Either[Int, String]]
   val io = unionType.io
@@ -87,7 +87,7 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "read and write case classes with union parameters" in {
-    val wrapperType = AvroType[BoolOrDoubleWrapper]
+    val wrapperType = AvroType[BoolOrDoubleWrapper]    
     val boolOrDouble = BoolOrDoubleWrapper(Left(true))
 
     val out = new ByteArrayOutputStream
@@ -103,7 +103,8 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
       Left(55),
       Right("Hello"),
       Left(110),
-      Right("World"))
+      Right("World")
+    )
 
     val out = new ByteArrayOutputStream
     unionArrayType.write(mixed, out)
@@ -116,10 +117,11 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     val unionMapType = AvroType[Map[String, Either[Int, String]]]
 
     val map: Map[String, Either[Int, String]] = Map(
-      "uno" -> Left(55),
-      "due" -> Right("Hello"),
-      "tre" -> Left(110),
-      "quattro" -> Right("World"))
+      "uno"     -> Left(55),
+      "due"     -> Right("Hello"),
+      "tre"     -> Left(110),
+      "quattro" -> Right("World")
+    )
 
     val out = new ByteArrayOutputStream
     unionMapType.write(map, out)

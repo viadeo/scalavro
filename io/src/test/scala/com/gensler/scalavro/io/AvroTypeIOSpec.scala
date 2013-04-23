@@ -1,10 +1,10 @@
 package com.gensler.scalavro.io.complex
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.{ ShouldMatchers, Matcher, MatchResult }
+import org.scalatest.matchers.{ShouldMatchers, Matcher, MatchResult}
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._

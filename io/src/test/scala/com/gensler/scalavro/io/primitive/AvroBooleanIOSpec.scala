@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.primitive
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -12,7 +12,7 @@ import com.gensler.scalavro.error._
 
 import com.gensler.scalavro.io.AvroTypeIO
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 class AvroBooleanIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -47,7 +47,7 @@ class AvroBooleanIOSpec extends FlatSpec with ShouldMatchers {
     io read trueStream should equal (Success(true))
     io read falseStream should equal (Success(false))
 
-    evaluating { io.read(errorStream).get } should produce[AvroDeserializationException[Boolean]]
+    evaluating { io.read(errorStream).get } should produce [AvroDeserializationException[Boolean]]
   }
 
 }
