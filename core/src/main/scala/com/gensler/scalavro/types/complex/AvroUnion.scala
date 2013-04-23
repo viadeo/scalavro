@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{AvroType, AvroComplexType}
+import com.gensler.scalavro.types.{ AvroType, AvroComplexType }
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 import com.gensler.scalavro.util.ReflectionHelpers
@@ -13,9 +13,8 @@ import scala.util.Success
 import spray.json._
 
 class AvroUnion[U <: Union.not[_]: TypeTag, T](
-  val union: Union[U],
-  val originalType: TypeTag[T]
-) extends AvroComplexType()(originalType) {
+    val union: Union[U],
+    val originalType: TypeTag[T]) extends AvroComplexType()(originalType) {
 
   val memberAvroTypes = union.typeMembers.map {
     tpe => AvroType.fromType(ReflectionHelpers tagForType tpe).get
@@ -26,8 +25,7 @@ class AvroUnion[U <: Union.not[_]: TypeTag, T](
   def schema() = memberAvroTypes.map { _.schema }.toJson
 
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
-  ) = memberAvroTypes.map { at =>
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = memberAvroTypes.map { at =>
     selfContainedSchemaOrFullyQualifiedName(at, resolvedSymbols)
   }.toJson
 

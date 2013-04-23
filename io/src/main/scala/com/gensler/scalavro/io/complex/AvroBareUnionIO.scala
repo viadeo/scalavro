@@ -4,34 +4,30 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.primitive.AvroLongIO
 import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.complex.AvroUnion
-import com.gensler.scalavro.error.{AvroSerializationException, AvroDeserializationException}
+import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
-import java.io.{InputStream, OutputStream}
+import java.io.{ InputStream, OutputStream }
 
-private[scalavro] case class AvroBareUnionIO[
-  U <: Union.not[_]: TypeTag,
-  T: TypeTag
-](
-  avroType: AvroUnion[U, T]
-) extends AvroUnionIO[U, T] {
+private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag](
+    avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 
-  protected[scalavro] def asGeneric[X <: T : TypeTag](obj: X) = {
+  protected[scalavro] def asGeneric[X <: T: TypeTag](obj: X) = {
     avroType.memberAvroTypes.find { at => typeOf[X] <:< at.tag.tpe } match {
       case Some(memberType) => memberType.asInstanceOf[AvroType[T]].asGeneric(obj)
-      case None => throw new AvroSerializationException(obj)
+      case None             => throw new AvroSerializationException(obj)
     }
   }
 
-  def write[X <: T : TypeTag](obj: X, stream: OutputStream) = ???
+  def write[X <: T: TypeTag](obj: X, stream: OutputStream) = ???
 
-  def writeBare[X : prove [T] #containsType : TypeTag](obj: X, stream: OutputStream) = {
+  def writeBare[X: prove[T]#containsType: TypeTag](obj: X, stream: OutputStream) = {
     avroType.memberAvroTypes.indexWhere { at => typeOf[X] <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {

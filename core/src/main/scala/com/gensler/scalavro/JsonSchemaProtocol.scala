@@ -35,13 +35,14 @@ object JsonSchemaProtocol extends DefaultJsonProtocol {
     * are sometimes preferable, for example when one wants to control the order
     * in which object keys are written to JSON.
     */
-  implicit def listMapFormat[K :JsonFormat, V :JsonFormat] = new RootJsonFormat[ListMap[K, V]] {
+  implicit def listMapFormat[K: JsonFormat, V: JsonFormat] = new RootJsonFormat[ListMap[K, V]] {
     def write(m: ListMap[K, V]) = JsObject {
-      m.map { case (k, v) =>
-        k.toJson match {
-          case JsString(x) => x -> v.toJson
-          case x => throw new SerializationException("Map key must be formatted as JsString, not '" + x + "'")
-        }
+      m.map {
+        case (k, v) =>
+          k.toJson match {
+            case JsString(x) => x -> v.toJson
+            case x           => throw new SerializationException("Map key must be formatted as JsString, not '" + x + "'")
+          }
       }
     }
 
@@ -49,4 +50,4 @@ object JsonSchemaProtocol extends DefaultJsonProtocol {
 
   }
 
- }
+}

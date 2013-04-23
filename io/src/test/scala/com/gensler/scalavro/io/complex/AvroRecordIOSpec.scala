@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.complex
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -13,7 +13,7 @@ import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
 // for testing
 case class Person(name: String, age: Int)
@@ -41,9 +41,8 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
 
   it should "read and write complex records" in {
     val sList = SantaList(
-      nice    = Seq(Person("Suzie", 9)),
-      naughty = Seq(Person("Tommy", 7))
-    )
+      nice = Seq(Person("Suzie", 9)),
+      naughty = Seq(Person("Tommy", 7)))
 
     val santaListType = AvroType.fromType[SantaList].get
     val santaIO = santaListType.io

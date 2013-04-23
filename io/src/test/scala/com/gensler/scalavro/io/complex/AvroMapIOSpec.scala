@@ -1,6 +1,6 @@
 package com.gensler.scalavro.io.complex
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
@@ -11,7 +11,7 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
 class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -25,12 +25,11 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
   it should "read and write maps" in {
 
     val m1 = Map(
-      "uno"     -> 1,
-      "due"     -> 2,
-      "tre"     -> 3,
+      "uno" -> 1,
+      "due" -> 2,
+      "tre" -> 3,
       "quattro" -> 4,
-      "cinque"  -> 5
-    )
+      "cinque" -> 5)
 
     val out = new ByteArrayOutputStream
     io.write(m1, out)

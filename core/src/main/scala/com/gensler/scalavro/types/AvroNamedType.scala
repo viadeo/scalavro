@@ -25,8 +25,7 @@ abstract class AvroNamedType[T: TypeTag] extends AvroComplexType[T] {
   def fullyQualify(json: JsValue): JsValue = json match {
     case JsObject(fields) => new JsObject(ListMap(
       "name" -> fullyQualifiedName.toJson) ++
-      (fields -- Seq("name", "namespace")
-    ))
+      (fields -- Seq("name", "namespace")))
     case otherJsValue: JsValue => otherJsValue
   }
 
