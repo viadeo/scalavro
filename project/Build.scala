@@ -1,9 +1,15 @@
 import sbt._
 import Keys._
 
+import scalariform.formatter.preferences._
+
 object ScalavroBuild extends Build {
 
-  lazy val root = Project(id = "scalavro", base = file(".")) aggregate(
+  lazy val root = Project(
+    id = "scalavro",
+    base = file("."),
+    settings = scalariformSettings
+  ) aggregate(
     core,
     io,
     util
