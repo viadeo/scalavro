@@ -1,5 +1,5 @@
 package com.gensler.scalavro.types
- 
+
 import scala.reflect.runtime.universe._
 
 import spray.json._
@@ -9,8 +9,8 @@ import spray.json.DefaultJsonProtocol._
   * Parent class of all composite and parameterized Avro types.
   */
 abstract class AvroComplexType[T: TypeTag]
-         extends AvroType[T]
-         with SelfDescribingSchemaHelpers {
+    extends AvroType[T]
+    with SelfDescribingSchemaHelpers {
 
   final val isPrimitive = false
 
@@ -19,19 +19,17 @@ abstract class AvroComplexType[T: TypeTag]
   }
 
   protected def withoutDocOrAliases(json: JsValue): JsValue = json match {
-    case JsObject(fields) => new JsObject( fields -- Seq("Doc", "aliases") )
+    case JsObject(fields)      => new JsObject(fields -- Seq("Doc", "aliases"))
     case otherJsValue: JsValue => otherJsValue
   }
 
 }
 
-
 trait SelfDescribingSchemaHelpers {
 
   protected def selfContainedSchemaOrFullyQualifiedName(
     avroType: AvroType[_],
-    resolvedSymbols: scala.collection.mutable.Set[String]
-  ): JsValue = {
+    resolvedSymbols: scala.collection.mutable.Set[String]): JsValue = {
 
     avroType match {
 

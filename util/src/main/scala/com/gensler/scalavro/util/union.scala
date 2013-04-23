@@ -31,7 +31,7 @@ import scala.reflect.runtime.universe._
 object Union extends UnionTypeHelpers {
 
   type union[A] = {
-    type or[B] = Disjunction [not[A]] #or [B] #apply
+    type or[B] = Disjunction[not[A]]#or[B]#apply
     type apply = not[not[A]]
   }
 
@@ -41,7 +41,7 @@ object Union extends UnionTypeHelpers {
     * Constructs a new unary union instance with the supplied type as its only
     * member type.
     */
-  def unary[T: TypeTag] = new Union[union [T] #apply]
+  def unary[T: TypeTag] = new Union[union[T]#apply]
 
   /**
     * == INTERNAL API ==
@@ -57,7 +57,7 @@ object Union extends UnionTypeHelpers {
     * `underlyingConjunctionTag` method.
     *
     * Usage:
-    * 
+    *
     * {{{
     * val binaryUnion = new Union[union [Int] #or [String]]
     *
@@ -73,7 +73,7 @@ object Union extends UnionTypeHelpers {
     * @tparam C the starting conjunction of negations
     * @tparam T the type to add to the conjunction before negation
     */
-  protected[scalavro] def combine[C : TypeTag, T : TypeTag] = {
+  protected[scalavro] def combine[C: TypeTag, T: TypeTag] = {
     new Union()(typeTag[Union.not[C with Union.not[T]]])
   }
 
@@ -82,7 +82,7 @@ object Union extends UnionTypeHelpers {
 private[scalavro] trait UnionTypeHelpers {
 
   sealed trait not[-A] {
-    type or[B] = Disjunction[A] #or[B] #apply
+    type or[B] = Disjunction[A]#or[B]#apply
     type apply = not[A]
     type unapply = A
   }
@@ -93,13 +93,13 @@ private[scalavro] trait UnionTypeHelpers {
   }
 }
 
-class Union[U <: Union.not[_] : TypeTag] {
+class Union[U <: Union.not[_]: TypeTag] {
 
   import Union._
 
   type underlying = U
 
-  type containsType[X] = prove [U] #containsType [X]
+  type containsType[X] = prove[U]#containsType[X]
 
   val underlyingTag = typeTag[U]
 
@@ -124,10 +124,12 @@ class Union[U <: Union.not[_] : TypeTag] {
     val notType = typeOf[Union.not[_]]
     var members = Vector[Type]()
 
-    actualParam.foreach { part => if (part <:< notType) {
-      val partParams = part.typeSymbol.asType.typeParams.map { _.asType.toTypeIn(part).normalize }
-      members ++= partParams
-    }}
+    actualParam.foreach { part =>
+      if (part <:< notType) {
+        val partParams = part.typeSymbol.asType.typeParams.map { _.asType.toTypeIn(part).normalize }
+        members ++= partParams
+      }
+    }
 
     members.distinct.toIndexedSeq
   }
@@ -137,15 +139,15 @@ class Union[U <: Union.not[_] : TypeTag] {
     */
   def contains[X: TypeTag]: Boolean = typeOf[not[not[X]]] <:< typeOf[U]
 
-  def assign[X : TypeTag : containsType](newValue: X) {
+  def assign[X: TypeTag: containsType](newValue: X) {
     wrappedValue = Value(newValue, typeTag[X])
   }
 
   def rawValue() = wrappedValue.ref
 
-  def value[X : TypeTag : containsType](): Option[X] = wrappedValue match {
+  def value[X: TypeTag: containsType](): Option[X] = wrappedValue match {
     case Value(x, tag) if tag.tpe <:< typeOf[X] => Some(x.asInstanceOf[X])
-    case _ => None
+    case _                                      => None
   }
 
   /**

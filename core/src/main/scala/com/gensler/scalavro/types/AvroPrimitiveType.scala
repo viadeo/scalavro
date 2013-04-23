@@ -16,7 +16,6 @@ abstract class AvroPrimitiveType[T: TypeTag] extends AvroType[T] {
   def schema(): spray.json.JsValue = typeName.toJson
 
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()
-  ) = schema
+    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = schema
 
 }

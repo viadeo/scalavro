@@ -1,16 +1,16 @@
 package com.gensler.scalavro.io
 
 import com.gensler.scalavro.error._
-import com.gensler.scalavro.types.{AvroType, AvroPrimitiveType}
+import com.gensler.scalavro.types.{ AvroType, AvroPrimitiveType }
 
 import org.apache.avro.generic.GenericData
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{InputStream, OutputStream}
+import java.io.{ InputStream, OutputStream }
 
-abstract class AvroTypeIO[T : TypeTag] {
+abstract class AvroTypeIO[T: TypeTag] {
 
   /**
     * Returns this AvroTypeIO instance.
@@ -26,15 +26,15 @@ abstract class AvroTypeIO[T : TypeTag] {
     * Returns the `org.apache.avro.generic.GenericData` or primitive type
     * representation of the supplied object.
     */
-  protected[scalavro] def asGeneric[G <: T : TypeTag](obj: G): Any
+  protected[scalavro] def asGeneric[G <: T: TypeTag](obj: G): Any
 
   /**
     * Writes a serialized representation of the supplied object according to
     * the Avro specification for binary encoding.  Throws an
-    * AvroSerializationException if writing is unsuccessful. 
+    * AvroSerializationException if writing is unsuccessful.
     */
   @throws[AvroSerializationException[_]]
-  def write[G <: T : TypeTag](obj: G, stream: OutputStream)
+  def write[G <: T: TypeTag](obj: G, stream: OutputStream)
 
   /**
     * Attempts to create an object of type T by reading the required data from
@@ -45,9 +45,9 @@ abstract class AvroTypeIO[T : TypeTag] {
 
   /**
     * Writes a JSON serialization of the supplied object.  Throws an
-    * AvroSerializationException if writing is unsuccessful. 
+    * AvroSerializationException if writing is unsuccessful.
     */
-/*
+  /*
   @throws[AvroSerializationException[_]]
   def writeJson[G <: T : TypeTag](obj: G, stream: OutputStream)
 */
@@ -56,7 +56,7 @@ abstract class AvroTypeIO[T : TypeTag] {
     * Attempts to create an object of type T by reading the required data from
     * the supplied JSON stream.
     */
-/*
+  /*
   @throws[AvroDeserializationException[_]]
   def readJson(stream: InputStream): Try[T]
 */
@@ -109,14 +109,14 @@ object AvroTypeIO {
       }
 
     // complex types
-    implicit def avroTypeToIO[T](array: AvroArray[T]): AvroArrayIO[T]                          = AvroArrayIO(array)
-    implicit def avroTypeToIO[T](set: AvroSet[T]): AvroSetIO[T]                                = AvroSetIO(set)
-    implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T]              = AvroEnumIO(enum)
-    implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T]                           = AvroJEnumIO(enum)
-    implicit def avroTypeToIO[T](fixed: AvroFixed): AvroFixedIO                                = AvroFixedIO(fixed)
-    implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T]                                = AvroMapIO(map)
-    implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T]                         = AvroRecordIO(error)
-    implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T]                       = AvroRecordIO(record)
+    implicit def avroTypeToIO[T](array: AvroArray[T]): AvroArrayIO[T] = AvroArrayIO(array)
+    implicit def avroTypeToIO[T](set: AvroSet[T]): AvroSetIO[T] = AvroSetIO(set)
+    implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T] = AvroEnumIO(enum)
+    implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T] = AvroJEnumIO(enum)
+    implicit def avroTypeToIO[T](fixed: AvroFixed): AvroFixedIO = AvroFixedIO(fixed)
+    implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T] = AvroMapIO(map)
+    implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T] = AvroRecordIO(error)
+    implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T] = AvroRecordIO(record)
     implicit def avroTypeToIO[U <: Union.not[_], T](union: AvroUnion[U, T]): AvroUnionIO[U, T] = AvroUnionIO(union)(union.union.underlyingTag, union.tag)
 
     implicit def avroTypeToIO[T: TypeTag](at: AvroType[T]): AvroTypeIO[T] = {
