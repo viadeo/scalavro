@@ -206,44 +206,57 @@ A runtime reflection-based Avro library in Scala.
 
 #### scala.Seq
 
+```scala
     import com.gensler.scalavro.types.AvroType
     AvroType[Seq[String]].schema
+```
 
 Which yields:
 
+```json
     {
       "type" : "array",
       "items" : "string"
     }
+```
 
 #### scala.Set
 
+```scala
     import com.gensler.scalavro.types.AvroType
     AvroType[Set[String]].schema
+```
 
 Which yields:
 
+```json
     {
       "type" : "array",
       "items" : "string"
     }
+```
 
 ### Maps
 
+```scala
     import com.gensler.scalavro.types.AvroType
     AvroType[Map[String, Double]].schema
+```
 
 Which yields:
 
+```json
     {
       "type" : "map",
       "values" : "double"
     }
+```
 
 ### Enums
 
 #### scala.Enumeration
 
+```scala
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
@@ -254,58 +267,74 @@ Which yields:
 
     import CardinalDirection._
     AvroType[CardinalDirection].schema
+```
 
 Which yields:
 
+```json
     {
       "name" : "CardinalDirection",
       "type" : "enum",
       "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
       "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
     }
+```
 
 #### Java `enum`
 
 Definition (Java):
 
+```java
     package com.gensler.scalavro.tests;
     enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
+```
 
 Use (Scala):
 
+```scala
     import com.gensler.scalavro.types.AvroType
 
     import com.gensler.scalavro.tests.JCardinalDirection
     AvroType[JCardinalDirection].schema
+```
 
 Which yields:
 
+```json
     {
       "name" : "JCardinalDirection",
       "type" : "enum",
       "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
       "namespace" : "com.gensler.scalavro.tests"
     }
+```
 
 ### Unions
 
 #### scala.Either
 
+```scala
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
     AvroType[Either[Int, Boolean]].schema
+```
 
 Which yields:
 
+```json
     ["int", "boolean"]
+```
 
 and
 
+```scala
     AvroType[Either[Seq[Double], Map[String, Seq[Int]]]].schema
+```
 
 Which yields:
 
+```json
     [{
       "type" : "array",
       "items" : "double"
@@ -317,44 +346,58 @@ Which yields:
         "items" : "int"
       }
     }]
+```
 
 #### scala.Option
 
+```scala
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
     AvroType[Option[String]].schema
+```
 
 Which yields:
 
+```json
     ["string", "null"]
+```
 
 #### com.gensler.scalavro.util.Union.union
 
+```scala
     import com.gensler.scalavro.util.Union._
     AvroType[union [Int] #or [String] #or [Boolean]].schema
+```
 
 Which yields:
 
+```json
     ["int", "string", "boolean"]
+```
 
 ### Supertypes of case classes
 
 Given:
 
+```scala
     class Alpha
     abstract class Beta extends Alpha
     case class Gamma() extends Alpha
     case class Delta() extends Beta
     case class Epsilon[T]() extends Beta
+```
 
 Usage:
 
+```scala
     import com.gensler.scalavro.AvroType
     AvroType[Alpha].schema
+```
 
 Which yields:
 
+```json
     [
       {
         "name" : "Delta",
@@ -369,6 +412,7 @@ Which yields:
         "namespace" : "com.gensler.scalavro.tests"
       }
     ]
+```
 
 Note that in the above example:
 
@@ -377,6 +421,7 @@ Note that in the above example:
 
 ### Records
 
+```scala
     package com.gensler.scalavro.tests
     import com.gensler.scalavro.types.AvroType
 
@@ -384,9 +429,11 @@ Note that in the above example:
 
     val personAvroType = AvroType[Person]
     personAvroType.schema
+```
 
 Which yields:
 
+```json
     {
       "name": "Person",
       "type": "record",
@@ -396,16 +443,20 @@ Which yields:
       ],
       "namespace": "com.gensler.scalavro.tests"
     }
+```
 
 And perhaps more interestingly:
 
+```scala
     case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
     val santaListAvroType = AvroType[SantaList]
     santaListAvroType.schema
+```
 
 Which yields:
 
+```json
     {
       "name": "SantaList",
       "type": "record",
@@ -421,9 +472,11 @@ Which yields:
       ],
       "namespace": "com.gensler.scalavro.tests"
     }
+```
 
 ## Scalavro by Example: Binary IO
 
+```scala
     import com.gensler.scalavro.AvroType
     import com.gensler.scalavro.io.AvroTypeIO
     import com.gensler.scalavro.io.AvroTypeIO.Implicits._
@@ -456,6 +509,7 @@ Which yields:
       case Success(readResult) => // readResult is an instance of SantaList
       case Failure(cause)      => // handle failure...
     }
+```
 
 ## Reference
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
