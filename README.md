@@ -12,6 +12,15 @@ A runtime reflection-based Avro library in Scala.
 4. To generate Scala bindings for reading and writing Avro-mapped Scala types.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
 
+## Index of Examples
+
+- [Arrays](#arrays)
+- [Maps](#maps)
+- [Enums](#enums)
+- [Unions](#unions)
+- [Records](#records)
+- [Binary IO](#binary-io)
+
 ## Type Mapping Strategy
 
 ### Primitive Types
@@ -202,6 +211,7 @@ A runtime reflection-based Avro library in Scala.
 
 ## Scalavro by Example: Schema Generation
 
+<a name="arrays"></a>
 ### Arrays
 
 #### scala.Seq
@@ -236,6 +246,7 @@ Which yields:
     }
 ```
 
+<a name="maps"></a>
 ### Maps
 
 ```scala
@@ -252,6 +263,7 @@ Which yields:
     }
 ```
 
+<a name="enums"></a>
 ### Enums
 
 #### scala.Enumeration
@@ -309,6 +321,7 @@ Which yields:
     }
 ```
 
+<a name="unions"></a>
 ### Unions
 
 #### scala.Either
@@ -376,6 +389,7 @@ Which yields:
     ["int", "string", "boolean"]
 ```
 
+<a name="supertypes-of-case-classes"></a>
 ### Supertypes of case classes
 
 Given:
@@ -419,6 +433,7 @@ Note that in the above example:
 - `Beta` is excluded from the union because it is not a case class
 - `Epsilon` is excluded from the union because it is abstract and because it takes type parameters
 
+<a name="records"></a>
 ### Records
 
 ```scala
@@ -474,6 +489,7 @@ Which yields:
     }
 ```
 
+<a name="binary-io"></a>
 ## Scalavro by Example: Binary IO
 
 ```scala
