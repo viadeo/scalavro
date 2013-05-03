@@ -45,6 +45,7 @@ object ScalavroBuild extends Build {
     ScalariformKeys.preferences := FormattingPreferences()
       .setPreference(IndentWithTabs, false)
       .setPreference(IndentSpaces, 2)
+      .setPreference(AlignParameters, false)
       .setPreference(DoubleIndentClassDeclaration, true)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
       .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, true)

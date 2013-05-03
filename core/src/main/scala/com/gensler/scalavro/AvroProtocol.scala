@@ -127,7 +127,7 @@ object AvroProtocol {
     * no errors are listed.
     */
   case class Message(
-      request: Map[String, AvroRecord[_ <: Product]],
+      request: Map[String, AvroType[_]],
       response: AvroType[_],
       errors: Option[AvroUnion[_, _]] = None,
       doc: Option[String] = None,
