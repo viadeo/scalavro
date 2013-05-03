@@ -217,50 +217,50 @@ A runtime reflection-based Avro library in Scala.
 #### scala.Seq
 
 ```scala
-    import com.gensler.scalavro.types.AvroType
-    AvroType[Seq[String]].schema
+import com.gensler.scalavro.types.AvroType
+AvroType[Seq[String]].schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "type" : "array",
-      "items" : "string"
-    }
+{
+  "type" : "array",
+  "items" : "string"
+}
 ```
 
 #### scala.Set
 
 ```scala
-    import com.gensler.scalavro.types.AvroType
-    AvroType[Set[String]].schema
+import com.gensler.scalavro.types.AvroType
+AvroType[Set[String]].schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "type" : "array",
-      "items" : "string"
-    }
+{
+  "type" : "array",
+  "items" : "string"
+}
 ```
 
 <a name="maps"></a>
 ### Maps
 
 ```scala
-    import com.gensler.scalavro.types.AvroType
-    AvroType[Map[String, Double]].schema
+import com.gensler.scalavro.types.AvroType
+AvroType[Map[String, Double]].schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "type" : "map",
-      "values" : "double"
-    }
+{
+  "type" : "map",
+  "values" : "double"
+}
 ```
 
 <a name="enums"></a>
@@ -269,27 +269,27 @@ Which yields:
 #### scala.Enumeration
 
 ```scala
-    package com.gensler.scalavro.tests
-    import com.gensler.scalavro.types.AvroType
+package com.gensler.scalavro.tests
+import com.gensler.scalavro.types.AvroType
 
-    object CardinalDirection extends Enumeration {
-      type CardinalDirection = Value
-      val N, NE, E, SE, S, SW, W, NW = Value
-    }
+object CardinalDirection extends Enumeration {
+  type CardinalDirection = Value
+  val N, NE, E, SE, S, SW, W, NW = Value
+}
 
-    import CardinalDirection._
-    AvroType[CardinalDirection].schema
+import CardinalDirection._
+AvroType[CardinalDirection].schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "name" : "CardinalDirection",
-      "type" : "enum",
-      "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-      "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
-    }
+{
+  "name" : "CardinalDirection",
+  "type" : "enum",
+  "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
+  "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
+}
 ```
 
 #### Java `enum`
@@ -297,28 +297,28 @@ Which yields:
 Definition (Java):
 
 ```java
-    package com.gensler.scalavro.tests;
-    enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
+package com.gensler.scalavro.tests;
+enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
 ```
 
 Use (Scala):
 
 ```scala
-    import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.tests.JCardinalDirection
 
-    import com.gensler.scalavro.tests.JCardinalDirection
-    AvroType[JCardinalDirection].schema
+AvroType[JCardinalDirection].schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "name" : "JCardinalDirection",
-      "type" : "enum",
-      "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-      "namespace" : "com.gensler.scalavro.tests"
-    }
+{
+  "name" : "JCardinalDirection",
+  "type" : "enum",
+  "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
+  "namespace" : "com.gensler.scalavro.tests"
+}
 ```
 
 <a name="unions"></a>
@@ -327,66 +327,66 @@ Which yields:
 #### scala.Either
 
 ```scala
-    package com.gensler.scalavro.tests
-    import com.gensler.scalavro.types.AvroType
+package com.gensler.scalavro.tests
+import com.gensler.scalavro.types.AvroType
 
-    AvroType[Either[Int, Boolean]].schema
+AvroType[Either[Int, Boolean]].schema
 ```
 
 Which yields:
 
 ```json
-    ["int", "boolean"]
+["int", "boolean"]
 ```
 
 and
 
 ```scala
-    AvroType[Either[Seq[Double], Map[String, Seq[Int]]]].schema
+AvroType[Either[Seq[Double], Map[String, Seq[Int]]]].schema
 ```
 
 Which yields:
 
 ```json
-    [{
-      "type" : "array",
-      "items" : "double"
-    },
-    {
-      "type" : "map",
-      "values" : {
-        "type" : "array",
-        "items" : "int"
-      }
-    }]
+[{
+  "type" : "array",
+  "items" : "double"
+},
+{
+  "type" : "map",
+  "values" : {
+    "type" : "array",
+    "items" : "int"
+  }
+}]
 ```
 
 #### scala.Option
 
 ```scala
-    package com.gensler.scalavro.tests
-    import com.gensler.scalavro.types.AvroType
+package com.gensler.scalavro.tests
+import com.gensler.scalavro.types.AvroType
 
-    AvroType[Option[String]].schema
+AvroType[Option[String]].schema
 ```
 
 Which yields:
 
 ```json
-    ["string", "null"]
+["string", "null"]
 ```
 
 #### com.gensler.scalavro.util.Union.union
 
 ```scala
-    import com.gensler.scalavro.util.Union._
-    AvroType[union [Int] #or [String] #or [Boolean]].schema
+import com.gensler.scalavro.util.Union._
+AvroType[union [Int] #or [String] #or [Boolean]].schema
 ```
 
 Which yields:
 
 ```json
-    ["int", "string", "boolean"]
+["int", "string", "boolean"]
 ```
 
 <a name="supertypes-of-case-classes"></a>
@@ -395,37 +395,37 @@ Which yields:
 Given:
 
 ```scala
-    class Alpha
-    abstract class Beta extends Alpha
-    case class Gamma() extends Alpha
-    case class Delta() extends Beta
-    case class Epsilon[T]() extends Beta
+class Alpha
+abstract class Beta extends Alpha
+case class Gamma() extends Alpha
+case class Delta() extends Beta
+case class Epsilon[T]() extends Beta
 ```
 
 Usage:
 
 ```scala
-    import com.gensler.scalavro.AvroType
-    AvroType[Alpha].schema
+import com.gensler.scalavro.AvroType
+AvroType[Alpha].schema
 ```
 
 Which yields:
 
 ```json
-    [
-      {
-        "name" : "Delta",
-        "type" : "record",
-        "fields" : [],
-        "namespace" : "com.gensler.scalavro.tests"
-      },
-      {
-        "name" : "Gamma",
-        "type" : "record",
-        "fields" : [],
-        "namespace" : "com.gensler.scalavro.tests"
-      }
-    ]
+[
+  {
+    "name" : "Delta",
+    "type" : "record",
+    "fields" : [],
+    "namespace" : "com.gensler.scalavro.tests"
+  },
+  {
+    "name" : "Gamma",
+    "type" : "record",
+    "fields" : [],
+    "namespace" : "com.gensler.scalavro.tests"
+  }
+]
 ```
 
 Note that in the above example:
@@ -437,94 +437,94 @@ Note that in the above example:
 ### Records
 
 ```scala
-    package com.gensler.scalavro.tests
-    import com.gensler.scalavro.types.AvroType
+package com.gensler.scalavro.tests
+import com.gensler.scalavro.types.AvroType
 
-    case class Person(name: String, age: Int)
+case class Person(name: String, age: Int)
 
-    val personAvroType = AvroType[Person]
-    personAvroType.schema
+val personAvroType = AvroType[Person]
+personAvroType.schema
 ```
 
 Which yields:
 
 ```json
-    {
-      "name": "Person",
-      "type": "record",
-      "fields": [
-        {"name": "name", "type": "string"},
-        {"name": "age", "type": "int"}
-      ],
-      "namespace": "com.gensler.scalavro.tests"
-    }
+{
+  "name": "Person",
+  "type": "record",
+  "fields": [
+    {"name": "name", "type": "string"},
+    {"name": "age", "type": "int"}
+  ],
+  "namespace": "com.gensler.scalavro.tests"
+}
 ```
 
 And perhaps more interestingly:
 
 ```scala
-    case class SantaList(nice: Seq[Person], naughty: Seq[Person])
+case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
-    val santaListAvroType = AvroType[SantaList]
-    santaListAvroType.schema
+val santaListAvroType = AvroType[SantaList]
+santaListAvroType.schema
 ```
 
 Which yields:
 
 ```json
+{
+  "name": "SantaList",
+  "type": "record",
+  "fields": [
     {
-      "name": "SantaList",
-      "type": "record",
-      "fields": [
-        {
-          "name": "nice",
-          "type": {"type": "array", "items": "Person"}
-        },
-        {
-          "name": "naughty",
-          "type": {"type": "array", "items": "Person"}
-        }
-      ],
-      "namespace": "com.gensler.scalavro.tests"
+      "name": "nice",
+      "type": {"type": "array", "items": "Person"}
+    },
+    {
+      "name": "naughty",
+      "type": {"type": "array", "items": "Person"}
     }
+  ],
+  "namespace": "com.gensler.scalavro.tests"
+}
 ```
 
 <a name="binary-io"></a>
 ## Scalavro by Example: Binary IO
 
 ```scala
-    import com.gensler.scalavro.AvroType
-    import com.gensler.scalavro.io.AvroTypeIO
-    import com.gensler.scalavro.io.AvroTypeIO.Implicits._
-    import scala.util.{Try, Success, Failure}
+import com.gensler.scalavro.AvroType
+import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+import scala.util.{Try, Success, Failure}
 
-    case class Person(name: String, age: Int)
-    case class SantaList(nice: Seq[Person], naughty: Seq[Person])
+case class Person(name: String, age: Int)
+case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
-    val santaList = SantaList(
-      nice = Seq(
-        Person("John", 17),
-        Person("Eve", 3)
-      ),
-      naughty = Seq(
-        Person("Jane", 25),
-        Person("Alice", 65)
-      )
-    )
+val santaList = SantaList(
+  nice = Seq(
+    Person("John", 17),
+    Person("Eve", 3)
+  ),
+  naughty = Seq(
+    Person("Jane", 25),
+    Person("Alice", 65)
+  )
+)
 
-    val santaListType = AvroType[SantaList]
-    val santaListIO = santaListType.io // implicitly: AvroTypeIO[SantaList]
+val santaListType = AvroType[SantaList]
+val santaListIO = santaListType.io // implicitly: AvroTypeIO[SantaList]
 
-    val outStream: java.io.OutputStream = // some stream...
+val outStream: java.io.OutputStream = // some stream...
 
-    santaListIO.write(santaList, outStream)
+santaListIO.write(santaList, outStream)
 
-    val inStream: java.io.InputStream = // some stream...
+val inStream: java.io.InputStream = // some stream...
 
-    santaListIO.read(inStream) match {
-      case Success(readResult) => // readResult is an instance of SantaList
-      case Failure(cause)      => // handle failure...
-    }
+santaListIO.read(inStream) match {
+  case Success(readResult) => // readResult is an instance of SantaList
+  case Failure(cause)      => // handle failure...
+}
 ```
 
 ## Reference
