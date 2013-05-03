@@ -127,15 +127,19 @@ object AvroProtocol {
     * no errors are listed.
     */
   case class Message(
-      request: Map[String, AvroType[_]],
+      request: AvroRecord[_],
       response: AvroType[_],
       errors: Option[AvroUnion[_, _]] = None,
       doc: Option[String] = None,
       oneWay: Option[Boolean] = None) extends JsonSchemifiable with CanonicalForm {
 
+    def requestParameters: Map[String, AvroType[_]] = request.fields.map {
+      field => field.name -> field.fieldType
+    }.toMap
+
     def schema(): JsValue = {
       val requiredParams = Map(
-        "request" -> request.toSeq.map {
+        "request" -> requestParameters.toSeq.map {
           case (paramName, paramType) =>
             new JsObject(Map(paramName -> paramType.canonicalFormOrFullyQualifiedName.toJson))
         }.asInstanceOf[Seq[JsValue]].toJson,
@@ -162,7 +166,7 @@ object AvroProtocol {
       */
     def parsingCanonicalForm(): JsValue = {
       val requiredParams = Map(
-        "request" -> request.toSeq.map {
+        "request" -> requestParameters.toSeq.map {
           case (paramName, paramType) =>
             new JsObject(Map(paramName -> paramType.canonicalFormOrFullyQualifiedName.toJson))
         }.asInstanceOf[Seq[JsValue]].toJson,

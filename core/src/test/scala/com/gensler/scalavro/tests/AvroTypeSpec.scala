@@ -207,9 +207,7 @@ class AvroTypeSpec extends AvroSpec {
       messages = Map(
         "hello" -> AvroProtocol.Message(
 
-          request = Map(
-            "greeting" -> greetingType
-          ),
+          request = greetingType,
 
           response = greetingType,
 
@@ -228,7 +226,7 @@ class AvroTypeSpec extends AvroSpec {
     )
 
     // prettyPrint(hwProtocol.schema)
-    // prettyPrint(hwProtocol.parsingCanonicalForm)
+    prettyPrint(hwProtocol.parsingCanonicalForm)
   }
 
 }
