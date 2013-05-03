@@ -141,7 +141,7 @@ object AvroProtocol {
       val requiredParams = Map(
         "request" -> requestParameters.toSeq.map {
           case (paramName, paramType) =>
-            new JsObject(Map(paramName -> paramType.canonicalFormOrFullyQualifiedName.toJson))
+            new JsObject(Map("name" -> paramName.toJson, "type" -> paramType.canonicalFormOrFullyQualifiedName.toJson))
         }.asInstanceOf[Seq[JsValue]].toJson,
         "response" -> response.canonicalFormOrFullyQualifiedName
       )
@@ -168,7 +168,7 @@ object AvroProtocol {
       val requiredParams = Map(
         "request" -> requestParameters.toSeq.map {
           case (paramName, paramType) =>
-            new JsObject(Map(paramName -> paramType.canonicalFormOrFullyQualifiedName.toJson))
+            new JsObject(Map("name" -> paramName.toJson, "type" -> paramType.canonicalFormOrFullyQualifiedName.toJson))
         }.asInstanceOf[Seq[JsValue]].toJson,
         "response" -> response.canonicalFormOrFullyQualifiedName
       )
