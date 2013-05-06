@@ -430,8 +430,9 @@ Which yields:
 
 Note that in the above example:
 
-- `Beta` is excluded from the union because it is not a case class
-- `Epsilon` is excluded from the union because it is abstract and because it takes type parameters
+- `Alpha` is excluded from the union because it is not a case class
+- `Beta` is excluded from the union because it is abstract and not a case class
+- `Epsilon` is excluded from the union because it takes type parameters
 
 <a name="records"></a>
 ### Records
