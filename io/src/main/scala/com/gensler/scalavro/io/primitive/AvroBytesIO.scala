@@ -8,6 +8,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{ InputStream, OutputStream }
+import java.nio.ByteBuffer
 
 object AvroBytesIO extends AvroBytesIO
 
@@ -15,7 +16,7 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
   def avroType = AvroBytes
 
-  protected[scalavro] def asGeneric[B <: Seq[Byte]: TypeTag](value: B): Seq[Byte] = value
+  protected[scalavro] def asGeneric[B <: Seq[Byte]: TypeTag](value: B): ByteBuffer = ByteBuffer.wrap(value.toArray)
 
   def write[B <: Seq[Byte]: TypeTag](bytes: B, stream: OutputStream) = {
     AvroLongIO.write(bytes.length.toLong, stream)
