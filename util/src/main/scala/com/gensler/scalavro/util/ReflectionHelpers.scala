@@ -128,16 +128,19 @@ trait ReflectionHelpers {
     * @param membername the arguments to supply to the constructor method
     */
   protected[scalavro] def productElement[P: TypeTag, T: TypeTag](
-    product: P, memberName: String): Option[T] = {
+    product: P,
+    memberName: String): Option[T] = {
 
     implicit val productClassTag = ClassTag[P](product.getClass)
 
-    val getterSymbol = typeOf[P].member(memberName: TermName).asMethod
+    val getterSymbol = typeOf[P].member(memberName: TermName)
 
-    if (getterSymbol.isGetter && getterSymbol.returnType <:< typeOf[T]) {
+    if (getterSymbol.isMethod &&
+      getterSymbol.asMethod.isGetter &&
+      getterSymbol.asMethod.returnType <:< typeOf[T]) {
       scala.util.Try {
         val instanceMirror = classLoaderMirror reflect product
-        val getterMethod = instanceMirror reflectMethod getterSymbol
+        val getterMethod = instanceMirror reflectMethod getterSymbol.asMethod
         getterMethod().asInstanceOf[T]
       }.toOption
     }
@@ -162,8 +165,17 @@ trait ReflectionHelpers {
         )
 
       val classMirror = classLoaderMirror reflectClass classSymbol
-      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR).asMethod
-      val constructorMethod = classMirror reflectConstructor constructorSymbol
+
+      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+
+      val defaultConstructor =
+        if (constructorSymbol.isMethod) constructorSymbol.asMethod
+        else {
+          val ctors = constructorSymbol.asTerm.alternatives
+          ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
+        }
+
+      val constructorMethod = classMirror reflectConstructor defaultConstructor
 
       constructorMethod(args: _*).asInstanceOf[T]
     }

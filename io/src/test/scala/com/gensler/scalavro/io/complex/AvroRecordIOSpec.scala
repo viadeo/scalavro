@@ -13,7 +13,12 @@ import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  PipedInputStream,
+  PipedOutputStream
+}
 
 // for testing
 case class Person(name: String, age: Int)

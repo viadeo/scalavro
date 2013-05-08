@@ -28,7 +28,7 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
     val buffer = Array.ofDim[Byte](length.toInt)
     val bytesRead = stream read buffer
     if (bytesRead != length) throw new AvroDeserializationException[Seq[Byte]]
-    buffer.toSeq
+    buffer.toIndexedSeq
   }
 
 }

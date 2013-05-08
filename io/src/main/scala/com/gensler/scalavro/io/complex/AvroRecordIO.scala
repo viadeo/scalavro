@@ -1,6 +1,7 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.AvroPrimitiveType
 import com.gensler.scalavro.types.complex.AvroRecord
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
@@ -27,12 +28,23 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     */
   protected[scalavro] def asGeneric[R <: T: TypeTag](obj: R): GenericRecord = {
     val record = new GenericData.Record(avroSchema)
+
     avroType.fields.foreach { field =>
-      ReflectionHelpers.productElement(obj, field.name)(typeTag[R], field.fieldType.tag) foreach { value =>
-        val io = avroTypeToIO(field.fieldType)
-        record.put(field.name, io asGeneric value)
-      }
+      extractField(field.fieldType.tag)
+
+      def extractField[V: TypeTag] =
+        ReflectionHelpers.productElement[R, V](obj, field.name) match {
+          case Some(value) => {
+            val io = avroTypeToIO(field.fieldType.asInstanceOf[AvroType[V]])
+            record.put(field.name, io.asGeneric(value))
+          }
+          case None => throw new RuntimeException(
+            "Could not extract a value for field [%s]" format field.name
+          )
+        }
+
     }
+
     return record
   }
 
