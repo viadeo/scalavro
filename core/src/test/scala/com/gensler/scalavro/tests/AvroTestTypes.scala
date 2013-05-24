@@ -1,6 +1,6 @@
 package com.gensler.scalavro.tests
 
-import com.gensler.scalavro.util.{ FixedData, FixedDataCompanion }
+import com.gensler.scalavro.util.{ FixedData }
 
 // for testing AvroRecord
 case class Person(name: String, age: Int)
@@ -23,9 +23,5 @@ case class Epsilon[T]() extends Beta
 case class AlphaWrapper(inner: Alpha)
 
 // fixed data example
-case class MD5(bytes: Seq[Byte]) extends FixedData
-
-// companion for fixed data
-object MD5 extends FixedDataCompanion {
-  val length = 16
-}
+@FixedData.Length(16)
+case class MD5(bytes: Seq[Byte]) extends FixedData(bytes)

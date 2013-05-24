@@ -148,7 +148,7 @@ object AvroType {
   import com.gensler.scalavro.types.complex._
   import com.gensler.scalavro.util.ReflectionHelpers
   import com.gensler.scalavro.util.Union
-  import com.gensler.scalavro.util.{ FixedData, FixedDataCompanion }
+  import com.gensler.scalavro.util.FixedData
   import scala.collection.immutable
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
@@ -254,29 +254,19 @@ object AvroType {
 
             // fixed-length data
             else if (tpe <:< typeOf[FixedData]) {
-              val companionSymbol = tpe.typeSymbol.asClass.companionSymbol
-              if (companionSymbol != NoSymbol) {
-                val moduleMirror = ReflectionHelpers.classLoaderMirror reflectModule companionSymbol.asModule
-                if (moduleMirror.instance.isInstanceOf[FixedDataCompanion]) {
-                  val dataLength = moduleMirror.instance.asInstanceOf[FixedDataCompanion].length
-                  tpe match {
-                    case TypeRef(prefix, symbol, _) =>
-                      new AvroFixed(
-                        name = symbol.name.toString,
-                        size = dataLength,
-                        namespace = Some(prefix.toString stripSuffix ".type")
-                      )(
-                        tt.asInstanceOf[TypeTag[FixedData]]
-                      )
-                  }
+              FixedData.lengthAnnotationInstance(tpe.typeSymbol.asClass) match {
+                case Some(FixedData.Length(dataLength)) => {
+                  val TypeRef(prefix, symbol, _) = tpe
+                  new AvroFixed(
+                    name = symbol.name.toString,
+                    size = dataLength,
+                    namespace = Some(prefix.toString stripSuffix ".type")
+                  )(tt.asInstanceOf[TypeTag[FixedData]])
                 }
-                else throw new IllegalArgumentException(
-                  "The companion object for the supplied type must extend FixedDataCompanion."
+                case None => throw new IllegalArgumentException(
+                  "Error: FixedData classes must be decorated with a FixedData.Length annotation."
                 )
               }
-              else throw new IllegalArgumentException(
-                "Fixed types must be defined with a companion object that extends FixedCompanion."
-              )
             }
 
             // case classes

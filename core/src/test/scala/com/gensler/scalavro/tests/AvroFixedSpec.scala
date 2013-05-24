@@ -30,7 +30,7 @@ class AvroFixedSpec extends AvroSpec {
   }
 
   it should "get its size from the source FixedData companion object" in {
-    af.size should be (MD5.length)
+    af.size should be (16)
   }
 
 }

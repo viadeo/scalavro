@@ -14,7 +14,11 @@ import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
 class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
 
-  "AvroFixedIO" should "do stuff" in {
+  val md5Type = AvroType[MD5]
+  val io = md5Type.io
+
+  "AvroFixedIO" should "be available with the AvroTypeIO implicits in scope" in {
+
   }
 
   it should "do other stuff" in {
