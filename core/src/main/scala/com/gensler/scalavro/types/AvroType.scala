@@ -148,6 +148,7 @@ object AvroType {
   import com.gensler.scalavro.types.complex._
   import com.gensler.scalavro.util.ReflectionHelpers
   import com.gensler.scalavro.util.Union
+  import com.gensler.scalavro.util.{ FixedData, FixedDataCompanion }
   import scala.collection.immutable
   import scala.collection.immutable.ListMap
   import java.util.concurrent.atomic.AtomicReference
@@ -210,6 +211,7 @@ object AvroType {
         case None => {
 
           val newComplexType = {
+
             // sequences
             if (tpe.typeConstructor =:= typeOf[Seq[_]].typeConstructor) tpe match {
               case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
@@ -235,7 +237,7 @@ object AvroType {
                   new AvroEnum(
                     name = symbol.name.toString,
                     symbols = ReflectionHelpers.symbolsOf(enumTypeTag),
-                    namespace = Some(prefix.toString.stripSuffix(".type"))
+                    namespace = Some(prefix.toString stripSuffix ".type")
                   )(enumTypeTag)
               }
             }
@@ -247,6 +249,33 @@ object AvroType {
                 name = enumClass.getSimpleName,
                 symbols = enumClass.getEnumConstants.map(_.toString),
                 namespace = Some(enumClass.getPackage.getName)
+              )
+            }
+
+            // fixed-length data
+            else if (tpe <:< typeOf[FixedData]) {
+              val companionSymbol = tpe.typeSymbol.asClass.companionSymbol
+              if (companionSymbol != NoSymbol) {
+                val moduleMirror = ReflectionHelpers.classLoaderMirror reflectModule companionSymbol.asModule
+                if (moduleMirror.instance.isInstanceOf[FixedDataCompanion]) {
+                  val dataLength = moduleMirror.instance.asInstanceOf[FixedDataCompanion].length
+                  tpe match {
+                    case TypeRef(prefix, symbol, _) =>
+                      new AvroFixed(
+                        name = symbol.name.toString,
+                        size = dataLength,
+                        namespace = Some(prefix.toString stripSuffix ".type")
+                      )(
+                        tt.asInstanceOf[TypeTag[FixedData]]
+                      )
+                  }
+                }
+                else throw new IllegalArgumentException(
+                  "The companion object for the supplied type must extend FixedDataCompanion."
+                )
+              }
+              else throw new IllegalArgumentException(
+                "Fixed types must be defined with a companion object that extends FixedCompanion."
               )
             }
 
@@ -264,7 +293,7 @@ object AvroType {
                         AvroRecord.Field(name, fieldType)
                       }
                     },
-                    namespace = Some(prefix.toString.stripSuffix(".type"))
+                    namespace = Some(prefix.toString stripSuffix ".type")
                   )
               }
             }

@@ -73,6 +73,7 @@ object AvroTypeIO {
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.io.primitive._
   import com.gensler.scalavro.util.Union
+  import com.gensler.scalavro.util.FixedData
 
   import com.gensler.scalavro.types.complex._
   import com.gensler.scalavro.io.complex._
@@ -113,7 +114,7 @@ object AvroTypeIO {
     implicit def avroTypeToIO[T](set: AvroSet[T]): AvroSetIO[T] = AvroSetIO(set)
     implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T] = AvroEnumIO(enum)
     implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T] = AvroJEnumIO(enum)
-    implicit def avroTypeToIO[T](fixed: AvroFixed): AvroFixedIO = AvroFixedIO(fixed)
+    implicit def avroTypeToIO[T <: FixedData](fixed: AvroFixed[T]): AvroFixedIO[T] = AvroFixedIO(fixed)(fixed.tag)
     implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T] = AvroMapIO(map)
     implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T] = AvroRecordIO(error)
     implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T] = AvroRecordIO(record)
@@ -126,7 +127,7 @@ object AvroTypeIO {
         case t: AvroSet[_]           => avroTypeToIO(t)
         case t: AvroEnum[_]          => avroTypeToIO(t)
         case t: AvroJEnum[_]         => avroTypeToIO(t)
-        case t: AvroFixed            => avroTypeToIO(t)
+        case t: AvroFixed[_]         => avroTypeToIO(t)
         case t: AvroMap[_]           => avroTypeToIO(t)
         case t: AvroError[_]         => avroTypeToIO(t)
         case t: AvroRecord[_]        => avroTypeToIO(t)
