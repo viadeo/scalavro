@@ -17,6 +17,10 @@ class AvroFixedSpec extends AvroSpec {
     typeOf[af.scalaType] =:= typeOf[MD5] should be (true)
   }
 
+  it should "fail to be created from a parameterized type" in {
+    evaluating { AvroType[BadFixed[String]] } should produce[IllegalArgumentException]
+  }
+
   it should "be a complex AvroType" in {
     af.isPrimitive should be (false)
   }

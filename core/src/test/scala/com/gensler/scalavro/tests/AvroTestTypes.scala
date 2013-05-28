@@ -24,6 +24,12 @@ case class Epsilon[T]() extends Beta
 
 case class AlphaWrapper(inner: Alpha)
 
-// fixed data example
+// good fixed data example
 @FixedData.Length(16)
-case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
+case class MD5(override val bytes: immutable.Seq[Byte])
+  extends FixedData(bytes)
+
+// bad fixed data example
+@FixedData.Length(4)
+case class BadFixed[T](override val bytes: immutable.Seq[Byte])
+  extends FixedData(bytes)
