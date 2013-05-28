@@ -4,4 +4,4 @@ case class HandshakeRequest(
   clientHash: MD5,
   clientProtocol: Option[String],
   serverHash: MD5,
-  meta: Map[String, Seq[Byte]])
+  meta: Option[Map[String, Seq[Byte]]])

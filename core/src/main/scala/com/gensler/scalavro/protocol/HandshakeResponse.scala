@@ -6,4 +6,4 @@ case class HandshakeResponse(
   `match`: HandshakeMatch,
   serverProtocol: Option[String],
   serverHash: Option[MD5],
-  meta: Map[String, Seq[Byte]])
+  meta: Option[Map[String, Seq[Byte]]])
