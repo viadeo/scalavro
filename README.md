@@ -18,6 +18,7 @@ A runtime reflection-based Avro library in Scala.
 - [Maps](#maps)
 - [Enums](#enums)
 - [Unions](#unions)
+- [Fixed-Length Data](#fixed)
 - [Records](#records)
 - [Binary IO](#binary-io)
 
@@ -174,6 +175,14 @@ A runtime reflection-based Avro library in Scala.
       </code></td>
     </tr>
     <tr>
+      <td><code>
+        com.gensler.scalavro.util.FixedData
+      </code></td>
+      <td><code>
+        fixed
+      </code></td>
+    </tr>
+    <tr>
       <td><em>
         Supertypes of non-recursive case classes without type parameters
       </em></td>
@@ -205,7 +214,6 @@ A runtime reflection-based Avro library in Scala.
 - Convenient binary IO
 
 ## Current Limitations
-- `fixed` data is not yet supported
 - JSON IO is not yet implemented
 - Schema resolution (taking the writer's schema into account when reading) is not yet implemented
 
@@ -379,7 +387,9 @@ Which yields:
 #### com.gensler.scalavro.util.Union.union
 
 ```scala
+import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.util.Union._
+
 AvroType[union [Int] #or [String] #or [Boolean]].schema
 ```
 
@@ -389,53 +399,37 @@ Which yields:
 ["int", "string", "boolean"]
 ```
 
-<a name="supertypes-of-case-classes"></a>
-### Supertypes of case classes
-
-Given:
+<a name="fixed"></a>
+### Fixed-Length Data
 
 ```scala
-class Alpha
-abstract class Beta extends Alpha
-case class Gamma() extends Alpha
-case class Delta() extends Beta
-case class Epsilon[T]() extends Beta
-```
+package com.gensler.scalavro.tests
 
-Usage:
+import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.util.FixedData
+import scala.collection.immutable
 
-```scala
-import com.gensler.scalavro.AvroType
-AvroType[Alpha].schema
+@FixedData.Length(16)
+case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
+
+AvroType[MD5].schema
 ```
 
 Which yields:
 
 ```json
-[
-  {
-    "name" : "Delta",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  },
-  {
-    "name" : "Gamma",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  }
-]
+{
+  "name": "MD5",
+  "type": "fixed",
+  "size": 16,
+  namespace: "com.gensler.scalavro.tests"
+}
 ```
-
-Note that in the above example:
-
-- `Alpha` is excluded from the union because it is not a case class
-- `Beta` is excluded from the union because it is abstract and not a case class
-- `Epsilon` is excluded from the union because it takes type parameters
 
 <a name="records"></a>
 ### Records
+
+#### From case classes
 
 ```scala
 package com.gensler.scalavro.tests
@@ -489,6 +483,51 @@ Which yields:
   "namespace": "com.gensler.scalavro.tests"
 }
 ```
+
+<a name="supertypes-of-case-classes"></a>
+#### From supertypes of case classes
+
+Given:
+
+```scala
+class Alpha
+abstract class Beta extends Alpha
+case class Gamma() extends Alpha
+case class Delta() extends Beta
+case class Epsilon[T]() extends Beta
+```
+
+Usage:
+
+```scala
+import com.gensler.scalavro.AvroType
+AvroType[Alpha].schema
+```
+
+Which yields:
+
+```json
+[
+  {
+    "name" : "Delta",
+    "type" : "record",
+    "fields" : [],
+    "namespace" : "com.gensler.scalavro.tests"
+  },
+  {
+    "name" : "Gamma",
+    "type" : "record",
+    "fields" : [],
+    "namespace" : "com.gensler.scalavro.tests"
+  }
+]
+```
+
+Note that in the above example:
+
+- `Alpha` is excluded from the union because it is not a case class
+- `Beta` is excluded from the union because it is abstract and not a case class
+- `Epsilon` is excluded from the union because it takes type parameters
 
 <a name="binary-io"></a>
 ## Scalavro by Example: Binary IO
