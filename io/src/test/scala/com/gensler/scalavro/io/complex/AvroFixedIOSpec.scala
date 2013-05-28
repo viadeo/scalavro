@@ -7,10 +7,18 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
 import com.gensler.scalavro.types._
+import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
+import com.gensler.scalavro.util.FixedData
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import scala.collection.immutable
+
+import java.io.{ PipedInputStream, PipedOutputStream }
+
+// test type
+@FixedData.Length(16)
+case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
 
 class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -18,10 +26,17 @@ class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
   val io = md5Type.io
 
   "AvroFixedIO" should "be available with the AvroTypeIO implicits in scope" in {
-
+    md5Type.io.isInstanceOf[AvroFixedIO[_]] should be (true)
   }
 
-  it should "do other stuff" in {
+  it should "read and write instances of FixedData subclasses" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val testBytes = "abcd1234defg5678".getBytes.toIndexedSeq
+    md5Type.write(MD5(testBytes), out)
+
+    md5Type.read(in) should equal (Success(MD5(testBytes)))
   }
 
 }
