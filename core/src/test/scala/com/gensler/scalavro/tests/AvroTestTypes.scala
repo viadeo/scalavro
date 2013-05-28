@@ -1,6 +1,8 @@
 package com.gensler.scalavro.tests
 
-import com.gensler.scalavro.util.{ FixedData }
+import com.gensler.scalavro.util.FixedData
+
+import scala.collection.immutable
 
 // for testing AvroRecord
 case class Person(name: String, age: Int)
@@ -24,4 +26,4 @@ case class AlphaWrapper(inner: Alpha)
 
 // fixed data example
 @FixedData.Length(16)
-case class MD5(bytes: Seq[Byte]) extends FixedData(bytes)
+case class MD5(bytes: immutable.Seq[Byte]) extends FixedData(bytes)

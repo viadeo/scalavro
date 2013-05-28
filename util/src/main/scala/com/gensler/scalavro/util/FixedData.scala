@@ -2,6 +2,7 @@ package com.gensler.scalavro.util
 
 import com.gensler.scalavro
 
+import scala.collection.immutable
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.universe.{ Annotation => ReflectedAnnotation }
 import scala.annotation.{ StaticAnnotation }
@@ -16,7 +17,7 @@ import scala.annotation.{ StaticAnnotation }
   *              The size of this sequence must be exactly that declared in the
   *              `FixedData.Length` annotation.
   */
-abstract class FixedData(bytes: Seq[Byte]) {
+abstract class FixedData(bytes: immutable.Seq[Byte]) {
 
   private def lengthAnnotation: Option[FixedData.Length] = FixedData.lengthAnnotationInstance(
     ReflectionHelpers.classLoaderMirror.classSymbol(this.getClass)

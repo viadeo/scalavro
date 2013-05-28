@@ -154,6 +154,21 @@ class AvroTypeSpec extends AvroSpec {
     typeOf[avroType.scalaType] =:= typeOf[AlphaWrapper] should be (true)
   }
 
+  // fixed-length data
+  it should "return valid AvroFixed types for subclasses of FixedData" in {
+
+    val md5Type = AvroType[MD5]
+    md5Type.isInstanceOf[AvroFixed[_]] should be (true)
+    val md5Fixed = md5Type.asInstanceOf[AvroFixed[MD5]]
+    md5Fixed.namespace should be (Some("com.gensler.scalavro.tests"))
+    md5Fixed.name should be ("MD5")
+    md5Fixed.fullyQualifiedName should be ("com.gensler.scalavro.tests.MD5")
+    md5Fixed dependsOn md5Type should be (false)
+
+    // prettyPrint(md5Type.schema)
+    // prettyPrint(md5Type.parsingCanonicalForm)
+  }
+
   // records
   it should "return valid AvroRecord types for product types" in {
 

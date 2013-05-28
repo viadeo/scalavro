@@ -20,7 +20,6 @@ class FixedDataSpec extends FlatSpec with ShouldMatchers {
     evaluating {
       MissingLength(whoaBytes)
     } should produce[java.lang.AssertionError]
-
   }
 
   it should "synthesize a FixedData.Length instance given a ClassSymbol" in {
