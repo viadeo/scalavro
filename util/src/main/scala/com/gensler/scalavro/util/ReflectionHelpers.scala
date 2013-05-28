@@ -109,6 +109,48 @@ trait ReflectionHelpers {
   }
 
   /**
+    * Returns Some(MethodMirror) for the public construcor of the supplied
+    * class type that takes the supplied argument type as its only parameter.
+    *
+    * Returns None if no suitable public single-argument constructor can
+    * be found for the supplied type.
+    *
+    * @targ T the type of the class to inspect for a suitable single-argument
+    *         constructor
+    * @targ A the type of the constructor's formal parameter
+    */
+  protected[scalavro] def singleArgumentConstructor[T: TypeTag, A: TypeTag]: Option[MethodMirror] = {
+
+    val classType = typeOf[T]
+    val targetArgType = typeOf[A]
+    val constructorSymbol = classType.declaration(nme.CONSTRUCTOR)
+
+    def isPublicAndMatchesArgument(methodSymbol: MethodSymbol): Boolean =
+      methodSymbol.isPublic && {
+        methodSymbol.asMethod.paramss match {
+          case List(List(argSym)) => argSym.typeSignatureIn(classType) =:= targetArgType
+          case _                  => false
+        }
+      }
+
+    val singleArgumentConstructor: Option[MethodSymbol] =
+      if (constructorSymbol.isMethod && isPublicAndMatchesArgument(constructorSymbol.asMethod)) {
+        Some(constructorSymbol.asMethod)
+      }
+      else {
+        val ctors = constructorSymbol.asTerm.alternatives
+        ctors.map{ _.asMethod }.find { isPublicAndMatchesArgument }
+      }
+
+    singleArgumentConstructor.collect {
+      case constructorSymbol: MethodSymbol if classType.typeSymbol.isClass => {
+        val classMirror = classLoaderMirror reflectClass classType.typeSymbol.asClass
+        classMirror reflectConstructor constructorSymbol
+      }
+    }
+  }
+
+  /**
     * Returns a TypeTag in the current runtime universe for the supplied type.
     */
   protected[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(
