@@ -258,9 +258,15 @@ object AvroType {
                 case Some(FixedData.Length(dataLength)) => {
                   val TypeRef(prefix, symbol, _) = tpe
 
+                  if (tpe.typeSymbol.asClass.typeParams.nonEmpty) {
+                    throw new IllegalArgumentException(
+                      "FixedData classes with type parameters are not supported"
+                    )
+                  }
+
                   if (!ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].isDefined) {
                     throw new IllegalArgumentException(
-                      "Error: FixedData classes must define a public single-argument constructor taking a Seq[Byte]."
+                      "FixedData classes must define a public single-argument constructor taking a Seq[Byte]"
                     )
                   }
 
@@ -271,7 +277,7 @@ object AvroType {
                   )(tt.asInstanceOf[TypeTag[FixedData]])
                 }
                 case None => throw new IllegalArgumentException(
-                  "Error: FixedData classes must be decorated with a FixedData.Length annotation."
+                  "FixedData classes must be decorated with a FixedData.Length annotation"
                 )
               }
             }
