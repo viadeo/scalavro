@@ -422,7 +422,7 @@ Which yields:
   "name": "MD5",
   "type": "fixed",
   "size": 16,
-  namespace: "com.gensler.scalavro.tests"
+  "namespace": "com.gensler.scalavro.tests"
 }
 ```
 
