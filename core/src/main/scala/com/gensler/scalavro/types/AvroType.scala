@@ -257,6 +257,13 @@ object AvroType {
               FixedData.lengthAnnotationInstance(tpe.typeSymbol.asClass) match {
                 case Some(FixedData.Length(dataLength)) => {
                   val TypeRef(prefix, symbol, _) = tpe
+
+                  if (!ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].isDefined) {
+                    throw new IllegalArgumentException(
+                      "Error: FixedData classes must define a public single-argument constructor taking a Seq[Byte]."
+                    )
+                  }
+
                   new AvroFixed(
                     name = symbol.name.toString,
                     size = dataLength,
