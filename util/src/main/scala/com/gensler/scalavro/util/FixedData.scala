@@ -17,7 +17,7 @@ import scala.annotation.{ StaticAnnotation }
   *              The size of this sequence must be exactly that declared in the
   *              `FixedData.Length` annotation.
   */
-abstract class FixedData(bytes: immutable.Seq[Byte]) {
+abstract class FixedData(val bytes: immutable.Seq[Byte]) {
 
   private def lengthAnnotation: Option[FixedData.Length] = FixedData.lengthAnnotationInstance(
     ReflectionHelpers.classLoaderMirror.classSymbol(this.getClass)

@@ -26,4 +26,4 @@ case class AlphaWrapper(inner: Alpha)
 
 // fixed data example
 @FixedData.Length(16)
-case class MD5(bytes: immutable.Seq[Byte]) extends FixedData(bytes)
+case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
