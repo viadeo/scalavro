@@ -1,7 +1,8 @@
-package com.gensler.scalavro
+package com.gensler.scalavro.protocol
 
 import com.gensler.scalavro.types.{ AvroType, AvroNamedType }
 import com.gensler.scalavro.types.complex.{ AvroRecord, AvroUnion }
+import com.gensler.scalavro.{ CanonicalForm, JsonSchemifiable }
 import com.gensler.scalavro.JsonSchemaProtocol._
 
 import scala.language.existentials

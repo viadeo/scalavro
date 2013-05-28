@@ -316,8 +316,8 @@ object AvroType {
             else if (tpe <:< typeOf[Option[_]]) tpe match {
               case TypeRef(_, _, List(innerType)) => new AvroUnion(
                 Union.combine(
-                  Union.unary(ReflectionHelpers.tagForType(innerType)).underlyingConjunctionTag,
-                  typeTag[Unit]
+                  Union.unary(typeTag[Unit]).underlyingConjunctionTag,
+                  ReflectionHelpers.tagForType(innerType)
                 ),
                 tt
               )

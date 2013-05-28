@@ -381,7 +381,7 @@ AvroType[Option[String]].schema
 Which yields:
 
 ```json
-["string", "null"]
+["null", "string"]
 ```
 
 #### com.gensler.scalavro.util.Union.union
