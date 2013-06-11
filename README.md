@@ -410,7 +410,8 @@ import com.gensler.scalavro.util.FixedData
 import scala.collection.immutable
 
 @FixedData.Length(16)
-case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
+case class MD5(override val bytes: immutable.Seq[Byte])
+           extends FixedData(bytes)
 
 AvroType[MD5].schema
 ```
