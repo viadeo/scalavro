@@ -14,8 +14,6 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
 import java.io.{
-  ByteArrayInputStream,
-  ByteArrayOutputStream,
   PipedInputStream,
   PipedOutputStream
 }
@@ -28,38 +26,57 @@ case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
 class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
 
-  val personType = AvroType.fromType[Person].get
-  val io = personType.io
-
   "AvroRecordIO" should "instantiate implicitly from an AvroRecord" in {
-    val avroTypeIO: AvroTypeIO[_] = personType
-    avroTypeIO should equal (io)
+    val personIO = AvroType[Person].io
+    val avroTypeIO: AvroTypeIO[_] = personIO
+    avroTypeIO should equal (personIO)
   }
 
   it should "read and write simple records" in {
-    val out = new ByteArrayOutputStream
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val personIO = AvroType[Person].io
+
     val julius = Person("Julius Caesar", 2112)
-    io.write(julius, out)
-    val in = new ByteArrayInputStream(out.toByteArray)
-    io read in should equal (Success(julius))
+
+    personIO.write(julius, out)
+    personIO read in should equal (Success(julius))
   }
 
-  it should "read and write complex records" in {
+  it should "read and write complex record instances" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val santaListIO = AvroType[SantaList].io
+
     val sList = SantaList(
       nice = Seq(Person("Suzie", 9)),
-      naughty = Seq(Person("Tommy", 7))
+      naughty = Seq(Person("Tommy", 7), Person("Eve", 3))
     )
 
-    val santaListType = AvroType.fromType[SantaList].get
-    val santaIO = santaListType.io
+    santaListIO.write(sList, out)
+    santaListIO read in should equal (Success(sList))
+  }
 
-    val out = new ByteArrayOutputStream
-    santaIO.write(sList, out)
+  it should "read and write HandshakeRequest instances" in {
+    import com.gensler.scalavro.protocol.{ HandshakeRequest, MD5 }
 
-    val in = new ByteArrayInputStream(out.toByteArray)
-    val Success(readResult) = santaIO read in
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
 
-    readResult should equal (sList)
+    val handshakeRequestIO = AvroType[HandshakeRequest].io
+
+    val request = HandshakeRequest(
+      clientHash = MD5("abcd1234defg5678".getBytes.toIndexedSeq),
+      clientProtocol = Some("{}"), // None,
+      serverHash = MD5("abcd1234defg5678".getBytes.toIndexedSeq),
+      meta = Some(Map[String, Seq[Byte]]()) // None
+    )
+
+    handshakeRequestIO.write(request, out)
+    val readResult = (handshakeRequestIO read in).get
+    readResult should equal (request)
   }
 
 }

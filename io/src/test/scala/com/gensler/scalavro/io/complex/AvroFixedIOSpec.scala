@@ -12,13 +12,11 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.util.FixedData
 
+import com.gensler.scalavro.protocol.MD5 // test type
+
 import scala.collection.immutable
 
 import java.io.{ PipedInputStream, PipedOutputStream }
-
-// test type
-@FixedData.Length(16)
-case class MD5(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
 
 class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
 

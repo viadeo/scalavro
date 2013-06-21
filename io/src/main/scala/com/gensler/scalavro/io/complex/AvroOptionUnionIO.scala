@@ -17,6 +17,10 @@ import java.io.{ InputStream, OutputStream }
 private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: Option[_]: TypeTag](
     avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 
+  // IMPORTANT:
+  // null is the 0th index in the union, per AvroType.fromType
+  val (nullIndex, nonNullIndex) = (0L, 1L)
+
   val TypeRef(_, _, List(innerType)) = typeOf[T]
 
   val innerAvroType = avroType.memberAvroTypes.find { at => innerType <:< at.tag.tpe }.get
@@ -26,11 +30,11 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
 
   private def asGenericHelper[X <: T: TypeTag, A: TypeTag](obj: X) = obj match {
     case Some(value) => innerAvroType.asInstanceOf[AvroType[A]].asGeneric(value.asInstanceOf[A])
-    case None        => Unit
+    case None        => null
   }
 
   def write[X <: T: TypeTag](obj: X, stream: OutputStream) = {
-    AvroLongIO.write(if (obj.isDefined) 0L else 1L, stream)
+    AvroLongIO.write(if (obj.isDefined) nonNullIndex else nullIndex, stream)
     writeHelper(obj, stream)(typeTag[X], innerAvroType.tag)
   }
 
@@ -46,8 +50,8 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
 
   def readHelper[A: TypeTag](stream: InputStream) = {
     val index = AvroLongIO.read(stream).get
-    if (index == 0) Some(innerAvroType.read(stream).get.asInstanceOf[A])
-    else if (index == 1) None
+    if (index == nonNullIndex) Some(innerAvroType.read(stream).get.asInstanceOf[A])
+    else if (index == nullIndex) None
     else throw new AvroDeserializationException[T]
   }
 }
