@@ -2,6 +2,7 @@ package com.gensler.scalavro.io
 
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.types.{ AvroType, AvroPrimitiveType }
+import com.gensler.scalavro.util.Logging
 
 import org.apache.avro.generic.GenericData
 
@@ -10,7 +11,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{ InputStream, OutputStream }
 
-abstract class AvroTypeIO[T: TypeTag] {
+abstract class AvroTypeIO[T: TypeTag] extends Logging {
 
   /**
     * Returns this AvroTypeIO instance.

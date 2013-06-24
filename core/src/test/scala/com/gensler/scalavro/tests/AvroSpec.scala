@@ -3,11 +3,9 @@ package com.gensler.scalavro.tests
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import spray.json.{ JsValue, PrettyPrinter }
-import org.slf4j.{ Logger, LoggerFactory }
+import com.gensler.scalavro.util.Logging
 
-trait AvroSpec extends FlatSpec with ShouldMatchers {
-
-  protected val log = LoggerFactory.getLogger(getClass.getName)
+trait AvroSpec extends FlatSpec with ShouldMatchers with Logging {
 
   protected def prettyPrint(json: JsValue) {
     val buff = new java.lang.StringBuilder
