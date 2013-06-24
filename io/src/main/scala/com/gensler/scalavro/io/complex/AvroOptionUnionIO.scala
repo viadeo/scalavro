@@ -52,6 +52,8 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
     val index = AvroLongIO.read(stream).get
     if (index == nonNullIndex) Some(innerAvroType.read(stream).get.asInstanceOf[A])
     else if (index == nullIndex) None
-    else throw new AvroDeserializationException[T]
+    else throw new AvroDeserializationException[T](
+      detailedMessage = "Encountered an index that was not zero or one: [%s]" format index
+    )
   }
 }

@@ -115,9 +115,9 @@ trait ReflectionHelpers {
     * Returns None if no suitable public single-argument constructor can
     * be found for the supplied type.
     *
-    * @targ T the type of the class to inspect for a suitable single-argument
-    *         constructor
-    * @targ A the type of the constructor's formal parameter
+    * @tparam T the type of the class to inspect for a suitable single-argument
+    *           constructor
+    * @tparam A the type of the constructor's formal parameter
     */
   protected[scalavro] def singleArgumentConstructor[T: TypeTag, A: TypeTag]: Option[MethodMirror] = {
 
