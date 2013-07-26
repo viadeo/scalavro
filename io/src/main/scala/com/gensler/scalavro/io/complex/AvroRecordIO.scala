@@ -70,16 +70,7 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     * supplied stream.
     */
   def read(stream: InputStream) = Try {
-    log.debug("Reading record of type [%s]" format avroType.tag.tpe)
-    val args = avroType.fields map { field =>
-      {
-        log.debug("Reading field [%s] of type [%s]".format(
-          field.name,
-          field.fieldType.tag.tpe
-        ))
-        field.fieldType.read(stream).get
-      }
-    }
+    val args = avroType.fields map { field => field.fieldType.read(stream).get }
     ReflectionHelpers.instantiateCaseClassWith(args)(avroType.tag).get
   }
 

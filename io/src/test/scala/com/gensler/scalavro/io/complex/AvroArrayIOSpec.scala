@@ -19,7 +19,7 @@ class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
   val io = intArrayType.io
 
   "AvroArrayIO" should "be available with the AvroTypeIO implicits in scope" in {
-    io.isInstanceOf[AvroArrayIO[_]] should be (true)
+    io.isInstanceOf[AvroArrayIO[_, _]] should be (true)
   }
 
   it should "read and write arrays" in {
@@ -30,6 +30,22 @@ class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
 
     val in = new ByteArrayInputStream(out.toByteArray)
     io read in should equal (Success(s1))
+  }
+
+  it should "return properly typed Seq subtypes when reading" in {
+    val indexedStringSeq = AvroType[IndexedSeq[String]]
+    val indexedStringSeqIO = indexedStringSeq.io
+
+    val strings = IndexedSeq("Aa", "Bb", "Cc", "Dd", "Ee")
+
+    val out = new ByteArrayOutputStream
+    indexedStringSeqIO.write(strings, out)
+
+    val in = new ByteArrayInputStream(out.toByteArray)
+    val Success(readResult) = indexedStringSeqIO read in
+
+    readResult should equal (strings)
+    readResult.isInstanceOf[IndexedSeq[_]] should be (true)
   }
 
 }
