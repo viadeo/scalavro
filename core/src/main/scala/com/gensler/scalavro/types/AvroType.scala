@@ -163,6 +163,9 @@ object AvroType {
     typeOf[Float] -> AvroFloat,
     typeOf[Int] -> AvroInt,
     typeOf[Long] -> AvroLong,
+    // typeOf[Byte] -> AvroByte,    // TODO?
+    // typeOf[Short] -> AvroShort,  // TODO?
+    // typeOf[Char] -> AvroChar,    // TODO?
     typeOf[String] -> AvroString
   )
 
@@ -354,25 +357,32 @@ object AvroType {
               new AvroUnion(new Union()(notTypeTag), tt)
             }
 
-            else {
-              // last-ditch attempt: union of case class subtypes of T
+            // abstract super types of concrete avro-typable types
+            else if (tpe.typeSymbol.isClass) {
+              // last-ditch attempt: union of avro-typeable subtypes of T
               import ReflectionHelpers._
 
-              val subTypes = caseClassSubTypesOf[T]
-              if (subTypes.nonEmpty) {
-                var u = Union.unary(tagForType(subTypes.head))
-                subTypes.tail.foreach { subType =>
+              val subTypeTags = typeableSubTypesOf[T]
+
+              if (subTypeTags.nonEmpty) {
+                var u = Union.unary(subTypeTags.head)
+                subTypeTags.tail.foreach { subTypeTag =>
                   u = Union.combine(
                     u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
-                    tagForType(subType)
+                    subTypeTag
                   )
                 }
                 new AvroUnion(u, tt)
               } // other types are not handled
+
               else throw new IllegalArgumentException(
                 "Unable to find or make an AvroType for the supplied type [%s]" format tpe
               )
             }
+
+            else throw new IllegalArgumentException(
+              "Unable to find or make an AvroType for the supplied type [%s]" format tpe
+            )
           }
 
           // add the synthesized AvroType to the complex type cache table

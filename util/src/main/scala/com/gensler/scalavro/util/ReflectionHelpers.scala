@@ -68,24 +68,66 @@ trait ReflectionHelpers {
   }
 
   /**
-    * Returns all currently loaded case class subtypes of the supplied type.
+    * Returns `true` iff the supplied class symbol corresponds to a
+    * serializable type.
     */
-  protected[scalavro] def caseClassSubTypesOf[S: TypeTag]: Seq[Type] = {
+  protected[scalavro] def classSymbolIsTypeable(sym: ClassSymbol): Boolean = {
+
+    val symType = sym.selfType
+    // val symTag = tagForType(symType)
+
+    sym.isPrimitive ||
+      sym.isAbstractClass || sym.isTrait ||
+      (sym.isCaseClass && sym.typeParams.isEmpty) ||
+      symType <:< typeOf[Set[_]] ||
+      symType <:< typeOf[Map[String, _]] ||
+      symType <:< typeOf[Seq[_]] ||
+      symType.baseClasses.head.owner == typeOf[Enumeration].typeSymbol ||
+      classLoaderMirror.runtimeClass(symType.typeSymbol.asClass).isEnum ||
+      symType <:< typeOf[FixedData] ||
+      symType <:< typeOf[Either[_, _]] ||
+      symType <:< typeOf[Option[_]] ||
+      symType <:< typeOf[Union.not[_]] ||
+      symType <:< typeOf[Union[_]]
+  }
+
+  /**
+    * Returns a TypeTag for each currently loaded avro-typeable subtype of
+    * the supplied type.
+    */
+  protected[scalavro] def typeableSubTypesOf[T: TypeTag]: Seq[TypeTag[_]] = {
     import scala.collection.JavaConversions.asScalaSet
     import java.lang.reflect.Modifier
 
-    // filter out abstract classes
-    val subClassSymbols = asScalaSet(
-      reflections.getSubTypesOf(classLoaderMirror.runtimeClass(typeOf[S]))
-    ).collect {
-        case clazz: Class[_] if !Modifier.isAbstract(clazz.getModifiers) =>
-          classLoaderMirror classSymbol clazz
-      }
+    val tType = typeOf[T]
+    val tSym = typeOf[T].typeSymbol
 
-    // filter class symbols to include only case classes with no type parameters
-    subClassSymbols.collect {
-      case sym: ClassSymbol if (sym.isCaseClass && sym.typeParams.isEmpty) => sym.selfType
-    }.toSeq
+    if (!tSym.isClass) Seq()
+
+    else if (tSym.asClass.isSealed) {
+      tSym.asClass.knownDirectSubclasses.collect {
+        case sym: Symbol if (
+          sym.isClass &&
+          !sym.asClass.isAbstractType &&
+          classSymbolIsTypeable(sym.asClass)
+        ) => tagForType(sym.asClass.selfType)
+      }.toSeq
+    }
+
+    else {
+      // filter out abstract classes
+      val subClassSymbols = asScalaSet(
+        reflections.getSubTypesOf(classLoaderMirror.runtimeClass(typeOf[T]))
+      ).collect {
+          case clazz: Class[_] if !Modifier.isAbstract(clazz.getModifiers) =>
+            classLoaderMirror classSymbol clazz
+        }
+
+      // filter class symbols to include only avro-typable classes
+      subClassSymbols.collect {
+        case sym: ClassSymbol if classSymbolIsTypeable(sym) => tagForType(sym.selfType)
+      }.toSeq
+    }
   }
 
   /**
