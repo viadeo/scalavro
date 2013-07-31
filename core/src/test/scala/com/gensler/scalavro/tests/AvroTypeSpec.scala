@@ -159,7 +159,7 @@ class AvroTypeSpec extends AvroSpec {
     }
   }
 
-  it should "return valid AvroUnion types supertypes of case classes" in {
+  it should "return valid AvroUnion types supertypes of avro-typeable classes" in {
     AvroType[Alpha] match {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
@@ -167,6 +167,7 @@ class AvroTypeSpec extends AvroSpec {
         avroType.union.typeMembers should have size (2)
         avroType.union.contains[Gamma] should be (true)
         avroType.union.contains[Delta] should be (true)
+        avroType.union.contains[AlphaCollection] should be (false)
       }
       case _ => fail
     }

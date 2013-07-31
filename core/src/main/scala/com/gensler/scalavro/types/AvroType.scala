@@ -6,6 +6,7 @@ import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.JsonSchemaProtocol._
+import com.gensler.scalavro.util.Logging
 
 import scala.util.{ Try, Success, Failure }
 import scala.language.existentials
@@ -142,7 +143,7 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
 /**
   * Companion object for [[AvroType]].
   */
-object AvroType {
+object AvroType extends Logging {
 
   import com.gensler.scalavro.types.primitive._
   import com.gensler.scalavro.types.complex._
@@ -188,14 +189,18 @@ object AvroType {
     */
   def fromType[T](implicit typeTag: TypeTag[T]): Try[AvroType[T]] = fromTypeHelper(typeTag)
 
-  private def fromTypeHelper[T](
+  private[scalavro] def fromTypeHelper[T](
     implicit tt: TypeTag[T],
     processedTypes: Set[Type] = Set[Type]()): Try[AvroType[T]] = Try {
 
-    if (processedTypes exists { _ =:= tt.tpe }) throw new CyclicTypeDependencyException(
-      "A cyclic type dependency was detected while attempting to " +
-        "synthesize an AvroType for  type [%s]" format tt.tpe
-    )
+    def cyclicTypeDependencyException() {
+      throw new CyclicTypeDependencyException(
+        "A cyclic type dependency was detected while attempting to " +
+          "synthesize an AvroType for  type [%s]" format tt.tpe
+      )
+    }
+
+    if (processedTypes exists { _ =:= tt.tpe }) cyclicTypeDependencyException()
 
     val tpe = tt.tpe
 
@@ -217,12 +222,22 @@ object AvroType {
 
             // sets
             if (tpe.typeConstructor =:= typeOf[Set[_]].typeConstructor) tpe match {
-              case TypeRef(_, _, List(itemType)) => new AvroSet()(ReflectionHelpers.tagForType(itemType))
+              case TypeRef(_, _, List(itemType)) => {
+                if (processedTypes.exists { _ =:= itemType })
+                  cyclicTypeDependencyException()
+
+                new AvroSet()(ReflectionHelpers.tagForType(itemType))
+              }
             }
 
             // string-keyed maps
             else if (tpe <:< typeOf[Map[String, _]]) tpe match {
-              case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))
+              case TypeRef(_, _, List(stringType, itemType)) => {
+                if (processedTypes.exists { _ =:= itemType })
+                  cyclicTypeDependencyException()
+
+                new AvroMap()(ReflectionHelpers.tagForType(itemType))
+              }
             }
 
             // sequences
@@ -234,6 +249,9 @@ object AvroType {
               }
 
               val itemType = seqSuperSymbol.map(_.typeParams(0).asType.toTypeIn(tpe)).get
+
+              if (processedTypes.exists { _ =:= itemType })
+                cyclicTypeDependencyException()
 
               def makeArray[I](itemTag: TypeTag[I]) = {
                 new AvroArray()(itemTag, tt.asInstanceOf[TypeTag[Seq[I]]])
@@ -325,24 +343,35 @@ object AvroType {
 
             // binary unions via scala.Either[A, B]
             else if (tpe <:< typeOf[Either[_, _]]) tpe match {
-              case TypeRef(_, _, List(left, right)) => new AvroUnion(
-                Union.combine(
-                  Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
-                  ReflectionHelpers.tagForType(right)
-                ),
-                tt
-              )
+              case TypeRef(_, _, List(left, right)) => {
+                if (processedTypes.exists { pt => pt =:= left || pt =:= right })
+                  cyclicTypeDependencyException()
+
+                new AvroUnion(
+                  Union.combine(
+                    Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
+                    ReflectionHelpers.tagForType(right)
+                  ),
+                  tt
+                )
+              }
             }
 
             // binary unions via scala.Option[T]
             else if (tpe <:< typeOf[Option[_]]) tpe match {
-              case TypeRef(_, _, List(innerType)) => new AvroUnion(
-                Union.combine(
-                  Union.unary(typeTag[Unit]).underlyingConjunctionTag,
-                  ReflectionHelpers.tagForType(innerType)
-                ),
-                tt
-              )
+              case TypeRef(_, _, List(innerType)) => {
+
+                if (processedTypes.exists { _ =:= innerType })
+                  cyclicTypeDependencyException()
+
+                new AvroUnion(
+                  Union.combine(
+                    Union.unary(typeTag[Unit]).underlyingConjunctionTag,
+                    ReflectionHelpers.tagForType(innerType)
+                  ),
+                  tt
+                )
+              }
             }
 
             // N-ary unions
@@ -362,16 +391,23 @@ object AvroType {
               // last-ditch attempt: union of avro-typeable subtypes of T
               import ReflectionHelpers._
 
-              val subTypeTags = typeableSubTypesOf[T]
+              val subTypeTags = typeableSubTypesOf[T].filter { subTypeTag =>
+                fromTypeHelper(
+                  subTypeTag,
+                  processedTypes + tpe
+                ).toOption.isDefined
+              }
 
               if (subTypeTags.nonEmpty) {
                 var u = Union.unary(subTypeTags.head)
+
                 subTypeTags.tail.foreach { subTypeTag =>
                   u = Union.combine(
                     u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
                     subTypeTag
                   )
                 }
+
                 new AvroUnion(u, tt)
               } // other types are not handled
 

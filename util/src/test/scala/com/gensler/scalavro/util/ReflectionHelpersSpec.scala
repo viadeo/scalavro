@@ -41,9 +41,9 @@ class ReflectionHelpersSpec extends FlatSpec with ShouldMatchers {
     caseClassParamsOf[Person] should have size (2)
   }
 
-  it should "return the case class subtypes of a given type" in {
-    caseClassSubTypesOf[A] should have size (2)
-    caseClassSubTypesOf[B] should have size (1)
+  it should "return the avro-typable subtypes of a given type" in {
+    typeableSubTypesOf[A] should have size (2)
+    typeableSubTypesOf[B] should have size (1)
   }
 
 }

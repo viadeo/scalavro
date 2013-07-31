@@ -33,19 +33,20 @@ class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "return properly typed Seq subtypes when reading" in {
-    val indexedStringSeq = AvroType[IndexedSeq[String]]
-    val indexedStringSeqIO = indexedStringSeq.io
+    import scala.collection.mutable.ArrayBuffer
+    val avroArrayBuffer = AvroType[ArrayBuffer[String]]
+    val avroArrayBufferIO = avroArrayBuffer.io
 
-    val strings = IndexedSeq("Aa", "Bb", "Cc", "Dd", "Ee")
+    val strings = ArrayBuffer("Aa", "Bb", "Cc", "Dd", "Ee")
 
     val out = new ByteArrayOutputStream
-    indexedStringSeqIO.write(strings, out)
+    avroArrayBufferIO.write(strings, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
-    val Success(readResult) = indexedStringSeqIO read in
+    val Success(readResult) = avroArrayBufferIO read in
 
     readResult should equal (strings)
-    readResult.isInstanceOf[IndexedSeq[_]] should be (true)
+    readResult.isInstanceOf[ArrayBuffer[_]] should be (true)
   }
 
 }

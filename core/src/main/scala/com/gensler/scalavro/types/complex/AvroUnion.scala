@@ -9,6 +9,7 @@ import com.gensler.scalavro.util.Union
 
 import scala.reflect.runtime.universe._
 import scala.util.Success
+import scala.collection.mutable
 
 import spray.json._
 
@@ -25,7 +26,7 @@ class AvroUnion[U <: Union.not[_]: TypeTag, T](
   def schema() = memberAvroTypes.map { _.schema }.toJson
 
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = memberAvroTypes.map { at =>
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = memberAvroTypes.map { at =>
     selfContainedSchemaOrFullyQualifiedName(at, resolvedSymbols)
   }.toJson
 

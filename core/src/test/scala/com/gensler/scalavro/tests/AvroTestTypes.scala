@@ -16,13 +16,21 @@ case class B(a: A)
 case class Greeting(message: String)
 case class Curse(message: String)
 
-class Alpha
+sealed class Alpha
 abstract class Beta extends Alpha
 case class Gamma() extends Alpha
 case class Delta() extends Beta
 case class Epsilon[T]() extends Beta
-
 case class AlphaWrapper(inner: Alpha)
+
+class AlphaCollection(as: Seq[Alpha]) extends Alpha with Seq[Alpha] {
+  def apply(idx: Int): Alpha = as apply idx
+  def iterator: Iterator[Alpha] = as.iterator
+  def length: Int = as.length
+}
+object AlphaCollection {
+  def apply(as: Alpha*): AlphaCollection = new AlphaCollection(as)
+}
 
 // good fixed data example
 @FixedData.Length(16)
