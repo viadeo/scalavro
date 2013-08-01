@@ -212,19 +212,38 @@ object AvroType {
 
           val newComplexType = {
 
-            // sequences
-            if (tpe.typeConstructor =:= typeOf[Seq[_]].typeConstructor) tpe match {
-              case TypeRef(_, _, List(itemType)) => new AvroArray()(ReflectionHelpers.tagForType(itemType))
-            }
-
             // sets
-            else if (tpe.typeConstructor =:= typeOf[Set[_]].typeConstructor) tpe match {
+            if (tpe.typeConstructor =:= typeOf[Set[_]].typeConstructor) tpe match {
               case TypeRef(_, _, List(itemType)) => new AvroSet()(ReflectionHelpers.tagForType(itemType))
             }
 
             // string-keyed maps
             else if (tpe <:< typeOf[Map[String, _]]) tpe match {
               case TypeRef(_, _, List(stringType, itemType)) => new AvroMap()(ReflectionHelpers.tagForType(itemType))
+            }
+
+            // sequences
+            else if (tpe <:< typeOf[Seq[_]]) {
+
+              // Traverse up to the Seq supertype and get the type of items
+              val seqSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
+                bcSymbol == typeOf[Seq[_]].typeSymbol
+              }
+
+              val itemType = seqSuperSymbol.map(_.typeParams(0).asType.toTypeIn(tpe)).get
+
+              def makeArray[I](itemTag: TypeTag[I]) = {
+                new AvroArray()(itemTag, tt.asInstanceOf[TypeTag[Seq[I]]])
+              }
+
+              if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
+                throw new IllegalArgumentException(
+                  "Sequence subclasses must have a companion object with a public varargs " +
+                    "apply method, but no such method was found for type [%s].".format(tpe)
+                )
+              }
+
+              makeArray(ReflectionHelpers.tagForType(itemType))
             }
 
             // Scala enumerations

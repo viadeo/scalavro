@@ -17,7 +17,7 @@ class AvroUnionSpec extends AvroSpec {
     u1 match {
       case avroType: AvroUnion[_, _] => {
 
-        println(avroType.union.typeMembers)
+        // println(avroType.union.typeMembers)
 
         avroType.union.contains[String] should be (true)
         avroType.union.contains[Int] should be (true)

@@ -139,7 +139,7 @@ trait ReflectionHelpers {
       }
       else {
         val ctors = constructorSymbol.asTerm.alternatives
-        ctors.map{ _.asMethod }.find { isPublicAndMatchesArgument }
+        ctors.map { _.asMethod }.find { isPublicAndMatchesArgument }
       }
 
     singleArgumentConstructor.collect {
@@ -159,6 +159,40 @@ trait ReflectionHelpers {
       def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
     }
   )
+
+  /**
+    * Returns Some(methodMirror) for the public varargs apply method of the
+    * supplied type's companion object, if one exists.  Returns None otherwise.
+    */
+  protected[scalavro] def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
+
+    def isPublicAndVarargs(methodSymbol: MethodSymbol): Boolean =
+      methodSymbol.isPublic && methodSymbol.isVarargs
+
+    val typeSymbol = typeOf[T].typeSymbol
+    if (!typeSymbol.isClass) None // supplied type is not a class
+    else {
+      val classSymbol = typeSymbol.asClass
+      if (!classSymbol.companionSymbol.isModule) None // supplied class type has no companion
+      else {
+        val moduleSymbol = classSymbol.companionSymbol.asModule
+        val companionInstance = classLoaderMirror.reflectModule(moduleSymbol).instance
+        val companionInstanceMirror = classLoaderMirror reflect companionInstance
+        val companionClassType = moduleSymbol.moduleClass.asClass.asType.toType
+
+        val applySymbol: Option[MethodSymbol] = {
+          val symbol = companionClassType.member("apply": TermName)
+          if (symbol.isMethod && isPublicAndVarargs(symbol.asMethod)) Some(symbol.asMethod)
+          else {
+            val choices = symbol.asTerm.alternatives
+            choices.map(_.asMethod).find(isPublicAndVarargs)
+          }
+        }
+
+        applySymbol.map { symbol => companionInstanceMirror reflectMethod symbol }
+      }
+    }
+  }
 
   /**
     * Attempts to fetch the value of a named component of a product instance,
