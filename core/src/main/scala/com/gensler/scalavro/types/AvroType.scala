@@ -158,15 +158,15 @@ object AvroType extends Logging {
   private val primitiveTypeCache: ListMap[Type, AvroType[_]] = ListMap(
     typeOf[Unit] -> AvroNull,
     typeOf[Boolean] -> AvroBoolean,
-    typeOf[Seq[Byte]] -> AvroBytes,
-    typeOf[immutable.Seq[Byte]] -> AvroBytes,
+    typeOf[Seq[Byte]] -> AvroBytes, // TODO: handle arbitrary subclasses of Seq[Byte]
+    typeOf[immutable.Seq[Byte]] -> AvroBytes, // TODO: handle arbitrary subclasses of Seq[Byte]
     typeOf[Double] -> AvroDouble,
     typeOf[Float] -> AvroFloat,
+    typeOf[Byte] -> AvroByte,
+    typeOf[Char] -> AvroChar,
+    typeOf[Short] -> AvroShort,
     typeOf[Int] -> AvroInt,
     typeOf[Long] -> AvroLong,
-    // typeOf[Byte] -> AvroByte,    // TODO?
-    // typeOf[Short] -> AvroShort,  // TODO?
-    // typeOf[Char] -> AvroChar,    // TODO?
     typeOf[String] -> AvroString
   )
 

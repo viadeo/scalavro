@@ -104,6 +104,9 @@ object AvroTypeIO {
         case AvroBytes   => AvroBytesIO
         case AvroDouble  => AvroDoubleIO
         case AvroFloat   => AvroFloatIO
+        case AvroByte    => AvroByteIO
+        case AvroChar    => AvroCharIO
+        case AvroShort   => AvroShortIO
         case AvroInt     => AvroIntIO
         case AvroLong    => AvroLongIO
         case AvroNull    => AvroNullIO

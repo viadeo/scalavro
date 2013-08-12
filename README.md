@@ -52,10 +52,26 @@ A runtime reflection-based Avro library in Scala.
     </tr>
     <tr>
       <td><code>
-        Long
+        Byte
       </code></td>
       <td><code>
-        long
+        int
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Char
+      </code></td>
+      <td><code>
+        int
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Short
+      </code></td>
+      <td><code>
+        int
       </code></td>
     </tr>
     <tr>
@@ -68,10 +84,10 @@ A runtime reflection-based Avro library in Scala.
     </tr>
     <tr>
       <td><code>
-        Double
+        Long
       </code></td>
       <td><code>
-        double
+        long
       </code></td>
     </tr>
     <tr>
@@ -80,6 +96,14 @@ A runtime reflection-based Avro library in Scala.
       </code></td>
       <td><code>
         float
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
+        Double
+      </code></td>
+      <td><code>
+        double
       </code></td>
     </tr>
     <tr>
