@@ -221,23 +221,57 @@ object AvroType extends Logging {
           val newComplexType = {
 
             // sets
-            if (tpe.typeConstructor =:= typeOf[Set[_]].typeConstructor) tpe match {
-              case TypeRef(_, _, List(itemType)) => {
-                if (processedTypes.exists { _ =:= itemType })
-                  cyclicTypeDependencyException()
+            if (tpe <:< typeOf[Set[_]]) {
 
-                new AvroSet()(ReflectionHelpers.tagForType(itemType))
+              // Traverse up to the Seq supertype and get the type of items
+              val setSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
+                bcSymbol == typeOf[Set[_]].typeSymbol
               }
+
+              val itemType = setSuperSymbol.map(_.typeParams(0).asType.toTypeIn(tpe)).get
+
+              if (processedTypes.exists { _ =:= itemType })
+                cyclicTypeDependencyException()
+
+              def makeSet[I](itemTag: TypeTag[I]) = {
+                new AvroSet()(itemTag, tt.asInstanceOf[TypeTag[Set[I]]])
+              }
+
+              if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
+                throw new IllegalArgumentException(
+                  "Set subclasses must have a companion object with a public varargs " +
+                    "apply method, but no such method was found for type [%s].".format(tpe)
+                )
+              }
+
+              makeSet(ReflectionHelpers.tagForType(itemType))
             }
 
             // string-keyed maps
-            else if (tpe <:< typeOf[Map[String, _]]) tpe match {
-              case TypeRef(_, _, List(stringType, itemType)) => {
-                if (processedTypes.exists { _ =:= itemType })
-                  cyclicTypeDependencyException()
+            else if (tpe <:< typeOf[Map[String, _]]) {
 
-                new AvroMap()(ReflectionHelpers.tagForType(itemType))
+              // Traverse up to the Map supertype and get the type of items
+              val mapSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
+                bcSymbol == typeOf[Map[_, _]].typeSymbol
               }
+
+              val itemType = mapSuperSymbol.map(_.typeParams(1).asType.toTypeIn(tpe)).get
+
+              if (processedTypes.exists { _ =:= itemType })
+                cyclicTypeDependencyException()
+
+              def makeMap[I](itemTag: TypeTag[I]) = {
+                new AvroMap()(itemTag, tt.asInstanceOf[TypeTag[Map[String, I]]])
+              }
+
+              if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
+                throw new IllegalArgumentException(
+                  "String-keyed map subclasses must have a companion object with a public varargs " +
+                    "apply method, but no such method was found for type [%s].".format(tpe)
+                )
+              }
+
+              makeMap(ReflectionHelpers.tagForType(itemType))
             }
 
             // sequences

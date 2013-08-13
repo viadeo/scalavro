@@ -11,7 +11,12 @@ import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  PipedInputStream,
+  PipedOutputStream
+}
 
 class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -19,10 +24,13 @@ class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
   val io = setType.io
 
   "AvroSetIO" should "be available with the AvroTypeIO implicits in scope" in {
-    io.isInstanceOf[AvroSetIO[_]] should be (true)
+    io.isInstanceOf[AvroSetIO[_, _]] should be (true)
   }
 
   it should "read and write sets" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
     val s1 = Set(
       Person("Russel", 45),
       Person("Whitehead", 53),
@@ -32,11 +40,25 @@ class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
       Person("Turing", 24)
     )
 
-    val out = new ByteArrayOutputStream
     io.write(s1, out)
-
-    val in = new ByteArrayInputStream(out.toByteArray)
     io read in should equal (Success(s1))
+  }
+
+  it should "return properly typed Set subtypes when reading" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    import scala.collection.immutable.ListSet
+    val listSetType = AvroType[ListSet[Int]]
+    val listSetIO = listSetType.io
+
+    val numbers = ListSet(1, 3, 2, 5, 8, 9, 11)
+
+    listSetIO.write(numbers, out)
+    val Success(readResult) = listSetIO read in
+
+    readResult should equal (numbers)
+    readResult.isInstanceOf[ListSet[_]] should be (true)
   }
 
 }

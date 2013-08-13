@@ -78,7 +78,7 @@ class AvroTypeSpec extends AvroSpec {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
 
-        avroType.isInstanceOf[AvroSet[_]] should be (true)
+        avroType.isInstanceOf[AvroSet[_, _]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Set[Int]] should be (true)
       }
       case Failure(cause) => throw cause
@@ -91,7 +91,7 @@ class AvroTypeSpec extends AvroSpec {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
 
-        avroType.isInstanceOf[AvroMap[_]] should be (true)
+        avroType.isInstanceOf[AvroMap[_, _]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Map[String, Int]] should be (true)
       }
       case Failure(cause) => throw cause
@@ -101,7 +101,7 @@ class AvroTypeSpec extends AvroSpec {
       case Success(avroType) => {
         // prettyPrint(avroType.schema)
 
-        avroType.isInstanceOf[AvroMap[_]] should be (true)
+        avroType.isInstanceOf[AvroMap[_, _]] should be (true)
         typeOf[avroType.scalaType] =:= typeOf[Map[String, Seq[Double]]] should be (true)
       }
       case Failure(cause) => throw cause

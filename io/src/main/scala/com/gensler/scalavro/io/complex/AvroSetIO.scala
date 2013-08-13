@@ -5,6 +5,7 @@ import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.io.primitive.AvroLongIO
 import com.gensler.scalavro.types.complex.AvroSet
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
+import com.gensler.scalavro.util.ReflectionHelpers
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
@@ -16,9 +17,18 @@ import scala.reflect.runtime.universe.TypeTag
 
 import java.io.{ InputStream, OutputStream }
 
-case class AvroSetIO[T](avroType: AvroSet[T]) extends AvroTypeIO[Set[T]]()(avroType.tag) {
+case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO[S]()(avroType.originalTypeTag) {
 
   implicit def itemTypeTag = avroType.itemType.tag
+  implicit def originalTypeTag = avroType.originalTypeTag
+
+  val originalTypeVarargsApply = ReflectionHelpers.companionVarargsApply[S] match {
+    case Some(methodMirror) => methodMirror
+    case None => throw new IllegalArgumentException(
+      "Sequence subclasses must have a companion object with a public varargs " +
+        "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
+    )
+  }
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
   val itemIO = AvroTypeIO.Implicits.avroTypeToIO(avroType.itemType)
@@ -56,7 +66,7 @@ case class AvroSetIO[T](avroType: AvroSet[T]) extends AvroTypeIO[Set[T]]()(avroT
 
     var itemsRead = readBlock()
     while (itemsRead != 0L) { itemsRead = readBlock() }
-    items.toSet
+    originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
   }
 
 }

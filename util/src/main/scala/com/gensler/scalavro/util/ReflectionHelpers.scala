@@ -10,7 +10,7 @@ import scala.reflect.runtime.universe._
   */
 object ReflectionHelpers extends ReflectionHelpers
 
-trait ReflectionHelpers {
+trait ReflectionHelpers extends Logging {
 
   protected[scalavro] val classLoaderMirror = runtimeMirror(getClass.getClassLoader)
 
@@ -208,8 +208,9 @@ trait ReflectionHelpers {
     */
   protected[scalavro] def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
 
-    def isPublicAndVarargs(methodSymbol: MethodSymbol): Boolean =
+    def isPublicAndVarargs(methodSymbol: MethodSymbol): Boolean = {
       methodSymbol.isPublic && methodSymbol.isVarargs
+    }
 
     val typeSymbol = typeOf[T].typeSymbol
     if (!typeSymbol.isClass) None // supplied type is not a class

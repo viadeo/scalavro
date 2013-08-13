@@ -1,6 +1,6 @@
 package com.gensler.scalavro.types.complex
 
-import com.gensler.scalavro.types.{ AvroType, AvroComplexType, AvroNamedType }
+import com.gensler.scalavro.types.{ AvroType, AvroComplexType }
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 
@@ -19,7 +19,6 @@ class AvroArray[T, S <: Seq[T]](
 
   val typeName = "array"
 
-  // name, type, fields, symbols, items, values, size
   def schema() = new JsObject(ListMap(
     "type" -> typeName.toJson,
     "items" -> itemType.schema

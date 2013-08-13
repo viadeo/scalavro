@@ -10,7 +10,10 @@ import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 import scala.util.Success
 
-class AvroMap[T: TypeTag] extends AvroComplexType[Map[String, T]] {
+class AvroMap[T, M <: Map[String, T]](
+  implicit val itemTypeTag: TypeTag[T],
+  implicit val originalTypeTag: TypeTag[M])
+    extends AvroComplexType[M] {
 
   val itemType = AvroType.fromType[T].get
 

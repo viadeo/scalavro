@@ -23,7 +23,7 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
   val intMapType = AvroType.fromType[Map[String, Int]].get
 
   "AvroMapIO" should "be available with the AvroTypeIO implicits in scope" in {
-    intMapType.io.isInstanceOf[AvroMapIO[_]] should be (true)
+    intMapType.io.isInstanceOf[AvroMapIO[_, _]] should be (true)
   }
 
   it should "read and write maps" in {
@@ -68,6 +68,23 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
 
     readResult should equal (bytesMap)
     readResult.get("due") should be (Some("two".getBytes.toSeq))
+  }
+
+  it should "return properly typed Map subtypes when reading" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    import scala.collection.immutable.ListMap
+    val listMapType = AvroType[ListMap[String, Int]]
+    val listMapIO = listMapType.io
+
+    val numbers = ListMap("one" -> 1, "two" -> 2, "three" -> 3)
+
+    listMapIO.write(numbers, out)
+    val Success(readResult) = listMapIO read in
+
+    readResult should equal (numbers)
+    readResult.isInstanceOf[ListMap[_, _]] should be (true)
   }
 
 }

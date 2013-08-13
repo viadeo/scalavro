@@ -115,11 +115,11 @@ object AvroTypeIO {
 
     // complex types
     implicit def avroTypeToIO[T, S <: Seq[T]](array: AvroArray[T, S]): AvroArrayIO[T, S] = AvroArrayIO(array)
-    implicit def avroTypeToIO[T](set: AvroSet[T]): AvroSetIO[T] = AvroSetIO(set)
+    implicit def avroTypeToIO[T, S <: Set[T]](set: AvroSet[T, S]): AvroSetIO[T, S] = AvroSetIO(set)
     implicit def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T] = AvroEnumIO(enum)
     implicit def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T] = AvroJEnumIO(enum)
     implicit def avroTypeToIO[T <: FixedData](fixed: AvroFixed[T]): AvroFixedIO[T] = AvroFixedIO(fixed)(fixed.tag)
-    implicit def avroTypeToIO[T](map: AvroMap[T]): AvroMapIO[T] = AvroMapIO(map)
+    implicit def avroTypeToIO[T, M <: Map[String, T]](map: AvroMap[T, M]): AvroMapIO[T, M] = AvroMapIO(map)
     implicit def avroTypeToIO[T](error: AvroError[T]): AvroRecordIO[T] = AvroRecordIO(error)
     implicit def avroTypeToIO[T](record: AvroRecord[T]): AvroRecordIO[T] = AvroRecordIO(record)
     implicit def avroTypeToIO[U <: Union.not[_], T](union: AvroUnion[U, T]): AvroUnionIO[U, T] = AvroUnionIO(union)(union.union.underlyingTag, union.tag)
@@ -128,11 +128,11 @@ object AvroTypeIO {
       at match {
         case t: AvroPrimitiveType[_] => avroTypeToIO(t)
         case t: AvroArray[_, _]      => avroTypeToIO(t)
-        case t: AvroSet[_]           => avroTypeToIO(t)
+        case t: AvroSet[_, _]        => avroTypeToIO(t)
         case t: AvroEnum[_]          => avroTypeToIO(t)
         case t: AvroJEnum[_]         => avroTypeToIO(t)
         case t: AvroFixed[_]         => avroTypeToIO(t)
-        case t: AvroMap[_]           => avroTypeToIO(t)
+        case t: AvroMap[_, _]        => avroTypeToIO(t)
         case t: AvroError[_]         => avroTypeToIO(t)
         case t: AvroRecord[_]        => avroTypeToIO(t)
         case t: AvroUnion[_, _]      => avroTypeToIO(t)
