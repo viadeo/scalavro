@@ -191,7 +191,7 @@ class AvroTypeSpec extends AvroSpec {
     md5Fixed.namespace should be (Some("com.gensler.scalavro.tests"))
     md5Fixed.name should be ("MD5")
     md5Fixed.fullyQualifiedName should be ("com.gensler.scalavro.tests.MD5")
-    md5Fixed dependsOn md5Type should be (false)
+    md5Fixed dependsOn md5Type should be (true)
 
     // prettyPrint(md5Type.schema)
     // prettyPrint(md5Type.parsingCanonicalForm)
@@ -212,7 +212,7 @@ class AvroTypeSpec extends AvroSpec {
     personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
     personRecord.name should be ("Person")
     personRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.Person")
-    personType dependsOn personType should be (false)
+    personType dependsOn personType should be (true)
     personType dependsOn santaListType should be (false)
 
     // prettyPrint(santaListType.schema)
@@ -225,7 +225,7 @@ class AvroTypeSpec extends AvroSpec {
     santaListRecord.name should be ("SantaList")
     santaListRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.SantaList")
     santaListType dependsOn personType should be (true)
-    santaListType dependsOn santaListType should be (false)
+    santaListType dependsOn santaListType should be (true)
   }
 
   it should "detect dependencies among AvroRecord types" in {

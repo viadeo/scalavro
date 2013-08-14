@@ -66,14 +66,6 @@ class AvroRecord[T: TypeTag](
     "fields" -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
   ))
 
-  def dependsOn(thatType: AvroType[_]) = {
-    fields.foldLeft(false) { (dependencyFound, field) =>
-      dependencyFound ||
-        field.fieldType == thatType ||
-        (field.fieldType dependsOn thatType)
-    }
-  }
-
   override def toString(): String = {
     "%s[%s]".format(getClass.getSimpleName, name)
   }

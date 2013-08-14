@@ -4,7 +4,7 @@ organization in ThisBuild := "com.gensler"
 
 name := "scalavro"
 
-version in ThisBuild := "0.3.0-SNAPSHOT"
+version in ThisBuild := "0.3.1-SNAPSHOT"
 
 licenses in ThisBuild := Seq(
   "BSD-style" -> url("http://opensource.org/licenses/BSD-2-Clause")

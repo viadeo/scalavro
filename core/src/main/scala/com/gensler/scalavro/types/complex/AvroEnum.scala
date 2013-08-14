@@ -37,6 +37,4 @@ class AvroEnum[E <: Enumeration: TypeTag](
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
 
-  def dependsOn(thatType: AvroType[_]) = false
-
 }

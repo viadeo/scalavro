@@ -11,6 +11,9 @@ abstract class AvroPrimitiveType[T: TypeTag] extends AvroType[T] {
 
   final val isPrimitive = true
 
+  /**
+    * Returns true if this type depends upon the supplied type.
+    */
   final def dependsOn(thatType: AvroType[_]) = false
 
   def schema(): spray.json.JsValue = typeName.toJson

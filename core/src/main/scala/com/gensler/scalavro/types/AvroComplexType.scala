@@ -23,6 +23,13 @@ abstract class AvroComplexType[T: TypeTag]
     case otherJsValue: JsValue => otherJsValue
   }
 
+  /**
+    * Returns true if this type depends upon the supplied type.
+    */
+  final def dependsOn(thatType: AvroType[_]): Boolean = {
+    dependentNamedTypes contains thatType
+  }
+
 }
 
 trait SelfDescribingSchemaHelpers {

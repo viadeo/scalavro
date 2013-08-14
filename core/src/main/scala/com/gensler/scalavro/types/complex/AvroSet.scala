@@ -36,7 +36,4 @@ class AvroSet[T, S <: Set[T]](
     "items" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
-  def dependsOn(thatType: AvroType[_]) =
-    itemType == thatType || (itemType dependsOn thatType)
-
 }

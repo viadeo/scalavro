@@ -33,6 +33,4 @@ class AvroUnion[U <: Union.not[_]: TypeTag, T](
   override def parsingCanonicalForm(): JsValue =
     memberAvroTypes.map { _.canonicalFormOrFullyQualifiedName }.toJson
 
-  def dependsOn(thatType: AvroType[_]) = memberAvroTypes.exists { _ dependsOn thatType }
-
 }

@@ -138,6 +138,34 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     */
   def dependsOn(thatType: AvroType[_]): Boolean
 
+  /**
+    * Returns the sequence of named types that are required to fully
+    * specify this AvroType, including recursive/transitive
+    * type dependencies.
+    */
+  lazy val dependentNamedTypes: Seq[AvroNamedType[_]] = {
+    this match {
+      case at: AvroPrimitiveType[_] => Seq()
+      case at: AvroArray[_, _]      => at.itemType.dependentNamedTypes
+      case at: AvroSet[_, _]        => at.itemType.dependentNamedTypes
+      case at: AvroMap[_, _]        => at.itemType.dependentNamedTypes
+
+      case at: AvroUnion[_, _] => {
+        at.memberAvroTypes.foldLeft(Seq[AvroNamedType[_]]()) {
+          (aggregate, memberType) => aggregate ++ memberType.dependentNamedTypes
+        }
+      }
+
+      case at: AvroRecord[_] => {
+        at +: at.fields.map { _.fieldType }.foldLeft(Seq[AvroNamedType[_]]()) {
+          (aggregate, fieldType) => aggregate ++ fieldType.dependentNamedTypes
+        }
+      }
+
+      case at: AvroNamedType[_] => Seq(at)
+    }
+  }.distinct
+
 }
 
 /**

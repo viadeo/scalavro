@@ -35,7 +35,4 @@ class AvroArray[T, S <: Seq[T]](
     "items" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
-  def dependsOn(thatType: AvroType[_]) =
-    itemType == thatType || (itemType dependsOn thatType)
-
 }

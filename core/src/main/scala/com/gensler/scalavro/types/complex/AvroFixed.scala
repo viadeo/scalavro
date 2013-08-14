@@ -41,6 +41,4 @@ class AvroFixed[T <: FixedData: TypeTag](
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(withoutDocOrAliases(schema))
 
-  def dependsOn(thatType: AvroType[_]) = false
-
 }

@@ -35,7 +35,4 @@ class AvroMap[T, M <: Map[String, T]](
     "values" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
-  def dependsOn(thatType: AvroType[_]) =
-    itemType == thatType || (itemType dependsOn thatType)
-
 }

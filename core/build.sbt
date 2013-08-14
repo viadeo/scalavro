@@ -5,5 +5,5 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "io.spray" % "spray-json_2.10.0-RC3" % "1.2.3"
+  "io.spray" %% "spray-json" % "1.2.5"
 )
