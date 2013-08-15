@@ -21,6 +21,10 @@ Using SBT:
 libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
 ```
 
+## API Documentation
+
+- Generated [Scaladoc for version 0.3.1](http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package)
+
 ## Index of Examples
 
 - [Arrays](#arrays)
