@@ -19,6 +19,7 @@ Using SBT:
 
 ```scala
 resolvers += "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/releases/"
+
 libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
 ```
 
