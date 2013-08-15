@@ -2,15 +2,28 @@
 
 A runtime reflection-based Avro library in Scala.
 
-## Motivation
-1. We would rather write Scala classes than Avro IDL.
-2. We would like to avoid adding a compilation phase to generate IO bindings.
+Scalavro takes a code-first, reflection based approach to schema generation and (de)serialization.  This yields a very low-overhead interface, and imposes some costs.  In general, Scalavro assumes you know what types you're reading and writing.  No built-in support is provided (as yet) for so-called schema resolution (taking the writer's schema into account when reading data).
 
 ## Goals
+
 1. To provide an in-memory representation of avro schemas and protocols.
-2. To generate avro schemas and protocols automatically from Scala types.
-4. To generate Scala bindings for reading and writing Avro-mapped Scala types.
+2. To synthesize avro schemas and protocols dynamically for a useful subset of Scala types.
+4. To dynamically generate Scala bindings for reading and writing Avro-mapped Scala types to and from Avro binary.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
+
+## Obtaining Scalavro
+
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.3.1`, built against Scala 2.10.2.
+
+Using SBT:
+
+```scala
+libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
+```
+
+## API Documentation
+
+- Generated [Scaladoc for version 0.3.1](http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package)
 
 ## Index of Examples
 
@@ -226,20 +239,21 @@ A runtime reflection-based Avro library in Scala.
 </table>
 
 ## General Information
-- Built against Scala 2.10.2 with SBT 0.12.2
+- Built against Scala 2.10.2 with SBT 0.12.4
 - Depends upon [spray-json](https://github.com/spray/spray-json)
 - The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
 
 ## Current Capabilities
-- Schema generation
-- Type-safe Avro protocol definitions and JSON output
-- Robustness in the face of cyclic type dependencies (such records are never valid Avro)
-- Schema conversion to "Parsing Canonical Form"
-- Convenient binary IO
+- Dynamic Avro schema generation from vanilla Scala types
+- Avro protocol definitions and schema generation
+- Convenient, dynamic binary IO
+- Avro RPC protocol representation and schema generation
+- Schema conversion to "Parsing Canonical Form" (useful for Avro RPC protocol applications)
 
 ## Current Limitations
 - JSON IO is not yet implemented
 - Schema resolution (taking the writer's schema into account when reading) is not yet implemented
+- Recursive type dependencies are detected but not handled optimally -- potentially valid types are rejected at runtime.  For example, the current version cannot synthesize an Avro schema for a simple recursively defined linked list node.  Supporting this is a planned enhancement.
 
 ## Scalavro by Example: Schema Generation
 
