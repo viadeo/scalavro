@@ -4,13 +4,7 @@ organization in ThisBuild := "com.gensler"
 
 name := "scalavro"
 
-version in ThisBuild := "0.3.1-SNAPSHOT"
-
-licenses in ThisBuild := Seq(
-  "BSD-style" -> url("http://opensource.org/licenses/BSD-2-Clause")
-)
-
-scalaVersion in ThisBuild := "2.10.2"
+version in ThisBuild := "0.3.1"
 
 libraryDependencies in ThisBuild ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.2",
@@ -25,6 +19,46 @@ scalacOptions in (ThisBuild, Compile) ++= Seq(
 )
 
 parallelExecution in (ThisBuild, Test) := false
+
+// publish settings
+
+publishMavenStyle in ThisBuild := true
+
+useGpg in ThisBuild := true
+
+pomIncludeRepository in ThisBuild := { _ => false }
+
+licenses in ThisBuild := Seq(
+  "BSD-style" -> url("http://opensource.org/licenses/BSD-2-Clause")
+)
+
+homepage in ThisBuild := Some(url("http://genslerappspod.github.io/scalavro/"))
+
+scalaVersion in ThisBuild := "2.10.2"
+
+publishTo in ThisBuild <<= version { (v: String) =>
+  val nexus = "https://oss.sonatype.org/"
+  if (v.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+pomExtra in ThisBuild := (
+  <scm>
+    <url>git@github.com:GenslerAppsPod/scalavro.git</url>
+    <connection>scm:git:git@github.com:GenslerAppsPod/scalavro.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>ConnorDoyle</id>
+      <name>Connor Doyle</name>
+      <url>http://gensler.com</url>
+    </developer>
+  </developers>
+)
+
+// formatter settings
 
 ScalariformKeys.preferences in ThisBuild := FormattingPreferences()
   .setPreference(IndentWithTabs, false)
