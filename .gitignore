@@ -1,0 +1,8 @@
+b/
+project/*/
+target/
+*.dot
+*.pdf
+*DS_Store
+*~
+
