@@ -13,13 +13,11 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from the Sonatype OSS Repository. The current release is `0.3.1`, built against Scala 2.10.2.  Synch to Maven Central is pending.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.3.1`, built against Scala 2.10.2.
 
 Using SBT:
 
 ```scala
-resolvers += "Sonatype OSS" at "https://oss.sonatype.org/content/repositories/releases/"
-
 libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
 ```
 
