@@ -6,6 +6,7 @@ import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
+import com.gensler.scalavro.util.ReflectionHelpers
 
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
@@ -26,12 +27,15 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
   }
 
   def write[X <: T: TypeTag](obj: X, stream: OutputStream) = {
-    avroType.memberAvroTypes.indexWhere { at => typeOf[X] <:< at.tag.tpe } match {
+    val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val objTypeTag = ReflectionHelpers.tagForType(typeOfObj)
+
+    avroType.memberAvroTypes.indexWhere { at => typeOfObj <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
         AvroLongIO.write(index.toLong, stream)
-        val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
-        memberType.write(obj, stream)
+        val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[X]]
+        memberType.write(obj, stream)(objTypeTag.asInstanceOf[TypeTag[X]])
       }
     }
   }

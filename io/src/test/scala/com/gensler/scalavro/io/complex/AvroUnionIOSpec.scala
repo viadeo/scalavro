@@ -75,7 +75,7 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     val classUnion = AvroType[Alpha]
 
     val first = Delta()
-    val second = Gamma(123.45)
+    val second: Alpha = Gamma(123.45)
 
     val out = new ByteArrayOutputStream
     classUnion.write(first, out)
@@ -113,7 +113,7 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     (unionArrayType read in).get should equal (mixed)
   }
 
-  it should "read and write maps of unions" in {
+  it should "read and write maps of simple unions" in {
     val unionMapType = AvroType[Map[String, Either[Int, String]]]
 
     val map: Map[String, Either[Int, String]] = Map(
@@ -129,4 +129,5 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     val in = new ByteArrayInputStream(out.toByteArray)
     (unionMapType read in).get should equal (map)
   }
+
 }
