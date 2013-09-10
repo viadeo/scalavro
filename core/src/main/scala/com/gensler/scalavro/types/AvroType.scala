@@ -10,7 +10,6 @@ import com.gensler.scalavro.util.Logging
 
 import scala.util.{ Try, Success, Failure }
 import scala.language.existentials
-import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.runtime.universe._
 
 import spray.json._
