@@ -20,8 +20,11 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 
   protected[scalavro] def asGeneric[X <: T: TypeTag](obj: X) = {
-    avroType.memberAvroTypes.find { at => typeOf[X] <:< at.tag.tpe } match {
-      case Some(memberType) => memberType.asInstanceOf[AvroType[T]].asGeneric(obj)
+    val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val objTypeTag = ReflectionHelpers.tagForType(typeOfObj)
+
+    avroType.memberAvroTypes.find { at => typeOfObj <:< at.tag.tpe } match {
+      case Some(memberType) => memberType.asInstanceOf[AvroType[T]].asGeneric(obj)(objTypeTag.asInstanceOf[TypeTag[X]])
       case None             => throw new AvroSerializationException(obj)
     }
   }
