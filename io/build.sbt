@@ -5,5 +5,5 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.apache.avro" % "avro" % "1.7.4"
+  "org.apache.avro" % "avro" % "1.7.5"
 )
