@@ -13,6 +13,8 @@ import org.apache.avro.generic.{ GenericRecord, GenericData, GenericDatumWriter 
 import org.apache.avro.io.EncoderFactory
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
+import org.apache.avro.io.BinaryEncoder
+
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.{ TypeTag, typeTag }
 
@@ -52,10 +54,9 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     * Writes a binary representation of the supplied object to the supplied
     * stream.
     */
-  def write[R <: T: TypeTag](obj: R, stream: OutputStream) {
+  def write[R <: T: TypeTag](obj: R, encoder: BinaryEncoder) {
     try {
       val datumWriter = new GenericDatumWriter[GenericRecord](avroSchema)
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
     }

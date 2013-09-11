@@ -9,6 +9,8 @@ import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
+import org.apache.avro.io.BinaryEncoder
+
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -30,15 +32,16 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
     case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].asGeneric(value.asInstanceOf[B])
   }
 
-  def write[X <: T: TypeTag](obj: X, stream: OutputStream) = {
-    AvroLongIO.write(if (obj.isLeft) 0L else 1L, stream)
-    writeHelper(obj, stream)(typeTag[X], leftAvroType.tag, rightAvroType.tag)
+  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder) = {
+    AvroLongIO.write(if (obj.isLeft) 0L else 1L, encoder)
+    writeHelper(obj, encoder)(typeTag[X], leftAvroType.tag, rightAvroType.tag)
+    encoder.flush
   }
 
-  def writeHelper[X <: T: TypeTag, A: TypeTag, B: TypeTag](obj: X, stream: OutputStream) =
+  def writeHelper[X <: T: TypeTag, A: TypeTag, B: TypeTag](obj: X, encoder: BinaryEncoder) =
     obj match {
-      case Left(value)  => leftAvroType.asInstanceOf[AvroType[A]].write(value.asInstanceOf[A], stream)
-      case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].write(value.asInstanceOf[B], stream)
+      case Left(value)  => leftAvroType.asInstanceOf[AvroType[A]].write(value.asInstanceOf[A], encoder)
+      case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].write(value.asInstanceOf[B], encoder)
     }
 
   def read(stream: InputStream) = Try {

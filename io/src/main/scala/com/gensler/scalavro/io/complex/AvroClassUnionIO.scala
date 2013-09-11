@@ -11,6 +11,8 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
+import org.apache.avro.io.BinaryEncoder
+
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -24,21 +26,22 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     val objTypeTag = ReflectionHelpers.tagForType(typeOfObj)
 
     avroType.memberAvroTypes.find { at => typeOfObj <:< at.tag.tpe } match {
-      case Some(memberType) => memberType.asInstanceOf[AvroType[T]].asGeneric(obj)(objTypeTag.asInstanceOf[TypeTag[X]])
+      case Some(memberType) => memberType.asInstanceOf[AvroType[T]].asGeneric(obj)(memberType.tag.asInstanceOf[TypeTag[X]])
       case None             => throw new AvroSerializationException(obj)
     }
   }
 
-  def write[X <: T: TypeTag](obj: X, stream: OutputStream) = {
+  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder) = {
     val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
     val objTypeTag = ReflectionHelpers.tagForType(typeOfObj)
 
     avroType.memberAvroTypes.indexWhere { at => typeOfObj <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
-        AvroLongIO.write(index.toLong, stream)
+        AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[X]]
-        memberType.write(obj, stream)(objTypeTag.asInstanceOf[TypeTag[X]])
+        memberType.write(obj, encoder)(objTypeTag.asInstanceOf[TypeTag[X]])
+        encoder.flush
       }
     }
   }

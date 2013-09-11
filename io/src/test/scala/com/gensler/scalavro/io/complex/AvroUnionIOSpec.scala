@@ -61,9 +61,13 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     val bareIO = AvroType[ISB].io.asInstanceOf[AvroBareUnionIO[ISB, ISB]]
 
     val out = new ByteArrayOutputStream
-    bareIO.writeBare(555, out)
-    bareIO.writeBare(false, out)
-    bareIO.writeBare("Unboxed unions!", out)
+
+    import org.apache.avro.io.EncoderFactory
+    val encoder = EncoderFactory.get.directBinaryEncoder(out, null)
+
+    bareIO.writeBare(555, encoder)
+    bareIO.writeBare(false, encoder)
+    bareIO.writeBare("Unboxed unions!", encoder)
 
     val in = new ByteArrayInputStream(out.toByteArray)
     (bareIO read in).get should equal (555)

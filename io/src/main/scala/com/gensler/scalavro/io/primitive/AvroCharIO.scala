@@ -4,7 +4,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroChar
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -19,9 +19,9 @@ trait AvroCharIO extends AvroTypeIO[Char] {
 
   protected[scalavro] def asGeneric[C <: Char: TypeTag](value: C): Char = value
 
-  def write[C <: Char: TypeTag](value: C, stream: OutputStream) = {
-    val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
+  def write[C <: Char: TypeTag](value: C, encoder: BinaryEncoder) = {
     encoder writeInt value.toChar
+    encoder.flush
   }
 
   def read(stream: InputStream) = Try {

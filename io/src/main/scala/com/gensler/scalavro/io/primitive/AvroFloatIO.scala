@@ -4,7 +4,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroFloat
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -19,9 +19,9 @@ trait AvroFloatIO extends AvroTypeIO[Float] {
 
   protected[scalavro] def asGeneric[F <: Float: TypeTag](value: F): Float = value
 
-  def write[F <: Float: TypeTag](value: F, stream: OutputStream) = {
-    val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
+  def write[F <: Float: TypeTag](value: F, encoder: BinaryEncoder) = {
     encoder writeFloat value
+    encoder.flush
   }
 
   def read(stream: InputStream) = Try {

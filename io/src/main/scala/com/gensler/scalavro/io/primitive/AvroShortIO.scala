@@ -4,7 +4,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroShort
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -19,9 +19,9 @@ trait AvroShortIO extends AvroTypeIO[Short] {
 
   protected[scalavro] def asGeneric[S <: Short: TypeTag](value: S): Short = value
 
-  def write[S <: Short: TypeTag](value: S, stream: OutputStream) = {
-    val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
+  def write[S <: Short: TypeTag](value: S, encoder: BinaryEncoder) = {
     encoder writeInt value.toInt
+    encoder.flush
   }
 
   def read(stream: InputStream) = Try {

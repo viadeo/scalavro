@@ -10,7 +10,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericArray, GenericDatumWriter }
-import org.apache.avro.io.EncoderFactory
+import org.apache.avro.io.{ EncoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -40,16 +40,20 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
     genericArray
   }
 
-  def write[G <: Set[T]: TypeTag](obj: G, stream: OutputStream) = {
+  def write[G <: Set[T]: TypeTag](items: G, encoder: BinaryEncoder) = {
     try {
-      val datumWriter = new GenericDatumWriter[GenericArray[_]](avroSchema)
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
-      datumWriter.write(asGeneric(obj), encoder)
+      encoder.writeArrayStart
+      encoder.setItemCount(items.size)
+      for (item <- items) {
+        encoder.startItem
+        avroType.itemType.write(item, encoder)
+      }
+      encoder.writeArrayEnd
       encoder.flush
     }
     catch {
       case cause: Throwable =>
-        throw new AvroSerializationException(obj, cause)
+        throw new AvroSerializationException(items, cause)
     }
   }
 

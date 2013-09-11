@@ -10,7 +10,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericDatumWriter }
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 import org.apache.avro.util.Utf8
 
 import scala.util.{ Try, Success, Failure }
@@ -37,11 +37,16 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
   protected[scalavro] def asGeneric[M <: Map[String, T]: TypeTag](map: M): java.util.Map[String, _] =
     scala.collection.JavaConversions mapAsJavaMap map.map { case (key, value) => key -> itemIO.asGeneric(value) }
 
-  def write[M <: Map[String, T]: TypeTag](map: M, stream: OutputStream) = {
+  def write[M <: Map[String, T]: TypeTag](map: M, encoder: BinaryEncoder) = {
     try {
-      val datumWriter = new GenericDatumWriter[java.util.Map[String, _]](avroSchema)
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
-      datumWriter.write(asGeneric(map), encoder)
+      encoder.writeMapStart
+      encoder.setItemCount(map.size)
+      for ((key, value) <- map) {
+        encoder.startItem
+        encoder writeString key
+        avroType.itemType.write(value, encoder)
+      }
+      encoder.writeMapEnd
       encoder.flush
     }
     catch {

@@ -10,7 +10,7 @@ import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericFixed
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.collection.immutable
 import scala.util.{ Try, Success, Failure }
@@ -28,7 +28,10 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
   protected[scalavro] def asGeneric[F <: T: TypeTag](obj: F): GenericFixed =
     new GenericData.Fixed(avroSchema, obj.bytes.toArray)
 
-  def write[F <: T: TypeTag](obj: F, stream: OutputStream) = stream write obj.bytes.toArray
+  def write[F <: T: TypeTag](obj: F, encoder: BinaryEncoder) = {
+    encoder writeFixed obj.bytes.toArray
+    encoder.flush
+  }
 
   def read(stream: InputStream) = Try {
     val buffer = Array.ofDim[Byte](avroType.size)

@@ -4,7 +4,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroBytes
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -20,9 +20,9 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
   protected[scalavro] def asGeneric[B <: Seq[Byte]: TypeTag](value: B): ByteBuffer = ByteBuffer.wrap(value.toArray)
 
-  def write[B <: Seq[Byte]: TypeTag](bytes: B, stream: OutputStream) = {
-    AvroLongIO.write(bytes.length.toLong, stream)
-    stream write bytes.toArray
+  def write[B <: Seq[Byte]: TypeTag](bytes: B, encoder: BinaryEncoder) = {
+    encoder writeBytes bytes.toArray
+    encoder.flush
   }
 
   def read(stream: InputStream) = Try {

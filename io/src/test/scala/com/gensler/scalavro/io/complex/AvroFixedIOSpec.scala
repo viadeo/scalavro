@@ -30,11 +30,10 @@ class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
   it should "read and write instances of FixedData subclasses" in {
     val out = new PipedOutputStream
     val in = new PipedInputStream(out)
-
     val testBytes = "abcd1234defg5678".getBytes.toIndexedSeq
     md5Type.write(MD5(testBytes), out)
-
-    md5Type.read(in) should equal (Success(MD5(testBytes)))
+    val readResult = md5Type.read(in)
+    readResult should equal (Success(MD5(testBytes)))
   }
 
 }

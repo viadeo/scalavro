@@ -10,6 +10,8 @@ import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
+import org.apache.avro.io.BinaryEncoder
+
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -25,15 +27,16 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     }
   }
 
-  def write[X <: T: TypeTag](obj: X, stream: OutputStream) = ???
+  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder): Unit = ???
 
   def writeBare[X: prove[T]#containsType: TypeTag](obj: X, stream: OutputStream) = {
     avroType.memberAvroTypes.indexWhere { at => typeOf[X] <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
-        AvroLongIO.write(index.toLong, stream)
+        AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
-        memberType.write(obj.asInstanceOf[T], stream)
+        memberType.write(obj.asInstanceOf[T], encoder)
+        encoder.flush
       }
     }
   }

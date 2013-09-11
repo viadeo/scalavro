@@ -8,7 +8,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericEnumSymbol, GenericDatumWriter, GenericDatumReader }
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory }
+import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -22,10 +22,9 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
   protected[scalavro] def asGeneric[T <: E: TypeTag](obj: T): GenericEnumSymbol =
     new GenericData.EnumSymbol(avroSchema, obj.toString)
 
-  def write[T <: E: TypeTag](obj: T, stream: OutputStream) = {
+  def write[T <: E: TypeTag](obj: T, encoder: BinaryEncoder) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericEnumSymbol](avroSchema)
-      val encoder = EncoderFactory.get.binaryEncoder(stream, null)
       datumWriter.write(asGeneric(obj), encoder)
       encoder.flush
     }
