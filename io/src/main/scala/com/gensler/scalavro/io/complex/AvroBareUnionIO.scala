@@ -7,6 +7,8 @@ import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
+import com.gensler.scalavro.util.ReflectionHelpers
+
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
@@ -29,8 +31,10 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
 
   def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder): Unit = ???
 
-  def writeBare[X: prove[T]#containsType: TypeTag](obj: X, stream: OutputStream) = {
-    avroType.memberAvroTypes.indexWhere { at => typeOf[X] <:< at.tag.tpe } match {
+  def writeBare[X: prove[T]#containsType: TypeTag](obj: X, encoder: BinaryEncoder) = {
+    val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val staticTypeOfObj = typeOf[X]
+    avroType.memberAvroTypes.indexWhere { at => staticTypeOfObj <:< at.tag.tpe || typeOfObj <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
         AvroLongIO.write(index.toLong, encoder)
