@@ -11,9 +11,9 @@ object ScalavroBuild extends Build {
     base = file("."),
     settings = commonSettings
   ) aggregate(
-    core, io, util
+    core, util
   ) dependsOn (
-    core, io, util
+    core, util
   )
 
   lazy val core = Project(
@@ -21,15 +21,6 @@ object ScalavroBuild extends Build {
     base = file("core"),
     settings = commonSettings
   ) dependsOn(
-    util
-  )
-
-  lazy val io = Project(
-    id = "io",
-    base = file("io"),
-    settings = commonSettings
-  ) dependsOn(
-    core,
     util
   )
 
