@@ -4,7 +4,7 @@ organization in ThisBuild := "com.gensler"
 
 name := "scalavro"
 
-version in ThisBuild := "0.4.0-SNAPSHOT"
+version in ThisBuild := "0.4.0-io-object-caching-SNAPSHOT"
 
 libraryDependencies in ThisBuild ++= Seq(
   "org.scala-lang" % "scala-reflect" % "2.10.2",
