@@ -13,7 +13,7 @@ import org.apache.avro.generic.{ GenericRecord, GenericData, GenericDatumWriter 
 import org.apache.avro.io.EncoderFactory
 import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 
-import org.apache.avro.io.BinaryEncoder
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.{ TypeTag, typeTag }
@@ -70,8 +70,8 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     * Reads a binary representation of the underlying Scala type from the
     * supplied stream.
     */
-  def read(stream: InputStream) = Try {
-    val args = avroType.fields map { field => field.fieldType.read(stream).get }
+  def read(decoder: BinaryDecoder) = Try {
+    val args = avroType.fields map { field => field.fieldType.read(decoder).get }
     ReflectionHelpers.instantiateCaseClassWith(args)(avroType.tag).get
   }
 

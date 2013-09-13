@@ -10,7 +10,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericDatumWriter }
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 import org.apache.avro.util.Utf8
 
 import scala.util.{ Try, Success, Failure }
@@ -55,14 +55,14 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
     }
   }
 
-  def read(stream: InputStream) = Try {
+  def read(decoder: BinaryDecoder) = Try {
     val items = new scala.collection.mutable.ArrayBuffer[(String, T)]
 
     def readBlock(): Long = {
-      val numItems = (AvroLongIO read stream).get
+      val numItems = (AvroLongIO read decoder).get
       val absNumItems = math abs numItems
-      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read stream).get }
-      (0L until absNumItems) foreach { _ => items += AvroStringIO.read(stream).get -> avroType.itemType.read(stream).get }
+      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read decoder).get }
+      (0L until absNumItems) foreach { _ => items += AvroStringIO.read(decoder).get -> avroType.itemType.read(decoder).get }
       absNumItems
     }
 

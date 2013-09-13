@@ -4,7 +4,12 @@ import com.gensler.scalavro.error._
 import com.gensler.scalavro.types.{ AvroType, AvroPrimitiveType }
 import com.gensler.scalavro.util.Logging
 
-import org.apache.avro.io.{ EncoderFactory, BinaryEncoder }
+import org.apache.avro.io.{
+  EncoderFactory,
+  DecoderFactory,
+  BinaryEncoder,
+  BinaryDecoder
+}
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -54,7 +59,16 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * the supplied binary stream.
     */
   @throws[AvroDeserializationException[_]]
-  def read(stream: InputStream): Try[T]
+  def read(stream: InputStream): Try[T] = {
+    read(DecoderFactory.get.directBinaryDecoder(stream, null))
+  }
+
+  /**
+    * Attempts to create an object of type T by reading the required data from
+    * the supplied decoder.
+    */
+  @throws[AvroDeserializationException[_]]
+  def read(decoder: BinaryDecoder): Try[T]
 
   /**
     * Writes a JSON serialization of the supplied object.  Throws an

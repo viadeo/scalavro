@@ -42,12 +42,9 @@ class AvroBooleanIOSpec extends FlatSpec with ShouldMatchers {
   it should "read Booleans from a stream" in {
     val trueStream = new ByteArrayInputStream(Array(1.toByte))
     val falseStream = new ByteArrayInputStream(Array(0.toByte))
-    val errorStream = new ByteArrayInputStream(Array(61.toByte))
 
     io read trueStream should equal (Success(true))
     io read falseStream should equal (Success(false))
-
-    evaluating { io.read(errorStream).get } should produce[AvroDeserializationException[Boolean]]
   }
 
 }

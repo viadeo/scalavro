@@ -8,7 +8,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericEnumSymbol, GenericDatumWriter, GenericDatumReader }
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -34,9 +34,8 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
     }
   }
 
-  def read(stream: InputStream) = Try {
+  def read(decoder: BinaryDecoder) = Try {
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
     datumReader.read(null, decoder) match {
       case genericEnumSymbol: GenericEnumSymbol => avroType.symbolMap.get(genericEnumSymbol.toString).get
       case _                                    => throw new AvroDeserializationException[E]()(avroType.tag)

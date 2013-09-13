@@ -7,7 +7,7 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import org.apache.avro.io.BinaryEncoder
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import java.io.{ InputStream, OutputStream }
 
@@ -31,12 +31,8 @@ trait AvroBooleanIO extends AvroTypeIO[Boolean] {
     encoder.flush
   }
 
-  def read(stream: InputStream) = Try {
-    stream.read match {
-      case `trueByte`  => true
-      case `falseByte` => false
-      case _           => throw new AvroDeserializationException[Boolean]
-    }
+  def read(decoder: BinaryDecoder) = Try {
+    decoder.readBoolean
   }
 
 }

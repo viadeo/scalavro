@@ -12,8 +12,6 @@ import org.apache.avro.Schema.Parser
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
-import java.io.{ InputStream, OutputStream }
-
 object AvroUnionIO {
   def apply[U <: Union.not[_]: TypeTag, T: TypeTag](avroType: AvroUnion[U, T]): AvroUnionIO[U, T] = {
 

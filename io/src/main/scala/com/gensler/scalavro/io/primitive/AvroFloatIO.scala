@@ -4,12 +4,10 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroFloat
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
-
-import java.io.{ InputStream, OutputStream }
 
 object AvroFloatIO extends AvroFloatIO
 
@@ -24,8 +22,7 @@ trait AvroFloatIO extends AvroTypeIO[Float] {
     encoder.flush
   }
 
-  def read(stream: InputStream) = Try {
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
+  def read(decoder: BinaryDecoder) = Try {
     decoder.readFloat
   }
 }
