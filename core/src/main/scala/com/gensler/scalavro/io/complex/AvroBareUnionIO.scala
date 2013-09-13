@@ -11,7 +11,7 @@ import com.gensler.scalavro.util.ReflectionHelpers
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
-import org.apache.avro.io.BinaryEncoder
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -37,10 +37,10 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     }
   }
 
-  def read(stream: InputStream) = Try {
-    val index = AvroLongIO.read(stream).get
+  def read(decoder: BinaryDecoder) = Try {
+    val index = AvroLongIO.read(decoder).get
     val memberType = avroType.memberAvroTypes(index.toInt).asInstanceOf[AvroType[T]]
-    memberType.io.read(stream).get
+    memberType.io.read(decoder).get
   }
 
 }

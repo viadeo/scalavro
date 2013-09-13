@@ -4,12 +4,11 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroBytes
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
 import java.nio.ByteBuffer
 
 object AvroBytesIO extends AvroBytesIO
@@ -25,16 +24,11 @@ trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
     encoder.flush
   }
 
-  def read(stream: InputStream) = Try {
-    val length = AvroLongIO.read(stream).get
-    val buffer = Array.ofDim[Byte](length.toInt)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-
-    try {
-      decoder.readFixed(buffer)
-      buffer.toIndexedSeq
-    }
-    catch { case cause: Throwable => throw new AvroDeserializationException[Seq[Byte]](cause) }
+  def read(decoder: BinaryDecoder) = Try {
+    val numBytes = decoder.readLong
+    val buffer = Array.ofDim[Byte](numBytes.toInt)
+    decoder.readFixed(buffer)
+    buffer.toIndexedSeq
   }
 
 }

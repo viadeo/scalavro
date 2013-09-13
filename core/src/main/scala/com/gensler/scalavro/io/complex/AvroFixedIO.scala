@@ -10,7 +10,7 @@ import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericFixed
-import org.apache.avro.io.{ EncoderFactory, DecoderFactory, BinaryEncoder }
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.collection.immutable
 import scala.util.{ Try, Success, Failure }
@@ -33,15 +33,10 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
     encoder.flush
   }
 
-  def read(stream: InputStream) = Try {
+  def read(decoder: BinaryDecoder) = Try {
     val buffer = Array.ofDim[Byte](avroType.size)
-    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-
-    try {
-      decoder.readFixed(buffer)
-      bytesConstructorMirror.get.apply(buffer.toIndexedSeq).asInstanceOf[T]
-    }
-    catch { case cause: Throwable => throw new AvroDeserializationException[Seq[Byte]](cause) }
+    decoder.readFixed(buffer)
+    bytesConstructorMirror.get.apply(buffer.toIndexedSeq).asInstanceOf[T]
   }
 
 }

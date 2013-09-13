@@ -8,7 +8,7 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
-import org.apache.avro.io.BinaryEncoder
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -34,14 +34,14 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].io.write(value.asInstanceOf[B], encoder)
     }
 
-  def read(stream: InputStream) = Try {
-    readHelper(stream)(leftAvroType.tag, rightAvroType.tag).asInstanceOf[T]
+  def read(decoder: BinaryDecoder) = Try {
+    readHelper(decoder)(leftAvroType.tag, rightAvroType.tag).asInstanceOf[T]
   }
 
-  def readHelper[A: TypeTag, B: TypeTag](stream: InputStream) = {
-    val index = AvroLongIO.read(stream).get
-    if (index == 0) Left(leftAvroType.io.read(stream).get.asInstanceOf[A])
-    else if (index == 1) Right(rightAvroType.io.read(stream).get.asInstanceOf[B])
+  def readHelper[A: TypeTag, B: TypeTag](decoder: BinaryDecoder) = {
+    val index = AvroLongIO.read(decoder).get
+    if (index == 0) Left(leftAvroType.io.read(decoder).get.asInstanceOf[A])
+    else if (index == 1) Right(rightAvroType.io.read(decoder).get.asInstanceOf[B])
     else throw new AvroDeserializationException[T]
   }
 }

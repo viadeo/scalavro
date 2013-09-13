@@ -8,7 +8,7 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
-import org.apache.avro.io.BinaryEncoder
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -38,13 +38,13 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case None        => AvroNullIO.write((), encoder)
     }
 
-  def read(stream: InputStream) = Try {
-    readHelper(stream)(innerAvroType.tag).asInstanceOf[T]
+  def read(decoder: BinaryDecoder) = Try {
+    readHelper(decoder)(innerAvroType.tag).asInstanceOf[T]
   }
 
-  def readHelper[A: TypeTag](stream: InputStream) = {
-    val index = AvroLongIO.read(stream).get
-    if (index == nonNullIndex) Some(innerAvroType.io.read(stream).get.asInstanceOf[A])
+  def readHelper[A: TypeTag](decoder: BinaryDecoder) = {
+    val index = AvroLongIO.read(decoder).get
+    if (index == nonNullIndex) Some(innerAvroType.io.read(decoder).get.asInstanceOf[A])
     else if (index == nullIndex) None
     else throw new AvroDeserializationException[T](
       detailedMessage = "Encountered an index that was not zero or one: [%s]" format index
