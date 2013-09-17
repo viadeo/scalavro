@@ -13,17 +13,17 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.3.1`, built against Scala 2.10.2.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.4.0`, built against Scala 2.10.2.
 
 Using SBT:
 
 ```scala
-libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
+libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
 ```
 
 ## API Documentation
 
-- Generated [Scaladoc for version 0.3.1](http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.4.0](http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package)
 
 ## Index of Examples
 
@@ -57,7 +57,7 @@ libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
     </tr>
     <tr>
       <td><code>
-        Boolean
+        Boolean        
       </code></td>
       <td><code>
         boolean
@@ -172,8 +172,7 @@ libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
         map
       </code></td>
     </tr>
-    <tr>
-      <td><code>
+       <td><code>
         scala.Enumeration#Value
       </code></td>
       <td><code>
@@ -187,31 +186,27 @@ libraryDependencies += "com.gensler" %% "scalavro-io" % "0.3.1"
         enum
       </code></td>
     </tr>
-    <tr>
-      <td><code>
+       <td><code>
         scala.util.Either[A, B]
       </code></td>
       <td><code>
         union
       </code></td>
     </tr>
-    <tr>
-      <td><code>
+       <td><code>
         scala.util.Option[T]
       </code></td>
       <td><code>
         union
       </code></td>
     </tr>
-    <tr>
-      <td><code>
+       <td><code>
         com.gensler.scalavro.util.Union[U]
       </code></td>
       <td><code>
         union
       </code></td>
     </tr>
-    <tr>
       <td><code>
         com.gensler.scalavro.util.FixedData
       </code></td>
@@ -574,7 +569,6 @@ Note that in the above example:
 ```scala
 import com.gensler.scalavro.AvroType
 import com.gensler.scalavro.io.AvroTypeIO
-import com.gensler.scalavro.io.AvroTypeIO.Implicits._
 import scala.util.{Try, Success, Failure}
 
 case class Person(name: String, age: Int)
@@ -592,19 +586,24 @@ val santaList = SantaList(
 )
 
 val santaListType = AvroType[SantaList]
-val santaListIO = santaListType.io // implicitly: AvroTypeIO[SantaList]
 
 val outStream: java.io.OutputStream = // some stream...
 
-santaListIO.write(santaList, outStream)
+santaListType.io.write(santaList, outStream)
 
 val inStream: java.io.InputStream = // some stream...
 
-santaListIO.read(inStream) match {
+santaListType.io.read(inStream) match {
   case Success(readResult) => // readResult is an instance of SantaList
   case Failure(cause)      => // handle failure...
 }
 ```
+
+### A Neat Fact about Scalavro's IO Capabilities
+
+Scalavro tries to produce read results whose runtime types are as accurate as possible for colections (the supported collection types are `Seq`, `Set`, and `Map`).  It accomplishes this by looking for a public varargs `apply` factory method on the target type's companion object.  This is why `AvroType[ArrayBuffer[Int]].io.read(…)` is able to return a `Try[ArrayBuffer[Int]]`.
+
+This works for custom subtypes of the supported collections types -- as long as you define a public varargs `apply` in the companion you're good to go.
 
 ## Reference
 1. [Current Apache Avro Specification](http://avro.apache.org/docs/current/spec.html)
