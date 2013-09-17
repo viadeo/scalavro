@@ -172,6 +172,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
         map
       </code></td>
     </tr>
+    <tr>
        <td><code>
         scala.Enumeration#Value
       </code></td>
@@ -194,6 +195,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
         union
       </code></td>
     </tr>
+    <tr>
        <td><code>
         scala.util.Option[T]
       </code></td>
@@ -201,6 +203,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
         union
       </code></td>
     </tr>
+    <tr>
        <td><code>
         com.gensler.scalavro.util.Union[U]
       </code></td>
@@ -208,6 +211,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
         union
       </code></td>
     </tr>
+    <tr>
       <td><code>
         com.gensler.scalavro.util.FixedData
       </code></td>
