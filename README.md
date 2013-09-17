@@ -2,6 +2,20 @@
 
 A runtime reflection-based Avro library in Scala.
 
+A full description of Avro is outside the scope of this documentation, but here is an introduction from [avro.apache.org](http://avro.apache.org/docs/current):
+
+> __[Apache Avro &trade;](http://avro.apache.org)__ is a data serialization system.
+>
+> Avro provides:
+> 
+> - Rich data structures.
+> - A compact, fast, binary data format.
+> - A container file, to store persistent data.
+> - Remote procedure call (RPC).
+> - Simple integration with dynamic languages. Code generation is not required to read or write data files nor to use or implement RPC protocols. Code generation as an optional optimization, only worth implementing for statically typed languages.
+>
+>Avro provides functionality similar to systems such as __[Thrift](http://thrift.apache.org)__, __[Protocol Buffers](http://code.google.com/p/protobuf/)__, etc.
+
 Scalavro takes a code-first, reflection based approach to schema generation and (de)serialization.  This yields a very low-overhead interface, and imposes some costs.  In general, Scalavro assumes you know what types you're reading and writing.  No built-in support is provided (as yet) for so-called schema resolution (taking the writer's schema into account when reading data).
 
 ## Goals
