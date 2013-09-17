@@ -186,6 +186,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
         enum
       </code></td>
     </tr>
+    <tr>
        <td><code>
         scala.util.Either[A, B]
       </code></td>
