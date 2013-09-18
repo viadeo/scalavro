@@ -10,8 +10,18 @@ import scala.annotation.{ StaticAnnotation }
 /**
   * The type of fixed-length data.
   *
-  * Implementations of this class must be decorated with a [[FixedData.Length]]
+  * Implementations of this class must be decorated with a `FixedData.Length`
   * annotation.
+  *
+  * @example
+  * {{{
+  *   import com.gensler.scalavro.util.FixedData
+  *   import scala.collection.immutable
+  *
+  *   @FixedData.Length(16)
+  *   case class MD5(override val bytes: immutable.Seq[Byte])
+  *     extends FixedData(bytes)
+  * }}}
   *
   * @param bytes The value of this Fixed data element as a sequence of bytes.
   *              The size of this sequence must be exactly that declared in the
@@ -37,7 +47,7 @@ abstract class FixedData(val bytes: immutable.Seq[Byte]) {
 
   /**
     * Returns the length of this fixed-length data element.  This value is
-    * derived from the [[FixedData.Length]] annotation.
+    * derived from the `FixedData.Length` annotation.
     */
   final lazy val length: Int = lengthAnnotation.get.length
 

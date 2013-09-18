@@ -167,7 +167,7 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
   }.distinct
 
   /**
-    * Returns an [[AvroTypeIO]] instance for this AvroType.
+    * Returns an `AvroTypeIO` instance for this AvroType.
     */
   lazy val io: AvroTypeIO[T] = AvroTypeIO.avroTypeToIO(this)
 
