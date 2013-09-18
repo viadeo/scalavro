@@ -661,7 +661,7 @@
 <h3>
 <a name="a-neat-fact-about-scalavros-io-capabilities" class="anchor" href="#a-neat-fact-about-scalavros-io-capabilities"><span class="octicon octicon-link"></span></a>A Neat Fact about Scalavro's IO Capabilities</h3>
 
-<p>Scalavro tries to produce read results whose runtime types are as accurate as possible for colections (the supported collection types are <code>Seq</code>, <code>Set</code>, and <code>Map</code>).  It accomplishes this by looking for a public varargs <code>apply</code> factory method on the target type's companion object.  This is why <code>AvroType[ArrayBuffer[Int]].io.read(…)</code> is able to return a <code>Try[ArrayBuffer[Int]]</code>.</p>
+<p>Scalavro tries to produce read results whose runtime types are as accurate as possible for collections (the supported collection types are <code>Seq</code>, <code>Set</code>, and <code>Map</code>).  It accomplishes this by looking for a public varargs <code>apply</code> factory method on the target type's companion object.  This is why <code>AvroType[ArrayBuffer[Int]].io.read(…)</code> is able to return a <code>Try[ArrayBuffer[Int]]</code>.</p>
 
 <p>This works for custom subtypes of the supported collections types -- as long as you define a public varargs <code>apply</code> in the companion you're good to go.</p>
 
