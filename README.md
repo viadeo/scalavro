@@ -255,7 +255,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
 ## General Information
 - Built against Scala 2.10.2 with SBT 0.12.4
 - Depends upon [spray-json](https://github.com/spray/spray-json)
-- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.4)
+- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.5)
 
 ## Current Capabilities
 - Dynamic Avro schema generation from vanilla Scala types
