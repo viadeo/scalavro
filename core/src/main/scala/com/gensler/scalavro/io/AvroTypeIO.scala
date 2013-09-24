@@ -47,8 +47,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * Attempts to create an object of type T by reading the required data from
     * the supplied binary stream.
     */
-  @throws[AvroDeserializationException[_]]
-  def read(stream: InputStream): Try[T] = {
+  def read(stream: InputStream): Try[T] = Try {
     read(DecoderFactory.get.directBinaryDecoder(stream, null))
   }
 
@@ -57,7 +56,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * the supplied decoder.
     */
   @throws[AvroDeserializationException[_]]
-  def read(decoder: BinaryDecoder): Try[T]
+  def read(decoder: BinaryDecoder): T
 
 }
 

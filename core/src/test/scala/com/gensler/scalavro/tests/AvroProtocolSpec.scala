@@ -10,6 +10,8 @@ import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.protocol.AvroProtocol
 
+import com.gensler.tests._
+
 class AvroProtocolSpec extends AvroSpec {
 
   "The Scalavro Protocol Support" should "provide conforming handshake record types" in {

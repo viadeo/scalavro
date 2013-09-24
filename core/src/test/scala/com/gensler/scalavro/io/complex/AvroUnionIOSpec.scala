@@ -13,15 +13,7 @@ import com.gensler.scalavro.util.Union._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
-// mock types:
-case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
-
-abstract class Alpha { def magic: Double }
-class Beta extends Alpha { val magic = math.Pi }
-case class Gamma(magic: Double) extends Alpha
-case class Delta() extends Beta
-case class Epsilon[T]() extends Beta
-// end mock types
+import com.gensler.tests._
 
 class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
 

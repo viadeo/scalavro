@@ -36,10 +36,10 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     }
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    val index = AvroLongIO.read(decoder).get
+  def read(decoder: BinaryDecoder) = {
+    val index = AvroLongIO.read(decoder)
     val memberType = avroType.memberAvroTypes(index.toInt).asInstanceOf[AvroType[T]]
-    memberType.io.read(decoder).get
+    memberType.io.read(decoder)
   }
 
 }

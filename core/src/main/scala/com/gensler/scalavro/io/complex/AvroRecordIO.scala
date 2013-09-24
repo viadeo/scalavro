@@ -21,29 +21,43 @@ import java.io.{ InputStream, OutputStream }
 
 case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avroType.tag) {
 
+  implicit val tt: TypeTag[T] = avroType.tag
+
+  import ReflectionHelpers.{ ProductElementExtractor, CaseClassFactory }
+
+  protected[this] lazy val extractors: Map[String, ProductElementExtractor[T, _]] = {
+    avroType.fields.map { field => field.name -> extractorFor(field) }.toMap
+  }
+
+  private def extractorFor[F](field: AvroRecord.Field[F]): ProductElementExtractor[T, F] = {
+    implicit val ft: TypeTag[F] = field.fieldType.tag
+    new ProductElementExtractor[T, F](field.name)
+  }
+
+  protected[this] lazy val factory = new CaseClassFactory[T]
+
+  protected[this] lazy val fieldReaders: Seq[AvroTypeIO[_]] = avroType.fields.map { _.fieldType.io }
+
   /**
     * Writes a binary representation of the supplied object to the supplied
     * stream.
     */
   def write[R <: T: TypeTag](obj: R, encoder: BinaryEncoder) {
-    try {
-      avroType.fields.foreach { field =>
-        writeFieldValue(field.fieldType.tag)
-        def writeFieldValue[V: TypeTag] = {
-          ReflectionHelpers.productElement[R, V](obj, field.name) match {
-            case Some(value) => {
-              field.fieldType.asInstanceOf[AvroType[V]].io.write(value, encoder)
-            }
-            case None => throw new RuntimeException(
-              "Could not extract a value for field [%s]" format field.name
-            )
-          }
+    for (field <- avroType.fields) {
+      writeFieldValue(field.fieldType.tag)
+      def writeFieldValue[F: TypeTag] = {
+        try {
+          val value = extractors(field.name).extractFrom(obj).asInstanceOf[F]
+          field.fieldType.asInstanceOf[AvroType[F]].io.write(value, encoder)
+        }
+        catch {
+          case cause: Throwable => throw new AvroSerializationException(
+            obj,
+            cause,
+            "Could not extract a value for field [%s]" format field.name
+          )
         }
       }
-    }
-    catch {
-      case cause: Throwable =>
-        throw new AvroSerializationException(obj, cause)
     }
   }
 
@@ -51,9 +65,10 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     * Reads a binary representation of the underlying Scala type from the
     * supplied stream.
     */
-  def read(decoder: BinaryDecoder) = Try {
-    val args = avroType.fields map { field => field.fieldType.io.read(decoder).get }
-    ReflectionHelpers.instantiateCaseClassWith(args)(avroType.tag).get
+  def read(decoder: BinaryDecoder) = {
+    val args = new scala.collection.mutable.ArrayBuffer[Any](initialSize = avroType.fields.size)
+    for (reader <- fieldReaders) args += reader read decoder
+    factory buildWith args
   }
 
 }

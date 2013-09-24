@@ -8,6 +8,8 @@ import com.gensler.scalavro.types.complex.AvroFixed
 
 import com.gensler.scalavro.util.FixedData
 
+import com.gensler.tests._
+
 class AvroFixedSpec extends AvroSpec {
 
   val af = AvroType[MD5].asInstanceOf[AvroFixed[MD5]]
@@ -30,7 +32,7 @@ class AvroFixedSpec extends AvroSpec {
   }
 
   it should "get its namespace from the source FixedData class" in {
-    af.namespace should be (Some("com.gensler.scalavro.tests"))
+    af.namespace should be (Some("com.gensler.tests"))
   }
 
   it should "get its size from the source FixedData companion object" in {

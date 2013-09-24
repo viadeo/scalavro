@@ -13,13 +13,11 @@ object AvroNullIO extends AvroNullIO
 
 trait AvroNullIO extends AvroTypeIO[Unit] {
 
-  def avroType = AvroNull
-
-  protected[scalavro] def asGeneric[U <: Unit: TypeTag](value: U): Unit = Unit
+  val avroType = AvroNull
 
   // null is written as zero bytes.
   def write[U <: Unit: TypeTag](value: U, encoder: BinaryEncoder) {}
 
-  def read(decoder: BinaryDecoder) = Success(())
+  def read(decoder: BinaryDecoder) = ()
 
 }

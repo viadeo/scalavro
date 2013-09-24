@@ -13,16 +13,13 @@ object AvroDoubleIO extends AvroDoubleIO
 
 trait AvroDoubleIO extends AvroTypeIO[Double] {
 
-  def avroType = AvroDouble
-
-  protected[scalavro] def asGeneric[D <: Double: TypeTag](value: D): Double = value
+  val avroType = AvroDouble
 
   def write[D <: Double: TypeTag](value: D, encoder: BinaryEncoder) = {
     encoder writeDouble value
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readDouble
-  }
+  def read(decoder: BinaryDecoder) = decoder.readDouble
+
 }

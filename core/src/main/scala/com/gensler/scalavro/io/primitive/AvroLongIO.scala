@@ -13,17 +13,13 @@ object AvroLongIO extends AvroLongIO
 
 trait AvroLongIO extends AvroTypeIO[Long] {
 
-  def avroType = AvroLong
-
-  protected[scalavro] def asGeneric[L <: Long: TypeTag](value: L): Long = value
+  val avroType = AvroLong
 
   def write[L <: Long: TypeTag](value: L, encoder: BinaryEncoder) = {
     encoder writeLong value
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readLong
-  }
+  def read(decoder: BinaryDecoder) = decoder.readLong
 
 }

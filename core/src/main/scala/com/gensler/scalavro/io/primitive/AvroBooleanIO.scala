@@ -15,12 +15,7 @@ object AvroBooleanIO extends AvroBooleanIO
 
 trait AvroBooleanIO extends AvroTypeIO[Boolean] {
 
-  def avroType = AvroBoolean
-
-  final val trueByte = 1.toByte
-  final val falseByte = 0.toByte
-
-  protected[scalavro] def asGeneric[B <: Boolean: TypeTag](value: B): Boolean = value
+  val avroType = AvroBoolean
 
   /**
     * a boolean is written as a single byte whose value is either 0 (false) or
@@ -31,8 +26,6 @@ trait AvroBooleanIO extends AvroTypeIO[Boolean] {
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readBoolean
-  }
+  def read(decoder: BinaryDecoder) = decoder.readBoolean
 
 }

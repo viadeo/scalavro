@@ -48,14 +48,14 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
     }
   }
 
-  def read(decoder: BinaryDecoder) = Try {
+  def read(decoder: BinaryDecoder) = {
     val items = new scala.collection.mutable.ArrayBuffer[(String, T)]
 
     def readBlock(): Long = {
-      val numItems = (AvroLongIO read decoder).get
+      val numItems = (AvroLongIO read decoder)
       val absNumItems = math abs numItems
-      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read decoder).get }
-      (0L until absNumItems) foreach { _ => items += AvroStringIO.read(decoder).get -> avroType.itemType.io.read(decoder).get }
+      if (numItems < 0L) { val bytesInBlock = (AvroLongIO read decoder) }
+      (0L until absNumItems) foreach { _ => items += AvroStringIO.read(decoder) -> avroType.itemType.io.read(decoder) }
       absNumItems
     }
 

@@ -13,17 +13,13 @@ object AvroCharIO extends AvroCharIO
 
 trait AvroCharIO extends AvroTypeIO[Char] {
 
-  def avroType = AvroChar
-
-  protected[scalavro] def asGeneric[C <: Char: TypeTag](value: C): Char = value
+  val avroType = AvroChar
 
   def write[C <: Char: TypeTag](value: C, encoder: BinaryEncoder) = {
     encoder writeInt value.toChar
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readInt.toChar
-  }
+  def read(decoder: BinaryDecoder) = decoder.readInt.toChar
 
 }

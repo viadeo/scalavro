@@ -38,13 +38,13 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case None        => AvroNullIO.write((), encoder)
     }
 
-  def read(decoder: BinaryDecoder) = Try {
+  def read(decoder: BinaryDecoder) = {
     readHelper(decoder)(innerAvroType.tag).asInstanceOf[T]
   }
 
   def readHelper[A: TypeTag](decoder: BinaryDecoder) = {
-    val index = AvroLongIO.read(decoder).get
-    if (index == nonNullIndex) Some(innerAvroType.io.read(decoder).get.asInstanceOf[A])
+    val index = AvroLongIO.read(decoder)
+    if (index == nonNullIndex) Some(innerAvroType.io.read(decoder).asInstanceOf[A])
     else if (index == nullIndex) None
     else throw new AvroDeserializationException[T](
       detailedMessage = "Encountered an index that was not zero or one: [%s]" format index

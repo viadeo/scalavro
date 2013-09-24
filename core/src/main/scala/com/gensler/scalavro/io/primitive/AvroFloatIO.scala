@@ -13,16 +13,13 @@ object AvroFloatIO extends AvroFloatIO
 
 trait AvroFloatIO extends AvroTypeIO[Float] {
 
-  def avroType = AvroFloat
-
-  protected[scalavro] def asGeneric[F <: Float: TypeTag](value: F): Float = value
+  val avroType = AvroFloat
 
   def write[F <: Float: TypeTag](value: F, encoder: BinaryEncoder) = {
     encoder writeFloat value
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readFloat
-  }
+  def read(decoder: BinaryDecoder) = decoder.readFloat
+
 }

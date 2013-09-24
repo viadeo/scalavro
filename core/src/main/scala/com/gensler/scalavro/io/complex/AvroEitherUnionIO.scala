@@ -34,14 +34,14 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].io.write(value.asInstanceOf[B], encoder)
     }
 
-  def read(decoder: BinaryDecoder) = Try {
+  def read(decoder: BinaryDecoder) = {
     readHelper(decoder)(leftAvroType.tag, rightAvroType.tag).asInstanceOf[T]
   }
 
   def readHelper[A: TypeTag, B: TypeTag](decoder: BinaryDecoder) = {
-    val index = AvroLongIO.read(decoder).get
-    if (index == 0) Left(leftAvroType.io.read(decoder).get.asInstanceOf[A])
-    else if (index == 1) Right(rightAvroType.io.read(decoder).get.asInstanceOf[B])
+    val index = AvroLongIO.read(decoder)
+    if (index == 0) Left(leftAvroType.io.read(decoder).asInstanceOf[A])
+    else if (index == 1) Right(rightAvroType.io.read(decoder).asInstanceOf[B])
     else throw new AvroDeserializationException[T]
   }
 }

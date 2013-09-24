@@ -7,6 +7,8 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 
+import com.gensler.tests._
+
 class AvroTypeSpec extends AvroSpec {
 
   // primitives
@@ -188,9 +190,9 @@ class AvroTypeSpec extends AvroSpec {
     val md5Type = AvroType[MD5]
     md5Type.isInstanceOf[AvroFixed[_]] should be (true)
     val md5Fixed = md5Type.asInstanceOf[AvroFixed[MD5]]
-    md5Fixed.namespace should be (Some("com.gensler.scalavro.tests"))
+    md5Fixed.namespace should be (Some("com.gensler.tests"))
     md5Fixed.name should be ("MD5")
-    md5Fixed.fullyQualifiedName should be ("com.gensler.scalavro.tests.MD5")
+    md5Fixed.fullyQualifiedName should be ("com.gensler.tests.MD5")
     md5Fixed dependsOn md5Type should be (true)
 
     // prettyPrint(md5Type.schema)
@@ -209,9 +211,9 @@ class AvroTypeSpec extends AvroSpec {
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
     val personRecord = personType.asInstanceOf[AvroRecord[Person]]
-    personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
+    personRecord.namespace should be (Some("com.gensler.tests"))
     personRecord.name should be ("Person")
-    personRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.Person")
+    personRecord.fullyQualifiedName should be ("com.gensler.tests.Person")
     personType dependsOn personType should be (true)
     personType dependsOn santaListType should be (false)
 
@@ -221,9 +223,9 @@ class AvroTypeSpec extends AvroSpec {
     santaListType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
     val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
-    santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
+    santaListRecord.namespace should be (Some("com.gensler.tests"))
     santaListRecord.name should be ("SantaList")
-    santaListRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.SantaList")
+    santaListRecord.fullyQualifiedName should be ("com.gensler.tests.SantaList")
     santaListType dependsOn personType should be (true)
     santaListType dependsOn santaListType should be (true)
   }

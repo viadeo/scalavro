@@ -9,6 +9,8 @@ import com.gensler.scalavro.error._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
+import com.gensler.tests._
+
 class AvroRecordSpec extends AvroSpec {
 
   val personType = AvroType[Person]

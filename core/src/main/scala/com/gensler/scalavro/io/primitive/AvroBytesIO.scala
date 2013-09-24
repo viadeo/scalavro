@@ -15,16 +15,14 @@ object AvroBytesIO extends AvroBytesIO
 
 trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
 
-  def avroType = AvroBytes
-
-  protected[scalavro] def asGeneric[B <: Seq[Byte]: TypeTag](value: B): ByteBuffer = ByteBuffer.wrap(value.toArray)
+  val avroType = AvroBytes
 
   def write[B <: Seq[Byte]: TypeTag](bytes: B, encoder: BinaryEncoder) = {
     encoder writeBytes bytes.toArray
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
+  def read(decoder: BinaryDecoder) = {
     val numBytes = decoder.readLong
     val buffer = Array.ofDim[Byte](numBytes.toInt)
     decoder.readFixed(buffer)

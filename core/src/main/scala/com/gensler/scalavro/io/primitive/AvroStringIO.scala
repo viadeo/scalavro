@@ -14,17 +14,13 @@ object AvroStringIO extends AvroStringIO
 
 trait AvroStringIO extends AvroTypeIO[String] {
 
-  def avroType = AvroString
-
-  protected[scalavro] def asGeneric[S <: String: TypeTag](value: S): String = value
+  val avroType = AvroString
 
   def write[S <: String: TypeTag](value: S, encoder: BinaryEncoder) = {
     encoder writeString value
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readString
-  }
+  def read(decoder: BinaryDecoder) = decoder.readString
 
 }

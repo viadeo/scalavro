@@ -47,14 +47,30 @@ trait ReflectionHelpers extends Logging {
 
     val classFilter = new FilterBuilder
     classFilter.excludePackage("java")
+    classFilter.excludePackage("javax")
     classFilter.excludePackage("scala")
     classFilter.excludePackage("ch.qos.logback")
-    classFilter.excludePackage("org.slf4j")
-    classFilter.excludePackage("org.reflections")
-    classFilter.excludePackage("spray.json")
+    classFilter.excludePackage("com.gensler.scalavro")
     classFilter.excludePackage("com.google.common")
+    classFilter.excludePackage("com.google.guava")
+    classFilter.excludePackage("com.google.code.findbugs")
+    classFilter.excludePackage("org.dom4j")
     classFilter.excludePackage("org.parboiled")
     classFilter.excludePackage("org.scalatest")
+    classFilter.excludePackage("com.thoughtworks.paranamer")
+    classFilter.excludePackage("org.tukaani.xz")
+    classFilter.excludePackage("org.apache.avro")
+    classFilter.excludePackage("org.apache.commons")
+    classFilter.excludePackage("org.codehaus.jackson")
+    classFilter.excludePackage("org.javassist")
+    classFilter.excludePackage("org.w3c.dom")
+    classFilter.excludePackage("org.xerial.snappy")
+    classFilter.excludePackage("org.xml.sax")
+    classFilter.excludePackage("org.scalatest")
+    classFilter.excludePackage("org.slf4j")
+    classFilter.excludePackage("org.reflections")
+    classFilter.excludePackage("sbt")
+    classFilter.excludePackage("spray.json")
 
     val urls = getClass.getClassLoader.asInstanceOf[java.net.URLClassLoader].getURLs
 
@@ -238,65 +254,66 @@ trait ReflectionHelpers extends Logging {
   }
 
   /**
-    * Attempts to fetch the value of a named component of a product instance,
-    * while verifying the value conforms to some expected type.
+    * Provides access to named members of instances of the supplied type `P`.
     *
     * @tparam P         the type of the product instance in question
-    * @tparam T         the expected type of the value
-    * @param product    an instance of some product type, P
-    * @param membername the arguments to supply to the constructor method
+    * @tparam T         the expected type of the member value
+    * @param membername the name of the member value to extract
     */
-  protected[scalavro] def productElement[P: TypeTag, T: TypeTag](
-    product: P,
-    memberName: String): Option[T] = {
+  class ProductElementExtractor[P: TypeTag, T: TypeTag](memberName: String) {
+    val memberField = typeOf[P].declaration(memberName: TermName).asTerm.accessed.asTerm
+    implicit val ct = ClassTag[P](classLoaderMirror runtimeClass typeOf[P])
 
-    implicit val productClassTag = ClassTag[P](product.getClass)
-
-    val getterSymbol = typeOf[P].member(memberName: TermName)
-
-    if (getterSymbol.isMethod &&
-      getterSymbol.asMethod.isGetter &&
-      getterSymbol.asMethod.returnType <:< typeOf[T]) {
-      scala.util.Try {
-        val instanceMirror = classLoaderMirror reflect product
-        val getterMethod = instanceMirror reflectMethod getterSymbol.asMethod
-        getterMethod().asInstanceOf[T]
-      }.toOption
+    /**
+      * Attempts to fetch the value from the supplied product instance.
+      *
+      * @param product    an instance of some product type, P
+      */
+    def extractFrom(product: P): T = {
+      val instanceMirror = classLoaderMirror reflect product
+      val fieldValue = instanceMirror reflectField memberField
+      fieldValue.get.asInstanceOf[T]
     }
-    else None
   }
 
   /**
-    * Attempts to create a new instance of the specified type by calling the
-    * constructor method with the supplied arguments.
+    * Encapsulates functionality to reflectively invoke the constructor
+    * for a given case class type `T`.
     *
-    * @tparam T   the type of object to construct, which must be a case class
-    * @param args the arguments to supply to the constructor method
+    * @tparam T the type of the case class this factory builds
     */
-  protected[scalavro] def instantiateCaseClassWith[T: TypeTag](args: Seq[_]): scala.util.Try[T] =
-    scala.util.Try {
-      val tpe = typeOf[T]
-      val classSymbol = tpe.typeSymbol.asClass
+  class CaseClassFactory[T: TypeTag] {
 
-      if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass))
-        throw new IllegalArgumentException(
-          "instantiateCaseClassWith may only be applied to case classes!"
-        )
+    val tpe = typeOf[T]
+    val classSymbol = tpe.typeSymbol.asClass
 
-      val classMirror = classLoaderMirror reflectClass classSymbol
+    if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass))
+      throw new IllegalArgumentException(
+        "instantiateCaseClassWith may only be applied to case classes!"
+      )
 
-      val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val classMirror = classLoaderMirror reflectClass classSymbol
 
-      val defaultConstructor =
-        if (constructorSymbol.isMethod) constructorSymbol.asMethod
-        else {
-          val ctors = constructorSymbol.asTerm.alternatives
-          ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
-        }
+    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
 
-      val constructorMethod = classMirror reflectConstructor defaultConstructor
+    val defaultConstructor =
+      if (constructorSymbol.isMethod) constructorSymbol.asMethod
+      else {
+        val ctors = constructorSymbol.asTerm.alternatives
+        ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
+      }
 
-      constructorMethod(args: _*).asInstanceOf[T]
-    }
+    val constructorMethod = classMirror reflectConstructor defaultConstructor
+
+    /**
+      * Attempts to create a new instance of the specified type by calling the
+      * constructor method with the supplied arguments.
+      *
+      * @tparam T   the type of object to construct, which must be a case class
+      * @param args the arguments to supply to the constructor method
+      */
+    def buildWith(args: Seq[_]): T = constructorMethod(args: _*).asInstanceOf[T]
+
+  }
 
 }
