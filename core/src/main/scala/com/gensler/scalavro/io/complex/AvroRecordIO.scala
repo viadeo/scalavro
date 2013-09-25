@@ -44,19 +44,17 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     */
   def write[R <: T: TypeTag](obj: R, encoder: BinaryEncoder) {
     for (field <- avroType.fields) {
-      writeFieldValue(field.fieldType.tag)
-      def writeFieldValue[F: TypeTag] = {
-        try {
-          val value = extractors(field.name).extractFrom(obj).asInstanceOf[F]
-          field.fieldType.asInstanceOf[AvroType[F]].io.write(value, encoder)
-        }
-        catch {
-          case cause: Throwable => throw new AvroSerializationException(
-            obj,
-            cause,
-            "Could not extract a value for field [%s]" format field.name
-          )
-        }
+      try {
+        val value = extractors(field.name).extractFrom(obj).asInstanceOf[Any]
+        val fieldTag = field.fieldType.tag.asInstanceOf[TypeTag[Any]]
+        field.fieldType.io.asInstanceOf[AvroTypeIO[Any]].write(value, encoder)(fieldTag)
+      }
+      catch {
+        case cause: Throwable => throw new AvroSerializationException(
+          obj,
+          cause,
+          "Could not extract a value for field [%s]" format field.name
+        )
       }
     }
   }

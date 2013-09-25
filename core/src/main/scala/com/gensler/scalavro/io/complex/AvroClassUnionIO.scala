@@ -22,10 +22,12 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
 
   def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder) = {
     val staticTypeOfObj = typeOf[X]
-    val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
-    val objTypeTag = ReflectionHelpers.tagForType(typeOfObj)
+    val runtimeTypeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val objTypeTag = ReflectionHelpers.tagForType(runtimeTypeOfObj)
 
-    avroType.memberAvroTypes.indexWhere { at => staticTypeOfObj <:< at.tag.tpe || typeOfObj <:< at.tag.tpe } match {
+    avroType.memberAvroTypes.indexWhere {
+      at => staticTypeOfObj <:< at.tag.tpe || runtimeTypeOfObj <:< at.tag.tpe
+    } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
         AvroLongIO.write(index.toLong, encoder)
