@@ -29,7 +29,7 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
     references: mutable.Map[Any, Long],
     topLevel: Boolean): Unit = {
 
-    AvroLongIO.write(if (obj.isLeft) 0L else 1L, encoder, references, false)
+    AvroLongIO.write(if (obj.isLeft) 0L else 1L, encoder)
     writeHelper(obj, encoder, references, topLevel)(typeTag[X], leftAvroType.tag, rightAvroType.tag)
     encoder.flush
   }
@@ -44,14 +44,23 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
     case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].io.write(value.asInstanceOf[B], encoder, references, false)
   }
 
-  def read(decoder: BinaryDecoder) = {
-    readHelper(decoder)(leftAvroType.tag, rightAvroType.tag).asInstanceOf[T]
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
+    readHelper(decoder, references, topLevel)(leftAvroType.tag, rightAvroType.tag).asInstanceOf[T]
   }
 
-  def readHelper[A: TypeTag, B: TypeTag](decoder: BinaryDecoder) = {
-    val index = AvroLongIO.read(decoder)
-    if (index == 0) Left(leftAvroType.io.read(decoder).asInstanceOf[A])
-    else if (index == 1) Right(rightAvroType.io.read(decoder).asInstanceOf[B])
-    else throw new AvroDeserializationException[T]
+  def readHelper[A: TypeTag, B: TypeTag](
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
+    (AvroLongIO read decoder) match {
+      case 0 => Left(leftAvroType.io.read(decoder, references, false).asInstanceOf[A])
+      case 1 => Right(rightAvroType.io.read(decoder, references, false).asInstanceOf[B])
+      case _ => throw new AvroDeserializationException[T]
+    }
   }
 }

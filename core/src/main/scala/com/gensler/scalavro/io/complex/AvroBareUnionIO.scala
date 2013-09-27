@@ -26,7 +26,18 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     obj: X,
     encoder: BinaryEncoder,
     references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = ???
+    topLevel: Boolean): Unit = {
+
+    /*
+    val staticTypeOfObj = typeOf[X]
+    val runtimeTypeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val objTypeTag = ReflectionHelpers.tagForType(runtimeTypeOfObj)
+    writeBare(obj, encoder, references, topLevel)(objTypeTag)
+*/
+
+    ??? // Not Implemented!
+
+  }
 
   def writeBare[X: prove[T]#containsType: TypeTag](
     obj: X,
@@ -39,7 +50,7 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     avroType.memberAvroTypes.indexWhere { at => staticTypeOfObj <:< at.tag.tpe || typeOfObj <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
-        AvroLongIO.write(index.toLong, encoder, references, false)
+        AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
         memberType.io.write(obj.asInstanceOf[T], encoder, references, false)
         encoder.flush
@@ -47,10 +58,14 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     }
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val index = AvroLongIO.read(decoder)
     val memberType = avroType.memberAvroTypes(index.toInt).asInstanceOf[AvroType[T]]
-    memberType.io.read(decoder)
+    memberType.io.read(decoder, references, false)
   }
 
 }

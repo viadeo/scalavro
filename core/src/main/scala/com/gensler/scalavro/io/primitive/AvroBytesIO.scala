@@ -14,21 +14,19 @@ import java.nio.ByteBuffer
 
 object AvroBytesIO extends AvroBytesIO
 
-trait AvroBytesIO extends AvroTypeIO[Seq[Byte]] {
+trait AvroBytesIO extends AvroPrimitiveTypeIO[Seq[Byte]] {
 
   val avroType = AvroBytes
 
-  protected[scalavro] def write[B <: Seq[Byte]: TypeTag](
-    bytes: B,
-    encoder: BinaryEncoder,
-    references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = {
+  protected[scalavro] def write(
+    bytes: Seq[Byte],
+    encoder: BinaryEncoder): Unit = {
 
     encoder writeBytes bytes.toArray
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(decoder: BinaryDecoder) = {
     val numBytes = decoder.readLong
     val buffer = Array.ofDim[Byte](numBytes.toInt)
     decoder.readFixed(buffer)

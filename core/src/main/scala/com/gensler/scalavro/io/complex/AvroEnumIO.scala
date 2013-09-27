@@ -53,7 +53,11 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
     }
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
     datumReader.read(null, decoder) match {
       case genericEnumSymbol: GenericEnumSymbol => enumeration withName genericEnumSymbol.toString

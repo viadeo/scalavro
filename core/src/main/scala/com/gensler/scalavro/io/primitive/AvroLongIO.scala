@@ -12,15 +12,13 @@ import scala.reflect.runtime.universe.TypeTag
 
 object AvroLongIO extends AvroLongIO
 
-trait AvroLongIO extends AvroTypeIO[Long] {
+trait AvroLongIO extends AvroPrimitiveTypeIO[Long] {
 
   val avroType = AvroLong
 
-  protected[scalavro] def write[L <: Long: TypeTag](
-    value: L,
-    encoder: BinaryEncoder,
-    references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = {
+  protected[scalavro] def write(
+    value: Long,
+    encoder: BinaryEncoder): Unit = {
 
     encoder writeLong value
     encoder.flush

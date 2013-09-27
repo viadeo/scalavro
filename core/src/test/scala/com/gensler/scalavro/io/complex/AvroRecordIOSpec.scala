@@ -79,6 +79,23 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
     readResult should equal (request)
   }
 
+  it should "read and write an object graph with shared references" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val santaListIO = AvroType[SantaList].io
+
+    val suzie = Person("Suzie", 9)
+
+    val sList = SantaList(
+      nice = Seq(suzie, Person("Dennis", 4)),
+      naughty = Seq(Person("Tommy", 7), suzie, Person("Eve", 3))
+    )
+
+    santaListIO.write(sList, out)
+    santaListIO read in should equal (Success(sList))
+  }
+
   it should "read and write instances of recursively defined case classes" in {
     val out = new PipedOutputStream
     val in = new PipedInputStream(out)

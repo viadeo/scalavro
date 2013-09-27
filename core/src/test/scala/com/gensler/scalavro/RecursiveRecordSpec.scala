@@ -16,7 +16,6 @@ class RecursiveRecordSpec extends AvroSpec {
   }
 
   it should "produce a schema for a record derived from a recursively defined case class" in {
-    prettyPrint(AvroType[SinglyLinkedStringList].schema)
     AvroType[SinglyLinkedStringList].schema.toString should equal ("""
 {
   "name": "com.gensler.scalavro.test.SinglyLinkedStringList",
@@ -26,7 +25,14 @@ class RecursiveRecordSpec extends AvroSpec {
     "type": "string"
   }, {
     "name": "next",
-    "type": ["null", "com.gensler.scalavro.test.SinglyLinkedStringList"]
+    "type": ["null", ["com.gensler.scalavro.test.SinglyLinkedStringList", {
+      "name": "com.gensler.scalavro.Reference",
+      "type": "record",
+      "fields": [{
+        "name": "id",
+        "type": "long"
+      }]
+    }]]
   }]
 }
 """.replaceAll("\\s", "")

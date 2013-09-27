@@ -40,7 +40,11 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
     }
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val datumReader = new GenericDatumReader[GenericEnumSymbol](avroSchema)
     datumReader.read(null, decoder) match {
       case genericEnumSymbol: GenericEnumSymbol => avroType.symbolMap(genericEnumSymbol.toString)

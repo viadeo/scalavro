@@ -36,7 +36,7 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
-        AvroLongIO.write(index.toLong, encoder, references, false)
+        AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[X]]
         memberType.io.write(obj, encoder, references, false)(objTypeTag.asInstanceOf[TypeTag[X]])
         encoder.flush
@@ -44,10 +44,14 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     }
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val index = AvroLongIO.read(decoder)
     val memberType = avroType.memberAvroTypes(index.toInt).asInstanceOf[AvroType[T]]
-    memberType.io.read(decoder)
+    memberType.io.read(decoder, references, false)
   }
 
 }

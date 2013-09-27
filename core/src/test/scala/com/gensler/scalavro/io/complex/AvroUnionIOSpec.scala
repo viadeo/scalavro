@@ -49,6 +49,8 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "read and write union members derived from bare Unions" in {
+    import scala.collection.mutable
+
     val bareIO = AvroType[ISB].io.asInstanceOf[AvroBareUnionIO[ISB, ISB]]
 
     val out = new ByteArrayOutputStream
@@ -56,9 +58,9 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     import org.apache.avro.io.EncoderFactory
     val encoder = EncoderFactory.get.directBinaryEncoder(out, null)
 
-    bareIO.writeBare(555, encoder)
-    bareIO.writeBare(false, encoder)
-    bareIO.writeBare("Unboxed unions!", encoder)
+    bareIO.writeBare(555, encoder, mutable.Map[Any, Long](), true)
+    bareIO.writeBare(false, encoder, mutable.Map[Any, Long](), true)
+    bareIO.writeBare("Unboxed unions!", encoder, mutable.Map[Any, Long](), true)
 
     val in = new ByteArrayInputStream(out.toByteArray)
     (bareIO read in).get should equal (555)

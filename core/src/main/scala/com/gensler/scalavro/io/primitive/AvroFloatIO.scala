@@ -12,15 +12,13 @@ import scala.reflect.runtime.universe.TypeTag
 
 object AvroFloatIO extends AvroFloatIO
 
-trait AvroFloatIO extends AvroTypeIO[Float] {
+trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
 
   val avroType = AvroFloat
 
-  protected[scalavro] def write[F <: Float: TypeTag](
-    value: F,
-    encoder: BinaryEncoder,
-    references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = {
+  protected[scalavro] def write(
+    value: Float,
+    encoder: BinaryEncoder): Unit = {
 
     encoder writeFloat value
     encoder.flush

@@ -21,7 +21,8 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
 
   // IMPORTANT:
   // null is the 0th index in the union, per AvroType.fromType
-  val (nullIndex, nonNullIndex) = (0L, 1L)
+  val NULL_INDEX = 0L
+  val NON_NULL_INDEX = 1L
 
   val TypeRef(_, _, List(innerType)) = typeOf[T]
 
@@ -33,7 +34,7 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
     references: mutable.Map[Any, Long],
     topLevel: Boolean): Unit = {
 
-    AvroLongIO.write(if (obj.isDefined) nonNullIndex else nullIndex, encoder, references, false)
+    AvroLongIO.write(if (obj.isDefined) NON_NULL_INDEX else NULL_INDEX, encoder)
     writeHelper(obj, encoder, references, topLevel)(typeTag[X], innerAvroType.tag)
     encoder.flush
   }
@@ -53,16 +54,26 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
     case None => AvroNullIO.write((), encoder, references, false)
   }
 
-  def read(decoder: BinaryDecoder) = {
-    readHelper(decoder)(innerAvroType.tag).asInstanceOf[T]
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
+    readHelper(decoder, references)(innerAvroType.tag).asInstanceOf[T]
   }
 
-  def readHelper[A: TypeTag](decoder: BinaryDecoder) = {
-    val index = AvroLongIO.read(decoder)
-    if (index == nonNullIndex) Some(innerAvroType.io.read(decoder).asInstanceOf[A])
-    else if (index == nullIndex) None
-    else throw new AvroDeserializationException[T](
-      detailedMessage = "Encountered an index that was not zero or one: [%s]" format index
-    )
+  def readHelper[A: TypeTag](
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any]) = {
+
+    (AvroLongIO read decoder) match {
+      case NON_NULL_INDEX => Some(
+        innerAvroType.io.read(decoder, references, false).asInstanceOf[A]
+      )
+      case NULL_INDEX => None
+      case index: Long => throw new AvroDeserializationException[T](
+        detailedMessage = "Encountered an index that was not zero or one: [%s]".format(index)
+      )
+    }
   }
 }
