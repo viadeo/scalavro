@@ -52,14 +52,20 @@ case class AvroArrayIO[T, S <: Seq[T]](avroType: AvroArray[T, S]) extends AvroTy
     }
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val items = new scala.collection.mutable.ArrayBuffer[T]
 
     def readBlock(): Long = {
       val numItems = (AvroLongIO read decoder)
       val absNumItems = math abs numItems
       if (numItems < 0L) { val bytesInBlock = (AvroLongIO read decoder) }
-      (0L until absNumItems) foreach { _ => items += avroType.itemType.io.read(decoder) }
+      (0L until absNumItems) foreach { _ =>
+        items += avroType.itemType.io.read(decoder, references, false)
+      }
       absNumItems
     }
 

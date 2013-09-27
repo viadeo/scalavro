@@ -12,17 +12,15 @@ import scala.reflect.runtime.universe.TypeTag
 
 object AvroNullIO extends AvroNullIO
 
-trait AvroNullIO extends AvroTypeIO[Unit] {
+trait AvroNullIO extends AvroPrimitiveTypeIO[Unit] {
 
   val avroType = AvroNull
 
   // null is written as zero bytes.
 
-  protected[scalavro] def write[U <: Unit: TypeTag](
-    value: U,
-    encoder: BinaryEncoder,
-    references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = {}
+  protected[scalavro] def write(
+    value: Unit,
+    encoder: BinaryEncoder): Unit = {}
 
   def read(decoder: BinaryDecoder) = ()
 

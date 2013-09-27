@@ -55,7 +55,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
   @throws[AvroDeserializationException[_]]
   def read(stream: InputStream): Try[T] = Try {
     val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
-    read(decoder, mutable.Seq[Any](), true)
+    read(decoder, mutable.ArrayBuffer[Any](), true)
   }
 
   /**
@@ -65,7 +65,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
   @throws[AvroDeserializationException[_]]
   protected[scalavro] def read(
     decoder: BinaryDecoder,
-    references: mutable.Seq[Any],
+    references: mutable.ArrayBuffer[Any],
     topLevel: Boolean): T
 
 }

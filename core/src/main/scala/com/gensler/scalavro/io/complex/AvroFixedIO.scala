@@ -36,7 +36,11 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val buffer = Array.ofDim[Byte](avroType.size)
     decoder.readFixed(buffer)
     bytesConstructorMirror.apply(buffer.toIndexedSeq).asInstanceOf[T]

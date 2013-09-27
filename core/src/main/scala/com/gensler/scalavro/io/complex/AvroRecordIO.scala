@@ -58,14 +58,14 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
       references.get(obj) match {
         case Some(id: Long) => { // the object has already been written
           // encode the union index
-          AvroLongIO.write(UNION_INDEX_REFERENCE, encoder, references, false)
+          AvroLongIO.write(UNION_INDEX_REFERENCE, encoder)
           // encode the reference id
           AvroLongIO.write(id, encoder, references, false)
         }
 
         case None => { // the object has not been written to the stream yet
           // encode the union index
-          AvroLongIO.write(UNION_INDEX_RECORD, encoder, references, false)
+          AvroLongIO.write(UNION_INDEX_RECORD, encoder)
           // write the object
           writeFieldValues(obj, encoder, references)
         }
@@ -79,7 +79,7 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
     references: mutable.Map[Any, Long]): Unit = {
 
     // add the object to the reference map
-    references += obj -> (references.size + 1)
+    references += obj -> references.size
 
     // encode the object as field values
     for (field <- avroType.fields) {
@@ -100,24 +100,27 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
 
   protected[scalavro] def read(
     decoder: BinaryDecoder,
-    references: mutable.Seq[Any],
+    references: mutable.ArrayBuffer[Any],
     topLevel: Boolean): T = {
 
-    if (topLevel) readObject(decoder)
+    if (topLevel) readObject(decoder, references)
     else {
-      AvroLongIO.read(decoder, references, false) match {
-        case UNION_INDEX_REFERENCE => references(AvroLongIO.read(decoder, references, false).get).asInstanceOf[T]
-        case UNION_INDEX_RECORD    => readObject(decoder, references)
-        case _                     => throw new AvroDeserializationException(obj)
+      (AvroLongIO read decoder) match {
+        case UNION_INDEX_REFERENCE => {
+          val index = AvroLongIO read decoder
+          references(index.toInt).asInstanceOf[T]
+        }
+        case UNION_INDEX_RECORD => readObject(decoder, references)
+        case _                  => throw new AvroDeserializationException
       }
     }
   }
 
-  protected[this] def readObject(decoder: BinaryDecoder, references: mutable.Seq[Any]): T = {
+  protected[this] def readObject(decoder: BinaryDecoder, references: mutable.ArrayBuffer[Any]): T = {
     val args = new scala.collection.mutable.ArrayBuffer[Any](initialSize = avroType.fields.size)
     for (reader <- fieldReaders) args += reader.read(decoder, references, false)
     val result = factory buildWith args
-    references += result
+    references append result
     result
   }
 
