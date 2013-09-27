@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.complex
+package com.gensler.scalavro.io.complex.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -6,14 +6,14 @@ import scala.reflect.runtime.universe._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
+import com.gensler.scalavro.test._
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
+import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.util.Union._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
-
-import com.gensler.tests._
 
 class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
 

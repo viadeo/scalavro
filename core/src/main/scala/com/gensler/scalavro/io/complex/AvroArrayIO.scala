@@ -11,6 +11,7 @@ import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericArray, GenericDatumWriter }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -29,13 +30,18 @@ case class AvroArrayIO[T, S <: Seq[T]](avroType: AvroArray[T, S]) extends AvroTy
     )
   }
 
-  def write[G <: Seq[T]: TypeTag](items: G, encoder: BinaryEncoder) = {
+  protected[scalavro] def write[G <: Seq[T]: TypeTag](
+    items: G,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
+
     try {
       encoder.writeArrayStart
       encoder.setItemCount(items.size)
       for (item <- items) {
         encoder.startItem
-        avroType.itemType.io.write(item, encoder)
+        avroType.itemType.io.write(item, encoder, references, false)
       }
       encoder.writeArrayEnd
       encoder.flush

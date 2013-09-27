@@ -1,4 +1,4 @@
-package com.gensler.scalavro.util
+package com.gensler.scalavro.util.test
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
@@ -6,8 +6,6 @@ import org.scalatest.matchers.ShouldMatchers
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.util.ReflectionHelpers._
-
-import com.gensler.tests._
 
 class ReflectionHelpersSpec extends FlatSpec with ShouldMatchers {
 

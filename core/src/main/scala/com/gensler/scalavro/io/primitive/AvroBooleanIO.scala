@@ -4,6 +4,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroBoolean
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -21,7 +22,12 @@ trait AvroBooleanIO extends AvroTypeIO[Boolean] {
     * a boolean is written as a single byte whose value is either 0 (false) or
     * 1 (true).
     */
-  def write[B <: Boolean: TypeTag](value: B, encoder: BinaryEncoder) = {
+  protected[scalavro] def write[B <: Boolean: TypeTag](
+    value: B,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
+
     encoder writeBoolean value
     encoder.flush
   }

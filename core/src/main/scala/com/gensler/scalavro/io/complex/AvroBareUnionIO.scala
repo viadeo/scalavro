@@ -13,6 +13,7 @@ import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -21,17 +22,26 @@ import java.io.{ InputStream, OutputStream }
 private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag](
     avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 
-  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder): Unit = ???
+  protected[scalavro] def write[X <: T: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = ???
 
-  def writeBare[X: prove[T]#containsType: TypeTag](obj: X, encoder: BinaryEncoder) = {
+  def writeBare[X: prove[T]#containsType: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean) = {
+
     val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
     val staticTypeOfObj = typeOf[X]
     avroType.memberAvroTypes.indexWhere { at => staticTypeOfObj <:< at.tag.tpe || typeOfObj <:< at.tag.tpe } match {
       case -1 => throw new AvroSerializationException(obj)
       case index: Int => {
-        AvroLongIO.write(index.toLong, encoder)
+        AvroLongIO.write(index.toLong, encoder, references, false)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
-        memberType.io.write(obj.asInstanceOf[T], encoder)
+        memberType.io.write(obj.asInstanceOf[T], encoder, references, false)
         encoder.flush
       }
     }

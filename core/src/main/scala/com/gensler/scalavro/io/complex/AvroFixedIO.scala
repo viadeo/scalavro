@@ -13,6 +13,7 @@ import org.apache.avro.generic.GenericFixed
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.collection.immutable
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -25,10 +26,12 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
   protected lazy val bytesConstructorMirror =
     ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].get
 
-  protected[scalavro] def asGeneric[F <: T: TypeTag](obj: F): GenericFixed =
-    new GenericData.Fixed(avroSchema, obj.bytes.toArray)
+  protected[scalavro] def write[F <: T: TypeTag](
+    obj: F,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
 
-  def write[F <: T: TypeTag](obj: F, encoder: BinaryEncoder) = {
     encoder writeFixed obj.bytes.toArray
     encoder.flush
   }

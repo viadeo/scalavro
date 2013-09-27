@@ -1,7 +1,8 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.protocol._
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -9,8 +10,6 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.protocol.AvroProtocol
-
-import com.gensler.tests._
 
 class AvroProtocolSpec extends AvroSpec {
 

@@ -6,6 +6,7 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -15,7 +16,12 @@ trait AvroDoubleIO extends AvroTypeIO[Double] {
 
   val avroType = AvroDouble
 
-  def write[D <: Double: TypeTag](value: D, encoder: BinaryEncoder) = {
+  protected[scalavro] def write[D <: Double: TypeTag](
+    value: D,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
+
     encoder writeDouble value
     encoder.flush
   }

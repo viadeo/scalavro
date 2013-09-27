@@ -11,6 +11,7 @@ import org.apache.avro.io.{
   BinaryDecoder
 }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -31,7 +32,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
   @throws[AvroSerializationException[_]]
   final def write[G <: T: TypeTag](obj: G, stream: OutputStream): Unit = {
     val encoder = EncoderFactory.get.binaryEncoder(stream, null)
-    write(obj, encoder)
+    write(obj, encoder, mutable.Map[Any, Long](), true)
     encoder.flush
   }
 
@@ -41,14 +42,20 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * AvroSerializationException if writing is unsuccessful.
     */
   @throws[AvroSerializationException[_]]
-  def write[G <: T: TypeTag](obj: G, encoder: BinaryEncoder): Unit
+  protected[scalavro] def write[G <: T: TypeTag](
+    obj: G,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit
 
   /**
     * Attempts to create an object of type T by reading the required data from
     * the supplied binary stream.
     */
+  @throws[AvroDeserializationException[_]]
   def read(stream: InputStream): Try[T] = Try {
-    read(DecoderFactory.get.directBinaryDecoder(stream, null))
+    val decoder = DecoderFactory.get.directBinaryDecoder(stream, null)
+    read(decoder, mutable.Seq[Any](), true)
   }
 
   /**
@@ -56,7 +63,10 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * the supplied decoder.
     */
   @throws[AvroDeserializationException[_]]
-  def read(decoder: BinaryDecoder): T
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.Seq[Any],
+    topLevel: Boolean): T
 
 }
 

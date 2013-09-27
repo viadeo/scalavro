@@ -1,4 +1,4 @@
-package com.gensler.tests
+package com.gensler.scalavro.util.test
 
 case class Animal(sound: String)
 

@@ -1,4 +1,4 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers

@@ -10,6 +10,7 @@ import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericEnumSymbol, GenericDatumWriter, GenericDatumReader }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -29,15 +30,21 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
 
   val enumeration = moduleMirror.instance.asInstanceOf[E]
 
-  protected[scalavro] def asGeneric[T <: E#Value: TypeTag](obj: T): GenericEnumSymbol = obj match {
-    case value: E#Value => new GenericData.EnumSymbol(avroSchema, value.toString)
-    case _              => throw new AvroSerializationException(obj)
-  }
+  protected[scalavro] def write[T <: E#Value: TypeTag](
+    obj: T,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
 
-  def write[T <: E#Value: TypeTag](obj: T, encoder: BinaryEncoder) = {
     try {
       val datumWriter = new GenericDatumWriter[GenericEnumSymbol](avroSchema)
-      datumWriter.write(asGeneric(obj), encoder)
+      obj match {
+        case value: E#Value => datumWriter.write(
+          new GenericData.EnumSymbol(avroSchema, value.toString),
+          encoder
+        )
+        case _ => throw new AvroSerializationException(obj)
+      }
       encoder.flush
     }
     catch {

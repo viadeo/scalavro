@@ -9,6 +9,7 @@ import spray.json._
 
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 
 class AvroFixed[T <: FixedData: TypeTag](
     val name: String,
@@ -18,7 +19,9 @@ class AvroFixed[T <: FixedData: TypeTag](
 
   val typeName = "fixed"
 
-  def schema() = {
+  def selfContainedSchema(
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = {
+
     val requiredParams = ListMap(
       "name" -> name.toJson,
       "type" -> typeName.toJson,
@@ -35,9 +38,6 @@ class AvroFixed[T <: FixedData: TypeTag](
 
     new JsObject(requiredParams ++ namespaceParam ++ aliasesParam)
   }
-
-  def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = schema
 
   override def parsingCanonicalForm(): JsValue = fullyQualify(withoutDocOrAliases(schema))
 

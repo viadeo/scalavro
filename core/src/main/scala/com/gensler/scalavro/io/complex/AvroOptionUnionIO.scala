@@ -10,6 +10,7 @@ import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -26,17 +27,31 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
 
   val innerAvroType = avroType.memberAvroTypes.find { at => innerType <:< at.tag.tpe }.get
 
-  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder) = {
-    AvroLongIO.write(if (obj.isDefined) nonNullIndex else nullIndex, encoder)
-    writeHelper(obj, encoder)(typeTag[X], innerAvroType.tag)
+  protected[scalavro] def write[X <: T: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
+
+    AvroLongIO.write(if (obj.isDefined) nonNullIndex else nullIndex, encoder, references, false)
+    writeHelper(obj, encoder, references, topLevel)(typeTag[X], innerAvroType.tag)
     encoder.flush
   }
 
-  def writeHelper[X <: T: TypeTag, A: TypeTag](obj: X, encoder: BinaryEncoder) =
-    obj match {
-      case Some(value) => innerAvroType.asInstanceOf[AvroType[A]].io.write(value.asInstanceOf[A], encoder)
-      case None        => AvroNullIO.write((), encoder)
-    }
+  protected[this] def writeHelper[X <: T: TypeTag, A: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean) = obj match {
+
+    case Some(value) => innerAvroType.asInstanceOf[AvroType[A]].io.write(
+      value.asInstanceOf[A],
+      encoder,
+      references,
+      false
+    )
+    case None => AvroNullIO.write((), encoder, references, false)
+  }
 
   def read(decoder: BinaryDecoder) = {
     readHelper(decoder)(innerAvroType.tag).asInstanceOf[T]

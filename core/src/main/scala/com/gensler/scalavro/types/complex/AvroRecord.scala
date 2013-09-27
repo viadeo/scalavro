@@ -1,12 +1,13 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{ AvroType, AvroNamedType, SelfDescribingSchemaHelpers }
-import com.gensler.scalavro.{ JsonSchemifiable, CanonicalForm }
+import com.gensler.scalavro.{ Reference, JsonSchemifiable, CanonicalForm }
 import com.gensler.scalavro.JsonSchemaProtocol._
 
 import spray.json._
 
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 import scala.reflect.runtime.universe.TypeTag
 
 class AvroRecord[T: TypeTag](
@@ -20,44 +21,31 @@ class AvroRecord[T: TypeTag](
 
   val typeName = "record"
 
-  def schema() = {
-    val requiredParams = ListMap(
-      "name" -> name.toJson,
-      "type" -> typeName.toJson,
-      "fields" -> fields.toJson,
-      "namespace" -> namespace.toJson
-    )
-
-    val aliasesParam = ListMap("aliases" -> aliases).collect {
-      case (k, s) if s.nonEmpty => (k, s.toJson)
-    }
-
-    val docParam = ListMap("doc" -> doc).collect {
-      case (k, Some(v)) => (k, v.toJson)
-    }
-
-    new JsObject(requiredParams ++ aliasesParam ++ docParam)
+  def referencedSchema(resolvedSymbols: mutable.Set[String] = mutable.Set[String]()): JsValue = {
+    AvroUnion.referenceUnionFor(this).selfContainedSchema(resolvedSymbols)
   }
 
-  def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = {
-    val requiredParams = ListMap(
-      "name" -> fullyQualifiedName.toJson,
-      "type" -> typeName.toJson,
-      "fields" -> fields.map { _.selfContainedSchema(resolvedSymbols) }.toJson
-    )
+  def selfContainedSchema(resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = {
+    if (resolvedSymbols contains this.fullyQualifiedName) this.fullyQualifiedName.toJson
+    else {
+      resolvedSymbols += this.fullyQualifiedName
 
-    val aliasesParam = ListMap("aliases" -> aliases).collect {
-      case (k, s) if s.nonEmpty => (k, s.toJson)
+      val requiredParams = ListMap(
+        "name" -> fullyQualifiedName.toJson,
+        "type" -> typeName.toJson,
+        "fields" -> fields.map { _.selfContainedSchema(resolvedSymbols) }.toJson
+      )
+
+      val aliasesParam = ListMap("aliases" -> aliases).collect {
+        case (k, s) if s.nonEmpty => (k, s.toJson)
+      }
+
+      val docParam = ListMap("doc" -> doc).collect {
+        case (k, Some(v)) => (k, v.toJson)
+      }
+
+      new JsObject(requiredParams ++ aliasesParam ++ docParam)
     }
-
-    val docParam = ListMap("doc" -> doc).collect {
-      case (k, Some(v)) => (k, v.toJson)
-    }
-
-    resolvedSymbols += this.fullyQualifiedName
-
-    new JsObject(requiredParams ++ aliasesParam ++ docParam)
   }
 
   override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
@@ -95,15 +83,16 @@ object AvroRecord {
     *
     * aliases
     */
-  case class Field[U](
+  case class Field[U: TypeTag](
     name: String,
-    fieldType: AvroType[U],
     default: Option[U] = None,
     order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
     doc: Option[String] = None) extends JsonSchemifiable
       with CanonicalForm
       with SelfDescribingSchemaHelpers {
+
+    lazy val fieldType: AvroType[U] = AvroType[U]
 
     def optionalParams = {
       //    val defaultParam = ListMap("default" -> default).collect {
@@ -124,16 +113,10 @@ object AvroRecord {
       /* defaultParam ++ */ orderParam ++ aliasesParam ++ docParam
     }
 
-    def schema(): spray.json.JsValue = {
-      val requiredParams = ListMap(
-        "name" -> name.toJson,
-        "type" -> fieldType.schemaOrName
-      )
-      new JsObject(requiredParams ++ optionalParams)
-    }
+    def schema(): spray.json.JsValue = selfContainedSchema()
 
     def selfContainedSchema(
-      resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()): JsValue = {
+      resolvedSymbols: mutable.Set[String] = mutable.Set[String]()): JsValue = {
       val requiredParams = ListMap(
         "name" -> name.toJson,
         "type" -> selfContainedSchemaOrFullyQualifiedName(fieldType, resolvedSymbols)

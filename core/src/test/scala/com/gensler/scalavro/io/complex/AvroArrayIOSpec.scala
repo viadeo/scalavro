@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.complex
+package com.gensler.scalavro.io.complex.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -8,6 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
+import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.error._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }

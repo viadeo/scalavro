@@ -1,5 +1,6 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -8,8 +9,6 @@ import com.gensler.scalavro.types.complex.AvroRecord
 import com.gensler.scalavro.error._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
-
-import com.gensler.tests._
 
 class AvroRecordSpec extends AvroSpec {
 

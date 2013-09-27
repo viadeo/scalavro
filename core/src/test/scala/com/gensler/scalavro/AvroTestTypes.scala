@@ -1,4 +1,4 @@
-package com.gensler.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.util.FixedData
 
@@ -44,3 +44,6 @@ case class BadFixed[T](override val bytes: immutable.Seq[Byte])
   extends FixedData(bytes)
 
 case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
+
+// a recursively defined type
+case class SinglyLinkedStringList(data: String, next: Option[SinglyLinkedStringList])

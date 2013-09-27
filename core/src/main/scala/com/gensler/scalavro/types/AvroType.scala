@@ -9,6 +9,7 @@ import com.gensler.scalavro.JsonSchemaProtocol._
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.util.Logging
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.language.existentials
 import scala.reflect.runtime.universe._
@@ -61,7 +62,7 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * schema.
     */
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()): spray.json.JsValue
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()): spray.json.JsValue
 
   /**
     * Returns the schema name if this is an instance of [[AvroNamedType]], or
@@ -399,8 +400,9 @@ object AvroType extends Logging {
                     name = symbol.name.toString,
                     fields = ReflectionHelpers.caseClassParamsOf[T].toSeq map {
                       case (name, tag) => {
-                        val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
-                        AvroRecord.Field(name, fieldType)
+                        // val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
+                        // AvroRecord.Field(name, fieldType)
+                        AvroRecord.Field(name)(tag)
                       }
                     },
                     namespace = Some(prefix.toString stripSuffix ".type")

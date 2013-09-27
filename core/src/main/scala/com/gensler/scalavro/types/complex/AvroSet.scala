@@ -8,6 +8,7 @@ import spray.json._
 
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 import scala.util.Success
 
 class AvroSet[T, S <: Set[T]](
@@ -19,14 +20,8 @@ class AvroSet[T, S <: Set[T]](
 
   val typeName = "array"
 
-  // name, type, fields, symbols, items, values, size
-  def schema() = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "items" -> itemType.schema
-  ))
-
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = new JsObject(ListMap(
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = new JsObject(ListMap(
     "type" -> typeName.toJson,
     "items" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
   ))

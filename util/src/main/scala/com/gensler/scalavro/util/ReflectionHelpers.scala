@@ -50,7 +50,8 @@ trait ReflectionHelpers extends Logging {
     classFilter.excludePackage("javax")
     classFilter.excludePackage("scala")
     classFilter.excludePackage("ch.qos.logback")
-    classFilter.excludePackage("com.gensler.scalavro")
+    classFilter.excludePackage("com.gensler.scalavro.io")
+    classFilter.excludePackage("com.gensler.scalavro.types")
     classFilter.excludePackage("com.google.common")
     classFilter.excludePackage("com.google.guava")
     classFilter.excludePackage("com.google.code.findbugs")
@@ -289,7 +290,7 @@ trait ReflectionHelpers extends Logging {
 
     if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass))
       throw new IllegalArgumentException(
-        "instantiateCaseClassWith may only be applied to case classes!"
+        "CaseClassFactory only applies to case classes!"
       )
 
     val classMirror = classLoaderMirror reflectClass classSymbol

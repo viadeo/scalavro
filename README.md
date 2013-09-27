@@ -329,7 +329,7 @@ Which yields:
 #### scala.Enumeration
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro
 import com.gensler.scalavro.types.AvroType
 
 object CardinalDirection extends Enumeration {
@@ -357,7 +357,7 @@ Which yields:
 Definition (Java):
 
 ```java
-package com.gensler.scalavro.tests;
+package com.gensler.scalavro;
 enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
 ```
 
@@ -387,7 +387,7 @@ Which yields:
 #### scala.Either
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Either[Int, Boolean]].schema
@@ -424,7 +424,7 @@ Which yields:
 #### scala.Option
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Option[String]].schema
@@ -455,7 +455,7 @@ Which yields:
 ### Fixed-Length Data
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro
 
 import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.util.FixedData
@@ -485,7 +485,7 @@ Which yields:
 #### From case classes
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro
 import com.gensler.scalavro.types.AvroType
 
 case class Person(name: String, age: Int)
