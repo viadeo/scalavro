@@ -67,11 +67,12 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
           // encode the union index
           AvroLongIO.write(UNION_INDEX_RECORD, encoder)
 
+          // write the object
+          writeFieldValues(obj, encoder, references)
+
           // add the object to the reference map
           references += obj -> references.size
 
-          // write the object
-          writeFieldValues(obj, encoder, references)
         }
       }
     }
@@ -119,10 +120,18 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
 
   protected[this] def readObject(decoder: BinaryDecoder, references: mutable.ArrayBuffer[Any]): T = {
     val args = new scala.collection.mutable.ArrayBuffer[Any](initialSize = avroType.fields.size)
-    for (reader <- fieldReaders) args += reader.read(decoder, references, false)
-    val result = factory buildWith args
-    references append result
-    result
+    try {
+      for (reader <- fieldReaders) args += reader.read(decoder, references, false)
+      val result = factory buildWith args
+      references append result
+      result
+    }
+    catch {
+      case cause: Throwable => throw new AvroDeserializationException[T](
+        cause,
+        "The object's arguments were: [%s]" format args.mkString(", ")
+      )
+    }
   }
 
 }
