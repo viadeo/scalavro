@@ -25,7 +25,7 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
   val originalTypeVarargsApply = ReflectionHelpers.companionVarargsApply[S] match {
     case Some(methodMirror) => methodMirror
     case None => throw new IllegalArgumentException(
-      "Sequence subclasses must have a companion object with a public varargs " +
+      "Set subclasses must have a companion object with a public varargs " +
         "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
     )
   }

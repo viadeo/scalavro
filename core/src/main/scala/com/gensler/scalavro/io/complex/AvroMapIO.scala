@@ -26,7 +26,7 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
   val originalTypeVarargsApply = ReflectionHelpers.companionVarargsApply[M] match {
     case Some(methodMirror) => methodMirror
     case None => throw new IllegalArgumentException(
-      "Sequence subclasses must have a companion object with a public varargs " +
+      "Map subclasses must have a companion object with a public varargs " +
         "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
     )
   }
