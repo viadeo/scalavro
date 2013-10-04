@@ -329,7 +329,7 @@ Which yields:
 #### scala.Enumeration
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 object CardinalDirection extends Enumeration {
@@ -348,7 +348,7 @@ Which yields:
   "name" : "CardinalDirection",
   "type" : "enum",
   "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-  "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
+  "namespace" : "com.gensler.scalavro.test.CardinalDirection"
 }
 ```
 
@@ -357,7 +357,7 @@ Which yields:
 Definition (Java):
 
 ```java
-package com.gensler.scalavro.tests;
+package com.gensler.scalavro.test;
 enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
 ```
 
@@ -365,7 +365,7 @@ Use (Scala):
 
 ```scala
 import com.gensler.scalavro.types.AvroType
-import com.gensler.scalavro.tests.JCardinalDirection
+import com.gensler.scalavro.test.JCardinalDirection
 
 AvroType[JCardinalDirection].schema
 ```
@@ -377,7 +377,7 @@ Which yields:
   "name" : "JCardinalDirection",
   "type" : "enum",
   "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-  "namespace" : "com.gensler.scalavro.tests"
+  "namespace" : "com.gensler.scalavro.test"
 }
 ```
 
@@ -387,7 +387,7 @@ Which yields:
 #### scala.Either
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Either[Int, Boolean]].schema
@@ -424,7 +424,7 @@ Which yields:
 #### scala.Option
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Option[String]].schema
@@ -455,7 +455,7 @@ Which yields:
 ### Fixed-Length Data
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.util.FixedData
@@ -475,7 +475,7 @@ Which yields:
   "name": "MD5",
   "type": "fixed",
   "size": 16,
-  "namespace": "com.gensler.scalavro.tests"
+  "namespace": "com.gensler.scalavro.test"
 }
 ```
 
@@ -485,7 +485,7 @@ Which yields:
 #### From case classes
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 case class Person(name: String, age: Int)
@@ -498,7 +498,7 @@ Which yields:
 
 ```json
 {
-  "name": "com.gensler.scalavro.tests.Person",
+  "name": "com.gensler.scalavro.test.Person",
   "type": "record",
   "fields": [
     {
@@ -526,7 +526,7 @@ Which yields:
 
 ```json
 {
-  "name": "com.gensler.scalavro.tests.SantaList",
+  "name": "com.gensler.scalavro.test.SantaList",
   "type": "record",
   "fields": [
     {
@@ -535,7 +535,7 @@ Which yields:
         "type": "array",
         "items": [
           {
-            "name": "com.gensler.scalavro.tests.Person",
+            "name": "com.gensler.scalavro.test.Person",
             "type": "record",
             "fields": [
               {
@@ -566,7 +566,7 @@ Which yields:
       "type": {
         "type": "array",
         "items": [
-          "com.gensler.scalavro.tests.Person",
+          "com.gensler.scalavro.test.Person",
           "com.gensler.scalavro.Reference"
         ]
       }
@@ -610,14 +610,14 @@ For comparison, in versions of Scalavro before `0.5.0`, the `SantaList` schema l
       "type": {"type": "array", "items": "Person"}
     }
   ],
-  "namespace": "com.gensler.scalavro.tests"
+  "namespace": "com.gensler.scalavro.test"
 }
 ```
 
 Here is an example of a simple recursively defined type (a singly-linked list):
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 case class Strings(data: String, next: Option[Strings])
@@ -629,7 +629,7 @@ Which yields:
 
 ```json
 {
-  "name": "com.gensler.scalavro.tests.Strings",
+  "name": "com.gensler.scalavro.test.Strings",
   "type": "record",
   "fields": [
     {
@@ -641,7 +641,7 @@ Which yields:
       "type": [
         "null",
         [
-          "com.gensler.scalavro.tests.Strings",
+          "com.gensler.scalavro.test.Strings",
           {
             "name": "com.gensler.scalavro.Reference",
             "type": "record",
@@ -665,7 +665,7 @@ Which yields:
 Given:
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 abstract class Alpha { def magic: Double }
 class Beta extends Alpha { val magic = math.Pi }
