@@ -268,6 +268,8 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.0-SNAPSHOT"
 ## Current Limitations
 - JSON IO is not yet implemented
 - Schema resolution (taking the writer's schema into account when reading) is not yet implemented
+- Although recursively defined records (case classes) are supported, serializing all such instances is not.  In particular, reading and writing cyclic object graphs is not supported.
+- Although records are supported (via case classes), only the case class's default constructor parameters are serialized.
 
 ## Scalavro by Example: Schema Generation
 
