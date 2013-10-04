@@ -28,6 +28,9 @@
         <p class="header">This project is maintained by <a class="header name" href="https://github.com/GenslerAppsPod">GenslerAppsPod</a></p>
       </header>
       <section>
+
+<!-- ARTICLE -->
+
 <h1>
 <a name="scalavro" class="anchor" href="#scalavro"><span class="octicon octicon-link"></span></a>Scalavro</h1>
 
@@ -63,18 +66,18 @@
 </ol><h2>
 <a name="obtaining-scalavro" class="anchor" href="#obtaining-scalavro"><span class="octicon octicon-link"></span></a>Obtaining Scalavro</h2>
 
-<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.4.0</code>, built against Scala 2.10.2.</p>
+<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.5.0</code>, built against Scala 2.10.2.</p>
 
 <p>Using SBT:</p>
 
-<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.4.0"</span>
+<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.5.0"</span>
 </pre></div>
 
 <h2>
 <a name="api-documentation" class="anchor" href="#api-documentation"><span class="octicon octicon-link"></span></a>API Documentation</h2>
 
 <ul>
-<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.4.0</a>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.0</a>
 </li>
 </ul><h2>
 <a name="index-of-examples" class="anchor" href="#index-of-examples"><span class="octicon octicon-link"></span></a>Index of Examples</h2>
@@ -299,6 +302,7 @@
 <ul>
 <li>Dynamic Avro schema generation from vanilla Scala types</li>
 <li>Avro protocol definitions and schema generation</li>
+<li>Support for recursively defined record types</li>
 <li>Convenient, dynamic binary IO</li>
 <li>Avro RPC protocol representation and schema generation</li>
 <li>Schema conversion to "Parsing Canonical Form" (useful for Avro RPC protocol applications)</li>
@@ -308,7 +312,8 @@
 <ul>
 <li>JSON IO is not yet implemented</li>
 <li>Schema resolution (taking the writer's schema into account when reading) is not yet implemented</li>
-<li>Recursive type dependencies are detected but not handled optimally -- potentially valid types are rejected at runtime.  For example, the current version cannot synthesize an Avro schema for a simple recursively defined linked list node.  Supporting this is a planned enhancement.</li>
+<li>Although recursively defined records (case classes) are supported, serializing all such instances is not.  In particular, reading and writing cyclic object graphs is not supported.</li>
+<li>Although records are supported (via case classes), only the case class's default constructor parameters are serialized.</li>
 </ul><h2>
 <a name="scalavro-by-example-schema-generation" class="anchor" href="#scalavro-by-example-schema-generation"><span class="octicon octicon-link"></span></a>Scalavro by Example: Schema Generation</h2>
 
@@ -372,7 +377,7 @@
 <h4>
 <a name="scalaenumeration" class="anchor" href="#scalaenumeration"><span class="octicon octicon-link"></span></a>scala.Enumeration</h4>
 
-<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.tests</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
 
 <span class="k">object</span> <span class="nc">CardinalDirection</span> <span class="k">extends</span> <span class="nc">Enumeration</span> <span class="o">{</span>
@@ -390,7 +395,7 @@
   <span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"CardinalDirection"</span><span class="p">,</span>
   <span class="nt">"type"</span> <span class="p">:</span> <span class="s2">"enum"</span><span class="p">,</span>
   <span class="nt">"symbols"</span> <span class="p">:</span> <span class="p">[</span><span class="s2">"N"</span><span class="p">,</span><span class="s2">"NE"</span><span class="p">,</span><span class="s2">"E"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">,</span><span class="s2">"S"</span><span class="p">,</span><span class="s2">"SW"</span><span class="p">,</span><span class="s2">"W"</span><span class="p">,</span><span class="s2">"NW"</span><span class="p">],</span>
-  <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests.CardinalDirection"</span>
+  <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.CardinalDirection"</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -400,14 +405,14 @@
 
 <p>Definition (Java):</p>
 
-<div class="highlight highlight-java"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">gensler</span><span class="o">.</span><span class="na">scalavro</span><span class="o">.</span><span class="na">tests</span><span class="o">;</span>
+<div class="highlight highlight-java"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">gensler</span><span class="o">.</span><span class="na">scalavro</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
 <span class="kd">enum</span> <span class="n">JCardinalDirection</span> <span class="o">{</span> <span class="n">N</span><span class="o">,</span> <span class="n">NE</span><span class="o">,</span> <span class="n">E</span><span class="o">,</span> <span class="n">SE</span><span class="o">,</span> <span class="n">S</span><span class="o">,</span> <span class="n">SW</span><span class="o">,</span> <span class="n">W</span><span class="o">,</span> <span class="n">NW</span> <span class="o">};</span>
 </pre></div>
 
 <p>Use (Scala):</p>
 
 <div class="highlight highlight-scala"><pre><span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
-<span class="k">import</span> <span class="nn">com.gensler.scalavro.tests.JCardinalDirection</span>
+<span class="k">import</span> <span class="nn">com.gensler.scalavro.test.JCardinalDirection</span>
 
 <span class="nc">AvroType</span><span class="o">[</span><span class="kt">JCardinalDirection</span><span class="o">].</span><span class="n">schema</span>
 </pre></div>
@@ -418,7 +423,7 @@
   <span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"JCardinalDirection"</span><span class="p">,</span>
   <span class="nt">"type"</span> <span class="p">:</span> <span class="s2">"enum"</span><span class="p">,</span>
   <span class="nt">"symbols"</span> <span class="p">:</span> <span class="p">[</span><span class="s2">"N"</span><span class="p">,</span><span class="s2">"NE"</span><span class="p">,</span><span class="s2">"E"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">,</span><span class="s2">"S"</span><span class="p">,</span><span class="s2">"SW"</span><span class="p">,</span><span class="s2">"W"</span><span class="p">,</span><span class="s2">"NW"</span><span class="p">],</span>
-  <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
+  <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.test"</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -430,7 +435,7 @@
 <h4>
 <a name="scalaeither" class="anchor" href="#scalaeither"><span class="octicon octicon-link"></span></a>scala.Either</h4>
 
-<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.tests</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
 
 <span class="nc">AvroType</span><span class="o">[</span><span class="kt">Either</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Boolean</span><span class="o">]].</span><span class="n">schema</span>
@@ -464,7 +469,7 @@
 <h4>
 <a name="scalaoption" class="anchor" href="#scalaoption"><span class="octicon octicon-link"></span></a>scala.Option</h4>
 
-<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.tests</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
 
 <span class="nc">AvroType</span><span class="o">[</span><span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">]].</span><span class="n">schema</span>
@@ -494,7 +499,7 @@
 <h3>
 <a name="fixed-length-data" class="anchor" href="#fixed-length-data"><span class="octicon octicon-link"></span></a>Fixed-Length Data</h3>
 
-<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.tests</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
 
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.util.FixedData</span>
@@ -513,7 +518,7 @@
   <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"MD5"</span><span class="p">,</span>
   <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"fixed"</span><span class="p">,</span>
   <span class="nt">"size"</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-  <span class="nt">"namespace"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
+  <span class="nt">"namespace"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test"</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -525,7 +530,7 @@
 <h4>
 <a name="from-case-classes" class="anchor" href="#from-case-classes"><span class="octicon octicon-link"></span></a>From case classes</h4>
 
-<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.tests</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
 <span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Person</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">age</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
@@ -537,13 +542,18 @@
 <p>Which yields:</p>
 
 <div class="highlight highlight-json"><pre><span class="p">{</span>
-  <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"Person"</span><span class="p">,</span>
+  <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.Person"</span><span class="p">,</span>
   <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
   <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span><span class="nt">"name"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span> <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
-    <span class="p">{</span><span class="nt">"name"</span><span class="p">:</span> <span class="s2">"age"</span><span class="p">,</span> <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"int"</span><span class="p">}</span>
-  <span class="p">],</span>
-  <span class="nt">"namespace"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"age"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"int"</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -558,6 +568,76 @@
 <p>Which yields:</p>
 
 <div class="highlight highlight-json"><pre><span class="p">{</span>
+  <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.SantaList"</span><span class="p">,</span>
+  <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+  <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"nice"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+        <span class="nt">"items"</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.Person"</span><span class="p">,</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+            <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+              <span class="p">{</span>
+                <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+                <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span>
+              <span class="p">},</span>
+              <span class="p">{</span>
+                <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"age"</span><span class="p">,</span>
+                <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"int"</span>
+              <span class="p">}</span>
+            <span class="p">]</span>
+          <span class="p">},</span>
+          <span class="p">{</span>
+            <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.Reference"</span><span class="p">,</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+            <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+              <span class="p">{</span>
+                <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+                <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+              <span class="p">}</span>
+            <span class="p">]</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"naughty"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+        <span class="nt">"items"</span><span class="p">:</span> <span class="p">[</span>
+          <span class="s2">"com.gensler.scalavro.test.Person"</span><span class="p">,</span>
+          <span class="s2">"com.gensler.scalavro.Reference"</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+<p><strong>Whoa -- what happened there?!</strong></p>
+
+<p>Scalavro as of version <code>0.5.0</code> supports <em>reference tracking</em> for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.</p>
+
+<p>Scalavro implements this by replacing any nested record type within a schema with a binary union of the target type and a <code>Reference</code> schema.  References are encoded as an Avro <code>long</code> value.  Here is the schema for <code>Reference</code>:</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
+  <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.Reference"</span><span class="p">,</span>
+  <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+  <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>For comparison, in versions of Scalavro before <code>0.5.0</code>, the <code>SantaList</code> schema looked like this:</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
   <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"SantaList"</span><span class="p">,</span>
   <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
   <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
@@ -570,7 +650,50 @@
       <span class="nt">"type"</span><span class="p">:</span> <span class="p">{</span><span class="nt">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span> <span class="nt">"items"</span><span class="p">:</span> <span class="s2">"Person"</span><span class="p">}</span>
     <span class="p">}</span>
   <span class="p">],</span>
-  <span class="nt">"namespace"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
+  <span class="nt">"namespace"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test"</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>Here is an example of a simple recursively defined type (a singly-linked list):</p>
+
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
+<span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Strings</span><span class="o">(</span><span class="n">data</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">next</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Strings</span><span class="o">])</span>
+
+<span class="nc">AvroType</span><span class="o">[</span><span class="kt">Strings</span><span class="o">].</span><span class="n">schema</span>
+</pre></div>
+
+<p>Which yields:</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
+  <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.Strings"</span><span class="p">,</span>
+  <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+  <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"data"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"next"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"null"</span><span class="p">,</span>
+        <span class="p">[</span>
+          <span class="s2">"com.gensler.scalavro.test.Strings"</span><span class="p">,</span>
+          <span class="p">{</span>
+            <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.Reference"</span><span class="p">,</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+            <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+              <span class="p">{</span>
+                <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+                <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+              <span class="p">}</span>
+            <span class="p">]</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -581,11 +704,14 @@
 
 <p>Given:</p>
 
-<div class="highlight highlight-scala"><pre><span class="k">class</span> <span class="nc">Alpha</span>
-<span class="k">abstract</span> <span class="k">class</span> <span class="nc">Beta</span> <span class="k">extends</span> <span class="nc">Alpha</span>
-<span class="k">case</span> <span class="k">class</span> <span class="nc">Gamma</span><span class="o">()</span> <span class="k">extends</span> <span class="nc">Alpha</span>
+<div class="highlight highlight-scala"><pre><span class="k">package</span> <span class="nn">com.gensler.scalavro.test</span>
+
+<span class="k">abstract</span> <span class="k">class</span> <span class="nc">Alpha</span> <span class="o">{</span> <span class="k">def</span> <span class="n">magic</span><span class="k">:</span> <span class="kt">Double</span> <span class="o">}</span>
+<span class="k">class</span> <span class="nc">Beta</span> <span class="k">extends</span> <span class="nc">Alpha</span> <span class="o">{</span> <span class="k">val</span> <span class="n">magic</span> <span class="k">=</span> <span class="n">math</span><span class="o">.</span><span class="nc">Pi</span> <span class="o">}</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Gamma</span><span class="o">(</span><span class="n">magic</span><span class="k">:</span> <span class="kt">Double</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">Alpha</span>
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Delta</span><span class="o">()</span> <span class="k">extends</span> <span class="nc">Beta</span>
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Epsilon</span><span class="o">[</span><span class="kt">T</span><span class="o">]()</span> <span class="k">extends</span> <span class="nc">Beta</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">AlphaWrapper</span><span class="o">(</span><span class="n">inner</span><span class="k">:</span> <span class="kt">Alpha</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">Alpha</span> <span class="o">{</span> <span class="k">def</span> <span class="n">magic</span> <span class="k">=</span> <span class="n">inner</span><span class="o">.</span><span class="n">magic</span> <span class="o">}</span>
 </pre></div>
 
 <p>Usage:</p>
@@ -597,18 +723,62 @@
 <p>Which yields:</p>
 
 <div class="highlight highlight-json"><pre><span class="p">[</span>
-  <span class="p">{</span>
-    <span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Delta"</span><span class="p">,</span>
-    <span class="nt">"type"</span> <span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
-    <span class="nt">"fields"</span> <span class="p">:</span> <span class="p">[],</span>
-    <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
-  <span class="p">},</span>
-  <span class="p">{</span>
-    <span class="nt">"name"</span> <span class="p">:</span> <span class="s2">"Gamma"</span><span class="p">,</span>
-    <span class="nt">"type"</span> <span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
-    <span class="nt">"fields"</span> <span class="p">:</span> <span class="p">[],</span>
-    <span class="nt">"namespace"</span> <span class="p">:</span> <span class="s2">"com.gensler.scalavro.tests"</span>
-  <span class="p">}</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.Delta"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+      <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.Reference"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+      <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"id"</span><span class="p">,</span>
+          <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"long"</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.Gamma"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+      <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"magic"</span><span class="p">,</span>
+          <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"double"</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">"com.gensler.scalavro.Reference"</span>
+  <span class="p">],</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"com.gensler.scalavro.test.AlphaWrapper"</span><span class="p">,</span>
+      <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"record"</span><span class="p">,</span>
+      <span class="nt">"fields"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"inner"</span><span class="p">,</span>
+          <span class="nt">"type"</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">[</span>
+              <span class="s2">"com.gensler.scalavro.test.Delta"</span><span class="p">,</span>
+              <span class="s2">"com.gensler.scalavro.Reference"</span>
+            <span class="p">],</span>
+            <span class="p">[</span>
+              <span class="s2">"com.gensler.scalavro.test.Gamma"</span><span class="p">,</span>
+              <span class="s2">"com.gensler.scalavro.Reference"</span>
+            <span class="p">],</span>
+            <span class="p">[</span>
+              <span class="s2">"com.gensler.scalavro.test.AlphaWrapper"</span><span class="p">,</span>
+              <span class="s2">"com.gensler.scalavro.Reference"</span>
+            <span class="p">]</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">"com.gensler.scalavro.Reference"</span>
+  <span class="p">]</span>
 <span class="p">]</span>
 </pre></div>
 
@@ -618,7 +788,7 @@
 <li>
 <code>Alpha</code> is excluded from the union because it is not a case class</li>
 <li>
-<code>Beta</code> is excluded from the union because it is abstract and not a case class</li>
+<code>Beta</code> is excluded from the union because it is abstract</li>
 <li>
 <code>Epsilon</code> is excluded from the union because it takes type parameters</li>
 </ul><p><a name="binary-io"></a></p>
@@ -689,6 +859,9 @@ All rights reserved.</p>
 <li><p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p></li>
 <li><p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p></li>
 </ul><p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+
+<!-- ARTICLE -->
+
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>

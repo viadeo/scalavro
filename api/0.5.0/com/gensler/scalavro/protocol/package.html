@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>protocol - com.gensler.scalavro.protocol</title>
+          <meta name="description" content="protocol - com.gensler.scalavro.protocol" />
+          <meta name="keywords" content="protocol com.gensler.scalavro.protocol" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.gensler.scalavro.protocol.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.gensler">gensler</a>.<a href="../package.html" class="extype" name="com.gensler.scalavro">scalavro</a></p>
+        <h1>protocol</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">protocol</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.gensler.scalavro.protocol.AvroProtocol" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AvroProtocolextendsJsonSchemifiablewithCanonicalFormwithProductwithSerializable"></a>
+      <a id="AvroProtocol:AvroProtocol"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroProtocol.html"><span class="name">AvroProtocol</span></a><span class="params">(<span name="protocol">protocol: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="types">types: <span class="extype" name="scala.Seq">Seq</span>[<a href="../types/AvroNamedType.html" class="extype" name="com.gensler.scalavro.types.AvroNamedType">AvroNamedType</a>[_]]</span>, <span name="messages">messages: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="AvroProtocol$$Message.html" class="extype" name="com.gensler.scalavro.protocol.AvroProtocol.Message">Message</a>]</span>, <span name="namespace">namespace: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">scala.None</span></span>, <span name="doc">doc: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">scala.None</span></span>)</span><span class="result"> extends <a href="../JsonSchemifiable.html" class="extype" name="com.gensler.scalavro.JsonSchemifiable">JsonSchemifiable</a> with <a href="../CanonicalForm.html" class="extype" name="com.gensler.scalavro.CanonicalForm">CanonicalForm</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Avro protocols describe RPC interfaces.</p>
+    </li><li name="com.gensler.scalavro.protocol.HandshakeRequest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HandshakeRequestextendsProductwithSerializable"></a>
+      <a id="HandshakeRequest:HandshakeRequest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HandshakeRequest.html"><span class="name">HandshakeRequest</span></a><span class="params">(<span name="clientHash">clientHash: <a href="MD5.html" class="extype" name="com.gensler.scalavro.protocol.MD5">MD5</a></span>, <span name="clientProtocol">clientProtocol: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="serverHash">serverHash: <a href="MD5.html" class="extype" name="com.gensler.scalavro.protocol.MD5">MD5</a></span>, <span name="meta">meta: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Byte">Byte</span>]]]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.gensler.scalavro.protocol.HandshakeResponse" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HandshakeResponseextendsProductwithSerializable"></a>
+      <a id="HandshakeResponse:HandshakeResponse"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HandshakeResponse.html"><span class="name">HandshakeResponse</span></a><span class="params">(<span name="match">match: <a href="HandshakeMatch$.html#HandshakeMatch=com.gensler.scalavro.protocol.HandshakeMatch.Value" class="extmbr" name="com.gensler.scalavro.protocol.HandshakeMatch.HandshakeMatch">HandshakeMatch</a></span>, <span name="serverProtocol">serverProtocol: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="serverHash">serverHash: <span class="extype" name="scala.Option">Option</span>[<a href="MD5.html" class="extype" name="com.gensler.scalavro.protocol.MD5">MD5</a>]</span>, <span name="meta">meta: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.Byte">Byte</span>]]]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.gensler.scalavro.protocol.MD5" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="MD5extendsFixedDatawithProductwithSerializable"></a>
+      <a id="MD5:MD5"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="MD5.html"><span class="name">MD5</span></a><span class="params">(<span name="bytes">bytes: <span class="extype" name="scala.collection.immutable.Seq">Seq</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>)</span><span class="result"> extends <a href="../util/FixedData.html" class="extype" name="com.gensler.scalavro.util.FixedData">FixedData</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@<a href="../util/FixedData$$Length.html" class="extype" name="com.gensler.scalavro.util.FixedData.Length">Length</a></span><span class="args">(<span>
+      length = 
+      <span class="symbol">16</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.gensler.scalavro.protocol.AvroProtocol" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AvroProtocol"></a>
+      <a id="AvroProtocol:AvroProtocol"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroProtocol$.html"><span class="name">AvroProtocol</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.gensler.scalavro.protocol.HandshakeMatch" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HandshakeMatch"></a>
+      <a id="HandshakeMatch:HandshakeMatch"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="HandshakeMatch$.html"><span class="name">HandshakeMatch</span></a><span class="result"> extends <span class="extype" name="scala.Enumeration">Enumeration</span></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+    </body>
+      </html>
