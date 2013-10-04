@@ -17,13 +17,18 @@ case class Greeting(message: String)
 case class Curse(message: String)
 
 abstract class Alpha { def magic: Double }
-class Beta extends Alpha { val magic = math.Pi }
-case class Gamma(magic: Double) extends Alpha
-case class Delta() extends Beta
-case class Epsilon[T]() extends Beta
-case class AlphaWrapper(inner: Alpha)
 
-class AlphaCollection(as: Seq[Alpha]) extends Alpha with Seq[Alpha] {
+class Beta extends Alpha { val magic = math.Pi }
+
+case class Gamma(magic: Double) extends Alpha
+
+case class Delta() extends Beta
+
+case class Epsilon[T]() extends Beta
+
+case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
+
+class AlphaCollection(as: Seq[Alpha]) extends Seq[Alpha] {
   def apply(idx: Int): Alpha = as apply idx
   def iterator: Iterator[Alpha] = as.iterator
   def length: Int = as.length

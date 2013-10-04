@@ -665,11 +665,14 @@ Which yields:
 Given:
 
 ```scala
-class Alpha
-abstract class Beta extends Alpha
-case class Gamma() extends Alpha
+package com.gensler.scalavro.tests
+
+abstract class Alpha { def magic: Double }
+class Beta extends Alpha { val magic = math.Pi }
+case class Gamma(magic: Double) extends Alpha
 case class Delta() extends Beta
 case class Epsilon[T]() extends Beta
+case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
 ```
 
 Usage:
@@ -683,25 +686,69 @@ Which yields:
 
 ```json
 [
-  {
-    "name" : "Delta",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  },
-  {
-    "name" : "Gamma",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  }
+  [
+    {
+      "name": "com.gensler.scalavro.test.Delta",
+      "type": "record",
+      "fields": []
+    },
+    {
+      "name": "com.gensler.scalavro.Reference",
+      "type": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": "long"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "name": "com.gensler.scalavro.test.Gamma",
+      "type": "record",
+      "fields": [
+        {
+          "name": "magic",
+          "type": "double"
+        }
+      ]
+    },
+    "com.gensler.scalavro.Reference"
+  ],
+  [
+    {
+      "name": "com.gensler.scalavro.test.AlphaWrapper",
+      "type": "record",
+      "fields": [
+        {
+          "name": "inner",
+          "type": [
+            [
+              "com.gensler.scalavro.test.Delta",
+              "com.gensler.scalavro.Reference"
+            ],
+            [
+              "com.gensler.scalavro.test.Gamma",
+              "com.gensler.scalavro.Reference"
+            ],
+            [
+              "com.gensler.scalavro.test.AlphaWrapper",
+              "com.gensler.scalavro.Reference"
+            ]
+          ]
+        }
+      ]
+    },
+    "com.gensler.scalavro.Reference"
+  ]
 ]
 ```
 
 Note that in the above example:
 
 - `Alpha` is excluded from the union because it is not a case class
-- `Beta` is excluded from the union because it is abstract and not a case class
+- `Beta` is excluded from the union because it is abstract
 - `Epsilon` is excluded from the union because it takes type parameters
 
 <a name="binary-io"></a>

@@ -11,7 +11,7 @@ class ReferenceSpec extends AvroSpec {
 
   "AvroRecord" should "return a referenced union schema" in {
     val Success(listType: AvroRecord[_]) = AvroType.fromType[SinglyLinkedStringList]
-    prettyPrint(listType.schema)
+    // prettyPrint(listType.schema)
   }
 
 }

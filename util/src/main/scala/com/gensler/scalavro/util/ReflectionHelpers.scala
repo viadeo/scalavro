@@ -91,7 +91,6 @@ trait ReflectionHelpers extends Logging {
   protected[scalavro] def classSymbolIsTypeable(sym: ClassSymbol): Boolean = {
 
     val symType = sym.selfType
-    // val symTag = tagForType(symType)
 
     sym.isPrimitive ||
       sym.isAbstractClass || sym.isTrait ||

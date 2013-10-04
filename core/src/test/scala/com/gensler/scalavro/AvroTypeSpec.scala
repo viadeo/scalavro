@@ -206,7 +206,7 @@ class AvroTypeSpec extends AvroSpec {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
-        avroType.union.typeMembers should have size (2)
+        avroType.union.typeMembers should have size (3)
         avroType.union.contains[Gamma] should be (true)
         avroType.union.contains[Delta] should be (true)
         avroType.union.contains[AlphaCollection] should be (false)
