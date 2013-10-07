@@ -66,7 +66,7 @@ trait SelfDescribingSchemaHelpers {
     }
   }
 
-  protected[scalavro] def schemaToParsingCanonicalForm(regularSchema: JsValue): JsValue = regularSchema match {
+  protected[scalavro] def schemaToParsingCanonicalForm(schema: JsValue): JsValue = schema match {
     case JsArray(elements) => JsArray(elements map schemaToParsingCanonicalForm)
 
     // replace short names with full names, using applicable namespaces
@@ -76,9 +76,9 @@ trait SelfDescribingSchemaHelpers {
       val canonicalFields: List[(String, JsValue)] = keysToRetain.flatMap { key =>
         fields.get(key).map { value =>
           val canonicalValue = (key, value) match {
-            case ("name", name) => fields.get("namespace") match {
-              case Some(ns) => "%s.%s".format(ns, name).toJson
-              case None     => name.toJson
+            case ("name", JsString(name)) => fields.get("namespace") match {
+              case Some(JsString(ns)) => "%s.%s".format(ns, name).toJson
+              case _                  => name.toJson
             }
             case ("type", _)   => schemaToParsingCanonicalForm(value)
             case ("fields", _) => schemaToParsingCanonicalForm(value)
