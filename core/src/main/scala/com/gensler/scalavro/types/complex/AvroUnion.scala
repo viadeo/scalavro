@@ -31,9 +31,6 @@ class AvroUnion[U <: Union.not[_]: TypeTag, T](
     }.toJson
   }
 
-  override def parsingCanonicalForm(): JsValue =
-    memberAvroTypes.map { _.canonicalFormOrFullyQualifiedName }.toJson
-
 }
 
 class AvroReferenceUnion[U <: Union.not[_]: TypeTag, T](

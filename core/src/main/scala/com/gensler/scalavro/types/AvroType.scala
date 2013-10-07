@@ -85,31 +85,8 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
 
   /**
     * Returns the JSON schema for this type in "parsing canonical form".
-    *
-    * _X_ [PRIMITIVES] Convert primitive schemas to their simple form (e.g.,
-    *     int instead of {"type":"int"}).
-    *
-    * _X_ [FULLNAMES] Replace short names with fullnames, using applicable
-    *     namespaces to do so. Then eliminate namespace attributes, which are
-    *     now redundant.
-    *
-    * _X_ [STRIP] Keep only attributes that are relevant to parsing data, which
-    *     are: type, name, fields, symbols, items, values, size. Strip all
-    *     others (e.g., doc and aliases).
-    *
-    * _X_ [ORDER] Order the appearance of fields of JSON objects as follows:
-    *     name, type, fields, symbols, items, values, size. For example, if an
-    *     object has type, name, and size fields, then the name field should
-    *     appear first, followed by the type and then the size fields.
-    *
-    * _X_ [INTEGERS] Eliminate quotes around and any leading zeros in front of
-    *     JSON integer literals (which appear in the size attributes of fixed
-    *     schemas).
-    *
-    * _X_ [WHITESPACE] Eliminate all whitespace in JSON outside of string
-    *     literals.
     */
-  def parsingCanonicalForm(): JsValue = schema
+  def parsingCanonicalForm(): JsValue
 
   /**
     * _X_ [STRINGS] For all JSON string literals in the schema text, replace

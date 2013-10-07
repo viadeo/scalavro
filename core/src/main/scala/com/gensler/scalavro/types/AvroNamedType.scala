@@ -8,7 +8,7 @@ import scala.reflect.runtime.universe.TypeTag
 import spray.json._
 
 /**
-  * Parent class of all "named types".  As of version 1.7.4 of the Avro
+  * Parent class of all "named types".  As of version 1.7.5 of the Avro
   * specification, the named types are `Record`, `Enum`, and `Fixed`.
   */
 abstract class AvroNamedType[T: TypeTag] extends AvroComplexType[T] {
@@ -17,17 +17,9 @@ abstract class AvroNamedType[T: TypeTag] extends AvroComplexType[T] {
 
   def namespace(): Option[String]
 
-  final def fullyQualifiedName(): String = namespace.map { _ + "." + name } getOrElse name
+  final def fullyQualifiedName(): String =
+    namespace.map { "%s.%s".format(_, name) } getOrElse name
 
-  protected[scalavro] override def canonicalFormOrFullyQualifiedName(): spray.json.JsValue =
-    this.fullyQualifiedName.toJson
-
-  def fullyQualify(json: JsValue): JsValue = json match {
-    case JsObject(fields) => new JsObject(ListMap(
-      "name" -> fullyQualifiedName.toJson) ++
-      (fields -- Seq("name", "namespace")
-      ))
-    case otherJsValue: JsValue => otherJsValue
-  }
+  final override def canonicalFormOrFullyQualifiedName = this.fullyQualifiedName.toJson
 
 }

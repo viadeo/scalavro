@@ -35,6 +35,4 @@ class AvroEnum[E <: Enumeration: TypeTag](
     new JsObject(requiredParams ++ optionalParams)
   }
 
-  override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
-
 }

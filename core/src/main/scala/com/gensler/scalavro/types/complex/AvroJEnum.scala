@@ -40,6 +40,4 @@ class AvroJEnum[E: TypeTag](
     new JsObject(requiredParams ++ optionalParams)
   }
 
-  override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
-
 }

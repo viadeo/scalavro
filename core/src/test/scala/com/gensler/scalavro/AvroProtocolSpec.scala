@@ -55,8 +55,8 @@ class AvroProtocolSpec extends AvroSpec {
 
     )
 
-    // prettyPrint(hwProtocol.schema)
-    // prettyPrint(hwProtocol.parsingCanonicalForm)
+    // log.debug(hwProtocol.schema.prettyPrint)
+    // log.debug(hwProtocol.parsingCanonicalForm.prettyPrint)
   }
 
 }

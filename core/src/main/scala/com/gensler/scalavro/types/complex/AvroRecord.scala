@@ -48,16 +48,6 @@ class AvroRecord[T: TypeTag](
     }
   }
 
-  override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
-    "name" -> fullyQualifiedName.toJson,
-    "type" -> typeName.toJson,
-    "fields" -> fields.asInstanceOf[Seq[CanonicalForm]].toJson
-  ))
-
-  override def toString(): String = {
-    "%s[%s]".format(getClass.getSimpleName, name)
-  }
-
 }
 
 object AvroRecord {
@@ -124,20 +114,8 @@ object AvroRecord {
       new JsObject(requiredParams ++ optionalParams)
     }
 
-    def parsingCanonicalForm(): JsValue = {
-      val requiredParams = ListMap(
-        "name" -> name.toJson,
-        "type" -> fieldType.canonicalFormOrFullyQualifiedName
-      )
-      //      val defaultParam = ListMap("default" -> default).collect {
-      //        case (k, Some(u)) => (k, fieldType writeAsJson u) }
-
-      val orderParam = ListMap("order" -> order).collect {
-        case (k, Some(o)) => (k, o.schema)
-      }
-
-      new JsObject(requiredParams ++ /* defaultParam ++ */ orderParam)
-    }
+    final def parsingCanonicalForm(): JsValue =
+      schemaToParsingCanonicalForm(this.schema)
 
   }
 

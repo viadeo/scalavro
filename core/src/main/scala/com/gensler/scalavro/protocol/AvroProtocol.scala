@@ -1,9 +1,11 @@
 package com.gensler.scalavro.protocol
 
+import com.gensler.scalavro.Reference
 import com.gensler.scalavro.types.{ AvroType, AvroNamedType }
 import com.gensler.scalavro.types.complex.{ AvroRecord, AvroUnion }
 import com.gensler.scalavro.{ CanonicalForm, JsonSchemifiable }
 import com.gensler.scalavro.JsonSchemaProtocol._
+import com.gensler.scalavro.types.SelfDescribingSchemaHelpers._
 
 import scala.language.existentials
 import scala.collection.immutable.ListMap
@@ -58,7 +60,7 @@ case class AvroProtocol(
     }
   }
 
-  lazy val normalizedDeclarations: Seq[AvroNamedType[_]] = Sorting.stableSort(types)
+  lazy val normalizedDeclarations: Seq[AvroType[_]] = AvroType[Reference] +: Sorting.stableSort(types)
 
   def schema(): JsValue = {
     val requiredParams = ListMap(
@@ -79,7 +81,7 @@ case class AvroProtocol(
     * Returns the JSON schema for this protocol in "parsing canonical form".
     */
   def parsingCanonicalForm(): JsValue = {
-    val fullyQualifiedName = namespace.map { _ + "." }.getOrElse("") + protocol
+    val fullyQualifiedName = namespace.map { "%s.%s" format (_, protocol) } getOrElse protocol
     ListMap(
       "protocol" -> fullyQualifiedName.toJson,
       "types" -> normalizedDeclarations.asInstanceOf[Seq[CanonicalForm]].toJson,
@@ -169,13 +171,13 @@ object AvroProtocol {
       val requiredParams = Map(
         "request" -> requestParameters.toSeq.map {
           case (paramName, paramType) =>
-            new JsObject(Map("name" -> paramName.toJson, "type" -> paramType.canonicalFormOrFullyQualifiedName.toJson))
+            new JsObject(ListMap("type" -> paramType.canonicalFormOrFullyQualifiedName, "name" -> paramName.toJson))
         }.asInstanceOf[Seq[JsValue]].toJson,
         "response" -> response.canonicalFormOrFullyQualifiedName
       )
 
       val errorParam = Map("errors" -> errors) collect {
-        case (k, Some(union)) => (k, union.canonicalFormOrFullyQualifiedName)
+        case (k, Some(union)) => (k, schemaToParsingCanonicalForm(union.canonicalFormOrFullyQualifiedName))
       }
 
       val oneWayParam = Map("one-way" -> oneWay) collect {

@@ -39,6 +39,4 @@ class AvroFixed[T <: FixedData: TypeTag](
     new JsObject(requiredParams ++ namespaceParam ++ aliasesParam)
   }
 
-  override def parsingCanonicalForm(): JsValue = fullyQualify(withoutDocOrAliases(schema))
-
 }

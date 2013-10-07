@@ -26,9 +26,4 @@ class AvroMap[T, M <: Map[String, T]](
     "values" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
   ))
 
-  override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "values" -> itemType.canonicalFormOrFullyQualifiedName
-  ))
-
 }
