@@ -8,6 +8,7 @@ import spray.json._
 
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 import scala.util.Success
 
 class AvroMap[T, M <: Map[String, T]](
@@ -19,20 +20,10 @@ class AvroMap[T, M <: Map[String, T]](
 
   val typeName = "map"
 
-  def schema() = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "values" -> itemType.schema
-  ))
-
   def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = new JsObject(ListMap(
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = new JsObject(ListMap(
     "type" -> typeName.toJson,
     "values" -> selfContainedSchemaOrFullyQualifiedName(itemType, resolvedSymbols)
-  ))
-
-  override def parsingCanonicalForm(): JsValue = new JsObject(ListMap(
-    "type" -> typeName.toJson,
-    "values" -> itemType.canonicalFormOrFullyQualifiedName
   ))
 
 }

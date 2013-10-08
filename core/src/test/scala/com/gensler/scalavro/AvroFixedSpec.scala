@@ -1,5 +1,6 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -30,7 +31,7 @@ class AvroFixedSpec extends AvroSpec {
   }
 
   it should "get its namespace from the source FixedData class" in {
-    af.namespace should be (Some("com.gensler.scalavro.tests"))
+    af.namespace should be (Some("com.gensler.scalavro.test"))
   }
 
   it should "get its size from the source FixedData companion object" in {

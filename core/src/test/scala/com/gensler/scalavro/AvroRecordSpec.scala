@@ -1,5 +1,6 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 

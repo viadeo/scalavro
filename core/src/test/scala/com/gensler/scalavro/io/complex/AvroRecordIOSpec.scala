@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.complex
+package com.gensler.scalavro.io.complex.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -8,6 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
+import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.error._
 
 import com.gensler.scalavro.io.AvroTypeIO
@@ -76,6 +77,47 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
     handshakeRequestIO.write(request, out)
     val readResult = (handshakeRequestIO read in).get
     readResult should equal (request)
+  }
+
+  it should "read and write an object graph with shared references" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val santaListIO = AvroType[SantaList].io
+
+    val suzie = Person("Suzie", 9)
+
+    val sList = SantaList(
+      nice = Seq(suzie, Person("Dennis", 4)),
+      naughty = Seq(Person("Tommy", 7), suzie, Person("Eve", 3))
+    )
+
+    santaListIO.write(sList, out)
+    santaListIO read in should equal (Success(sList))
+  }
+
+  it should "read and write instances of recursively defined case classes" in {
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    import com.gensler.scalavro.test.{ SinglyLinkedStringList => LL }
+
+    val listIO = AvroType[LL].io
+
+    val myList = LL(
+      "one",
+      Some(LL(
+        "two",
+        Some(LL(
+          "three",
+          None
+        ))
+      ))
+    )
+
+    listIO.write(myList, out)
+    val Success(readResult) = listIO read in
+    readResult should equal (myList)
   }
 
 }

@@ -14,7 +14,7 @@ A full description of Avro is outside the scope of this documentation, but here 
 > - Remote procedure call (RPC).
 > - Simple integration with dynamic languages. Code generation is not required to read or write data files nor to use or implement RPC protocols. Code generation as an optional optimization, only worth implementing for statically typed languages.
 >
->Avro provides functionality similar to systems such as __[Thrift](http://thrift.apache.org)__, __[Protocol Buffers](http://code.google.com/p/protobuf/)__, etc.
+> Avro provides functionality similar to systems such as __[Thrift](http://thrift.apache.org)__, __[Protocol Buffers](http://code.google.com/p/protobuf/)__, etc.
 
 Scalavro takes a code-first, reflection based approach to schema generation and (de)serialization.  This yields a very low-overhead interface, and imposes some costs.  In general, Scalavro assumes you know what types you're reading and writing.  No built-in support is provided (as yet) for so-called schema resolution (taking the writer's schema into account when reading data).
 
@@ -27,17 +27,17 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.4.0`, built against Scala 2.10.2.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.0`, built against Scala 2.10.3.
 
 Using SBT:
 
 ```scala
-libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
+libraryDependencies += "com.gensler" %% "scalavro" % "0.5.0"
 ```
 
 ## API Documentation
 
-- Generated [Scaladoc for version 0.4.0](http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.5.0](http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package)
 
 ## Index of Examples
 
@@ -260,6 +260,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
 ## Current Capabilities
 - Dynamic Avro schema generation from vanilla Scala types
 - Avro protocol definitions and schema generation
+- Support for recursively defined record types
 - Convenient, dynamic binary IO
 - Avro RPC protocol representation and schema generation
 - Schema conversion to "Parsing Canonical Form" (useful for Avro RPC protocol applications)
@@ -267,7 +268,8 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.4.0"
 ## Current Limitations
 - JSON IO is not yet implemented
 - Schema resolution (taking the writer's schema into account when reading) is not yet implemented
-- Recursive type dependencies are detected but not handled optimally -- potentially valid types are rejected at runtime.  For example, the current version cannot synthesize an Avro schema for a simple recursively defined linked list node.  Supporting this is a planned enhancement.
+- Although recursively defined records (case classes) are supported, serializing all such instances is not.  In particular, reading and writing cyclic object graphs is not supported.
+- Although records are supported (via case classes), only the case class's default constructor parameters are serialized.
 
 ## Scalavro by Example: Schema Generation
 
@@ -329,7 +331,7 @@ Which yields:
 #### scala.Enumeration
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 object CardinalDirection extends Enumeration {
@@ -348,7 +350,7 @@ Which yields:
   "name" : "CardinalDirection",
   "type" : "enum",
   "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-  "namespace" : "com.gensler.scalavro.tests.CardinalDirection"
+  "namespace" : "com.gensler.scalavro.test.CardinalDirection"
 }
 ```
 
@@ -357,7 +359,7 @@ Which yields:
 Definition (Java):
 
 ```java
-package com.gensler.scalavro.tests;
+package com.gensler.scalavro.test;
 enum JCardinalDirection { N, NE, E, SE, S, SW, W, NW };
 ```
 
@@ -365,7 +367,7 @@ Use (Scala):
 
 ```scala
 import com.gensler.scalavro.types.AvroType
-import com.gensler.scalavro.tests.JCardinalDirection
+import com.gensler.scalavro.test.JCardinalDirection
 
 AvroType[JCardinalDirection].schema
 ```
@@ -377,7 +379,7 @@ Which yields:
   "name" : "JCardinalDirection",
   "type" : "enum",
   "symbols" : ["N","NE","E","SE","S","SW","W","NW"],
-  "namespace" : "com.gensler.scalavro.tests"
+  "namespace" : "com.gensler.scalavro.test"
 }
 ```
 
@@ -387,7 +389,7 @@ Which yields:
 #### scala.Either
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Either[Int, Boolean]].schema
@@ -424,7 +426,7 @@ Which yields:
 #### scala.Option
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 AvroType[Option[String]].schema
@@ -455,7 +457,7 @@ Which yields:
 ### Fixed-Length Data
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.util.FixedData
@@ -475,7 +477,7 @@ Which yields:
   "name": "MD5",
   "type": "fixed",
   "size": 16,
-  "namespace": "com.gensler.scalavro.tests"
+  "namespace": "com.gensler.scalavro.test"
 }
 ```
 
@@ -485,7 +487,7 @@ Which yields:
 #### From case classes
 
 ```scala
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 import com.gensler.scalavro.types.AvroType
 
 case class Person(name: String, age: Int)
@@ -498,13 +500,18 @@ Which yields:
 
 ```json
 {
-  "name": "Person",
+  "name": "com.gensler.scalavro.test.Person",
   "type": "record",
   "fields": [
-    {"name": "name", "type": "string"},
-    {"name": "age", "type": "int"}
-  ],
-  "namespace": "com.gensler.scalavro.tests"
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "age",
+      "type": "int"
+    }
+  ]
 }
 ```
 
@@ -521,6 +528,78 @@ Which yields:
 
 ```json
 {
+  "name": "com.gensler.scalavro.test.SantaList",
+  "type": "record",
+  "fields": [
+    {
+      "name": "nice",
+      "type": {
+        "type": "array",
+        "items": [
+          {
+            "name": "com.gensler.scalavro.test.Person",
+            "type": "record",
+            "fields": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "age",
+                "type": "int"
+              }
+            ]
+          },
+          {
+            "name": "com.gensler.scalavro.Reference",
+            "type": "record",
+            "fields": [
+              {
+                "name": "id",
+                "type": "long"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "naughty",
+      "type": {
+        "type": "array",
+        "items": [
+          "com.gensler.scalavro.test.Person",
+          "com.gensler.scalavro.Reference"
+        ]
+      }
+    }
+  ]
+}
+```
+
+**Whoa -- what happened there?!**
+
+Scalavro as of version `0.5.0` supports _reference tracking_ for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.
+
+Scalavro implements this by replacing any nested record type within a schema with a binary union of the target type and a `Reference` schema.  References are encoded as an Avro `long` value.  Here is the schema for `Reference`:
+
+```json
+{
+  "name": "com.gensler.scalavro.Reference",
+  "type": "record",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    }
+  ]
+}
+```
+
+For comparison, in versions of Scalavro before `0.5.0`, the `SantaList` schema looked like this:
+
+```json
+{
   "name": "SantaList",
   "type": "record",
   "fields": [
@@ -533,7 +612,52 @@ Which yields:
       "type": {"type": "array", "items": "Person"}
     }
   ],
-  "namespace": "com.gensler.scalavro.tests"
+  "namespace": "com.gensler.scalavro.test"
+}
+```
+
+Here is an example of a simple recursively defined type (a singly-linked list):
+
+```scala
+package com.gensler.scalavro.test
+import com.gensler.scalavro.types.AvroType
+
+case class Strings(data: String, next: Option[Strings])
+
+AvroType[Strings].schema
+```
+
+Which yields:
+
+```json
+{
+  "name": "com.gensler.scalavro.test.Strings",
+  "type": "record",
+  "fields": [
+    {
+      "name": "data",
+      "type": "string"
+    },
+    {
+      "name": "next",
+      "type": [
+        "null",
+        [
+          "com.gensler.scalavro.test.Strings",
+          {
+            "name": "com.gensler.scalavro.Reference",
+            "type": "record",
+            "fields": [
+              {
+                "name": "id",
+                "type": "long"
+              }
+            ]
+          }
+        ]
+      ]
+    }
+  ]
 }
 ```
 
@@ -543,11 +667,14 @@ Which yields:
 Given:
 
 ```scala
-class Alpha
-abstract class Beta extends Alpha
-case class Gamma() extends Alpha
+package com.gensler.scalavro.test
+
+abstract class Alpha { def magic: Double }
+class Beta extends Alpha { val magic = math.Pi }
+case class Gamma(magic: Double) extends Alpha
 case class Delta() extends Beta
 case class Epsilon[T]() extends Beta
+case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
 ```
 
 Usage:
@@ -561,25 +688,69 @@ Which yields:
 
 ```json
 [
-  {
-    "name" : "Delta",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  },
-  {
-    "name" : "Gamma",
-    "type" : "record",
-    "fields" : [],
-    "namespace" : "com.gensler.scalavro.tests"
-  }
+  [
+    {
+      "name": "com.gensler.scalavro.test.Delta",
+      "type": "record",
+      "fields": []
+    },
+    {
+      "name": "com.gensler.scalavro.Reference",
+      "type": "record",
+      "fields": [
+        {
+          "name": "id",
+          "type": "long"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "name": "com.gensler.scalavro.test.Gamma",
+      "type": "record",
+      "fields": [
+        {
+          "name": "magic",
+          "type": "double"
+        }
+      ]
+    },
+    "com.gensler.scalavro.Reference"
+  ],
+  [
+    {
+      "name": "com.gensler.scalavro.test.AlphaWrapper",
+      "type": "record",
+      "fields": [
+        {
+          "name": "inner",
+          "type": [
+            [
+              "com.gensler.scalavro.test.Delta",
+              "com.gensler.scalavro.Reference"
+            ],
+            [
+              "com.gensler.scalavro.test.Gamma",
+              "com.gensler.scalavro.Reference"
+            ],
+            [
+              "com.gensler.scalavro.test.AlphaWrapper",
+              "com.gensler.scalavro.Reference"
+            ]
+          ]
+        }
+      ]
+    },
+    "com.gensler.scalavro.Reference"
+  ]
 ]
 ```
 
 Note that in the above example:
 
 - `Alpha` is excluded from the union because it is not a case class
-- `Beta` is excluded from the union because it is abstract and not a case class
+- `Beta` is excluded from the union because it is abstract
 - `Epsilon` is excluded from the union because it takes type parameters
 
 <a name="binary-io"></a>

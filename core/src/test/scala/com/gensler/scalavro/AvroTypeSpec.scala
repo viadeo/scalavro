@@ -1,5 +1,6 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -70,6 +71,47 @@ class AvroTypeSpec extends AvroSpec {
       }
       case Failure(cause) => throw cause
     }
+
+    AvroType[Seq[SantaList]].schema.toString should equal ("""
+{
+  "type": "array",
+  "items": [{
+    "name": "com.gensler.scalavro.test.SantaList",
+    "type": "record",
+    "fields": [{
+      "name": "nice",
+      "type": {
+        "type": "array",
+        "items": [{
+          "name": "com.gensler.scalavro.test.Person",
+          "type": "record",
+          "fields": [{
+            "name": "name",
+            "type": "string"
+          }, {
+            "name": "age",
+            "type": "int"
+          }]
+        }, {
+          "name": "com.gensler.scalavro.Reference",
+          "type": "record",
+          "fields": [{
+            "name": "id",
+            "type": "long"
+          }]
+        }]
+      }
+    }, {
+      "name": "naughty",
+      "type": {
+        "type": "array",
+        "items": ["com.gensler.scalavro.test.Person", "com.gensler.scalavro.Reference"]
+      }
+    }]
+  }, "com.gensler.scalavro.Reference"]
+}
+""".replaceAll("\\s", ""))
+
   }
 
   // sets
@@ -164,7 +206,7 @@ class AvroTypeSpec extends AvroSpec {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
-        avroType.union.typeMembers should have size (2)
+        avroType.union.typeMembers should have size (3)
         avroType.union.contains[Gamma] should be (true)
         avroType.union.contains[Delta] should be (true)
         avroType.union.contains[AlphaCollection] should be (false)
@@ -188,9 +230,9 @@ class AvroTypeSpec extends AvroSpec {
     val md5Type = AvroType[MD5]
     md5Type.isInstanceOf[AvroFixed[_]] should be (true)
     val md5Fixed = md5Type.asInstanceOf[AvroFixed[MD5]]
-    md5Fixed.namespace should be (Some("com.gensler.scalavro.tests"))
+    md5Fixed.namespace should be (Some("com.gensler.scalavro.test"))
     md5Fixed.name should be ("MD5")
-    md5Fixed.fullyQualifiedName should be ("com.gensler.scalavro.tests.MD5")
+    md5Fixed.fullyQualifiedName should be ("com.gensler.scalavro.test.MD5")
     md5Fixed dependsOn md5Type should be (true)
 
     // prettyPrint(md5Type.schema)
@@ -209,9 +251,9 @@ class AvroTypeSpec extends AvroSpec {
     personType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[personType.scalaType] =:= typeOf[Person] should be (true)
     val personRecord = personType.asInstanceOf[AvroRecord[Person]]
-    personRecord.namespace should be (Some("com.gensler.scalavro.tests"))
+    personRecord.namespace should be (Some("com.gensler.scalavro.test"))
     personRecord.name should be ("Person")
-    personRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.Person")
+    personRecord.fullyQualifiedName should be ("com.gensler.scalavro.test.Person")
     personType dependsOn personType should be (true)
     personType dependsOn santaListType should be (false)
 
@@ -221,17 +263,64 @@ class AvroTypeSpec extends AvroSpec {
     santaListType.isInstanceOf[AvroRecord[_]] should be (true)
     typeOf[santaListType.scalaType] =:= typeOf[SantaList] should be (true)
     val santaListRecord = santaListType.asInstanceOf[AvroRecord[SantaList]]
-    santaListRecord.namespace should be (Some("com.gensler.scalavro.tests"))
+    santaListRecord.namespace should be (Some("com.gensler.scalavro.test"))
     santaListRecord.name should be ("SantaList")
-    santaListRecord.fullyQualifiedName should be ("com.gensler.scalavro.tests.SantaList")
+    santaListRecord.fullyQualifiedName should be ("com.gensler.scalavro.test.SantaList")
     santaListType dependsOn personType should be (true)
     santaListType dependsOn santaListType should be (true)
   }
 
-  it should "detect dependencies among AvroRecord types" in {
-    import com.gensler.scalavro.error.CyclicTypeDependencyException
-    evaluating { AvroType[A] } should produce[CyclicTypeDependencyException]
-    evaluating { AvroType[B] } should produce[CyclicTypeDependencyException]
+  it should "allow circular dependencies among AvroRecord types" in {
+    AvroType[A].schema.toString should equal ("""
+{
+  "name": "com.gensler.scalavro.test.A",
+  "type": "record",
+  "fields": [{
+    "name": "b",
+    "type": [{
+      "name": "com.gensler.scalavro.test.B",
+      "type": "record",
+      "fields": [{
+        "name": "a",
+        "type": ["com.gensler.scalavro.test.A", {
+          "name": "com.gensler.scalavro.Reference",
+          "type": "record",
+          "fields": [{
+            "name": "id",
+            "type": "long"
+          }]
+        }]
+      }]
+    }, "com.gensler.scalavro.Reference"]
+  }]
+}
+""".replaceAll("\\s", ""))
+
+    AvroType[B].schema.toString should equal ("""
+{
+  "name": "com.gensler.scalavro.test.B",
+  "type": "record",
+  "fields": [{
+    "name": "a",
+    "type": [{
+      "name": "com.gensler.scalavro.test.A",
+      "type": "record",
+      "fields": [{
+        "name": "b",
+        "type": ["com.gensler.scalavro.test.B", {
+          "name": "com.gensler.scalavro.Reference",
+          "type": "record",
+          "fields": [{
+            "name": "id",
+            "type": "long"
+          }]
+        }]
+      }]
+    }, "com.gensler.scalavro.Reference"]
+  }]
+}
+""".replaceAll("\\s", ""))
+
   }
 
 }

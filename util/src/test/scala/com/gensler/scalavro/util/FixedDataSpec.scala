@@ -1,7 +1,9 @@
-package com.gensler.scalavro.util
+package com.gensler.scalavro.util.test
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+
+import com.gensler.scalavro.util.FixedData
 
 import scala.collection.immutable
 import scala.reflect.runtime.universe._

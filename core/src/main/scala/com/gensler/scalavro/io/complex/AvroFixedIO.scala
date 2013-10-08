@@ -13,6 +13,7 @@ import org.apache.avro.generic.GenericFixed
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import scala.collection.immutable
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
@@ -23,20 +24,26 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
 
   protected lazy val bytesConstructorMirror =
-    ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]]
+    ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].get
 
-  protected[scalavro] def asGeneric[F <: T: TypeTag](obj: F): GenericFixed =
-    new GenericData.Fixed(avroSchema, obj.bytes.toArray)
+  protected[scalavro] def write[F <: T: TypeTag](
+    obj: F,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
 
-  def write[F <: T: TypeTag](obj: F, encoder: BinaryEncoder) = {
     encoder writeFixed obj.bytes.toArray
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
     val buffer = Array.ofDim[Byte](avroType.size)
     decoder.readFixed(buffer)
-    bytesConstructorMirror.get.apply(buffer.toIndexedSeq).asInstanceOf[T]
+    bytesConstructorMirror.apply(buffer.toIndexedSeq).asInstanceOf[T]
   }
 
 }

@@ -1,7 +1,8 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.protocol._
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -54,8 +55,8 @@ class AvroProtocolSpec extends AvroSpec {
 
     )
 
-    // prettyPrint(hwProtocol.schema)
-    // prettyPrint(hwProtocol.parsingCanonicalForm)
+    // log.debug(hwProtocol.schema.prettyPrint)
+    // log.debug(hwProtocol.parsingCanonicalForm.prettyPrint)
   }
 
 }

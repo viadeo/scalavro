@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.complex
+package com.gensler.scalavro.io.complex.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -10,6 +10,7 @@ import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
 import com.gensler.scalavro.types.primitive._
 
+import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.io.primitive._
 

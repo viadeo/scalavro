@@ -6,24 +6,24 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
 object AvroByteIO extends AvroByteIO
 
-trait AvroByteIO extends AvroTypeIO[Byte] {
+trait AvroByteIO extends AvroPrimitiveTypeIO[Byte] {
 
-  def avroType = AvroByte
+  val avroType = AvroByte
 
-  protected[scalavro] def asGeneric[B <: Byte: TypeTag](value: B): Byte = value
+  protected[scalavro] def write(
+    value: Byte,
+    encoder: BinaryEncoder): Unit = {
 
-  def write[B <: Byte: TypeTag](value: B, encoder: BinaryEncoder) = {
     encoder writeInt value.toInt
     encoder.flush
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    decoder.readInt.toByte
-  }
+  def read(decoder: BinaryDecoder) = decoder.readInt.toByte
 
 }

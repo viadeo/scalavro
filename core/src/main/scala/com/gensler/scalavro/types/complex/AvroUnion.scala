@@ -6,10 +6,11 @@ import com.gensler.scalavro.JsonSchemaProtocol._
 import com.gensler.scalavro.util.ReflectionHelpers
 
 import com.gensler.scalavro.util.Union
+import com.gensler.scalavro.util.Union.union
 
 import scala.reflect.runtime.universe._
-import scala.util.Success
 import scala.collection.mutable
+import scala.util.Success
 
 import spray.json._
 
@@ -23,14 +24,39 @@ class AvroUnion[U <: Union.not[_]: TypeTag, T](
 
   val typeName = "union"
 
-  def schema() = memberAvroTypes.map { _.schema }.toJson
-
   def selfContainedSchema(
-    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = memberAvroTypes.map { at =>
-    selfContainedSchemaOrFullyQualifiedName(at, resolvedSymbols)
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = {
+    memberAvroTypes.map { at =>
+      selfContainedSchemaOrFullyQualifiedName(at, resolvedSymbols)
+    }.toJson
+  }
+
+}
+
+class AvroReferenceUnion[U <: Union.not[_]: TypeTag, T](
+    union: Union[U],
+    originalType: TypeTag[T]) extends AvroUnion[U, T](union, originalType) {
+
+  override def selfContainedSchema(resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = memberAvroTypes.map {
+    _ match {
+      case recordType: AvroRecord[_] => recordType.selfContainedSchema(resolvedSymbols)
+      case at: AvroType[_]           => selfContainedSchemaOrFullyQualifiedName(at, resolvedSymbols)
+    }
   }.toJson
 
-  override def parsingCanonicalForm(): JsValue =
-    memberAvroTypes.map { _.canonicalFormOrFullyQualifiedName }.toJson
+}
+
+object AvroUnion {
+
+  import com.gensler.scalavro.Reference
+
+  def referenceUnionFor[T](recordType: AvroRecord[T]): AvroReferenceUnion[_, _] = {
+    implicit val recordTypeTag: TypeTag[T] = recordType.tag
+
+    new AvroReferenceUnion(
+      new Union[union[T]#or[Reference]],
+      typeTag[Either[T, Reference]]
+    )
+  }
 
 }

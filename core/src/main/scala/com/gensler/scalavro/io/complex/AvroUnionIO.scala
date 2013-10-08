@@ -9,6 +9,7 @@ import com.gensler.scalavro.util.Union._
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 

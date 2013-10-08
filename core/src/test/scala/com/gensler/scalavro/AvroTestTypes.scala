@@ -1,4 +1,4 @@
-package com.gensler.scalavro.tests
+package com.gensler.scalavro.test
 
 import com.gensler.scalavro.util.FixedData
 
@@ -16,17 +16,23 @@ case class B(a: A)
 case class Greeting(message: String)
 case class Curse(message: String)
 
-sealed class Alpha
-abstract class Beta extends Alpha
-case class Gamma() extends Alpha
-case class Delta() extends Beta
-case class Epsilon[T]() extends Beta
-case class AlphaWrapper(inner: Alpha)
+abstract class Alpha { def magic: Double }
 
-class AlphaCollection(as: Seq[Alpha]) extends Alpha with Seq[Alpha] {
+class Beta extends Alpha { val magic = math.Pi }
+
+case class Gamma(magic: Double) extends Alpha
+
+case class Delta() extends Beta
+
+case class Epsilon[T]() extends Beta
+
+case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
+
+class AlphaCollection(as: Seq[Alpha]) extends Seq[Alpha] {
   def apply(idx: Int): Alpha = as apply idx
   def iterator: Iterator[Alpha] = as.iterator
   def length: Int = as.length
+  def magic = length.toDouble
 }
 object AlphaCollection {
   def apply(as: Alpha*): AlphaCollection = new AlphaCollection(as)
@@ -41,3 +47,8 @@ case class MD5(override val bytes: immutable.Seq[Byte])
 @FixedData.Length(4)
 case class BadFixed[T](override val bytes: immutable.Seq[Byte])
   extends FixedData(bytes)
+
+case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
+
+// a recursively defined type
+case class SinglyLinkedStringList(data: String, next: Option[SinglyLinkedStringList])

@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.complex
+package com.gensler.scalavro.io.complex.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -6,22 +6,14 @@ import scala.reflect.runtime.universe._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
+import com.gensler.scalavro.test._
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
+import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.error._
 import com.gensler.scalavro.util.Union._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
-
-// mock types:
-case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
-
-abstract class Alpha { def magic: Double }
-class Beta extends Alpha { val magic = math.Pi }
-case class Gamma(magic: Double) extends Alpha
-case class Delta() extends Beta
-case class Epsilon[T]() extends Beta
-// end mock types
 
 class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
 
@@ -57,6 +49,8 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "read and write union members derived from bare Unions" in {
+    import scala.collection.mutable
+
     val bareIO = AvroType[ISB].io.asInstanceOf[AvroBareUnionIO[ISB, ISB]]
 
     val out = new ByteArrayOutputStream
@@ -64,9 +58,9 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     import org.apache.avro.io.EncoderFactory
     val encoder = EncoderFactory.get.directBinaryEncoder(out, null)
 
-    bareIO.writeBare(555, encoder)
-    bareIO.writeBare(false, encoder)
-    bareIO.writeBare("Unboxed unions!", encoder)
+    bareIO.writeBare(555, encoder, mutable.Map[Any, Long](), true)
+    bareIO.writeBare(false, encoder, mutable.Map[Any, Long](), true)
+    bareIO.writeBare("Unboxed unions!", encoder, mutable.Map[Any, Long](), true)
 
     val in = new ByteArrayInputStream(out.toByteArray)
     (bareIO read in).get should equal (555)

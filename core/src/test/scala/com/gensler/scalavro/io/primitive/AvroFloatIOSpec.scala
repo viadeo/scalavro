@@ -1,4 +1,4 @@
-package com.gensler.scalavro.io.primitive
+package com.gensler.scalavro.io.primitive.test
 
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
@@ -8,6 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
+import com.gensler.scalavro.io.primitive._
 import com.gensler.scalavro.error._
 
 import com.gensler.scalavro.io.AvroTypeIO

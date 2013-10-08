@@ -7,6 +7,7 @@ import spray.json._
 
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 import scala.util.Success
 
 class AvroEnum[E <: Enumeration: TypeTag](
@@ -18,7 +19,9 @@ class AvroEnum[E <: Enumeration: TypeTag](
 
   val typeName = "enum"
 
-  def schema() = {
+  def selfContainedSchema(
+    resolvedSymbols: mutable.Set[String] = mutable.Set[String]()) = {
+
     val requiredParams = ListMap(
       "name" -> name.toJson,
       "type" -> typeName.toJson,
@@ -31,10 +34,5 @@ class AvroEnum[E <: Enumeration: TypeTag](
 
     new JsObject(requiredParams ++ optionalParams)
   }
-
-  def selfContainedSchema(
-    resolvedSymbols: scala.collection.mutable.Set[String] = scala.collection.mutable.Set[String]()) = schema
-
-  override def parsingCanonicalForm(): JsValue = fullyQualify(schema)
 
 }

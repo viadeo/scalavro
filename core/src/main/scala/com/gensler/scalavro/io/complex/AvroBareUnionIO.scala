@@ -13,6 +13,7 @@ import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
@@ -21,9 +22,29 @@ import java.io.{ InputStream, OutputStream }
 private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag](
     avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 
-  def write[X <: T: TypeTag](obj: X, encoder: BinaryEncoder): Unit = ???
+  protected[scalavro] def write[X <: T: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean): Unit = {
 
-  def writeBare[X: prove[T]#containsType: TypeTag](obj: X, encoder: BinaryEncoder) = {
+    /*
+    val staticTypeOfObj = typeOf[X]
+    val runtimeTypeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
+    val objTypeTag = ReflectionHelpers.tagForType(runtimeTypeOfObj)
+    writeBare(obj, encoder, references, topLevel)(objTypeTag)
+*/
+
+    ??? // Not Implemented!
+
+  }
+
+  def writeBare[X: prove[T]#containsType: TypeTag](
+    obj: X,
+    encoder: BinaryEncoder,
+    references: mutable.Map[Any, Long],
+    topLevel: Boolean) = {
+
     val typeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
     val staticTypeOfObj = typeOf[X]
     avroType.memberAvroTypes.indexWhere { at => staticTypeOfObj <:< at.tag.tpe || typeOfObj <:< at.tag.tpe } match {
@@ -31,16 +52,20 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
       case index: Int => {
         AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[T]]
-        memberType.io.write(obj.asInstanceOf[T], encoder)
+        memberType.io.write(obj.asInstanceOf[T], encoder, references, false)
         encoder.flush
       }
     }
   }
 
-  def read(decoder: BinaryDecoder) = Try {
-    val index = AvroLongIO.read(decoder).get
+  protected[scalavro] def read(
+    decoder: BinaryDecoder,
+    references: mutable.ArrayBuffer[Any],
+    topLevel: Boolean) = {
+
+    val index = AvroLongIO.read(decoder)
     val memberType = avroType.memberAvroTypes(index.toInt).asInstanceOf[AvroType[T]]
-    memberType.io.read(decoder).get
+    memberType.io.read(decoder, references, false)
   }
 
 }
