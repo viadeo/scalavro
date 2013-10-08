@@ -27,17 +27,17 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.0`, built against Scala 2.10.3.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.1`, built against Scala 2.10.3.
 
 Using SBT:
 
 ```scala
-libraryDependencies += "com.gensler" %% "scalavro" % "0.5.0"
+libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
 ```
 
 ## API Documentation
 
-- Generated [Scaladoc for version 0.5.0](http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.5.1](http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package)
 
 ## Index of Examples
 
@@ -579,7 +579,7 @@ Which yields:
 
 **Whoa -- what happened there?!**
 
-Scalavro as of version `0.5.0` supports _reference tracking_ for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.
+Scalavro as of version `0.5.1` supports _reference tracking_ for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.
 
 Scalavro implements this by replacing any nested record type within a schema with a binary union of the target type and a `Reference` schema.  References are encoded as an Avro `long` value.  Here is the schema for `Reference`:
 
@@ -596,7 +596,7 @@ Scalavro implements this by replacing any nested record type within a schema wit
 }
 ```
 
-For comparison, in versions of Scalavro before `0.5.0`, the `SantaList` schema looked like this:
+For comparison, in versions of Scalavro before `0.5.1`, the `SantaList` schema looked like this:
 
 ```json
 {
