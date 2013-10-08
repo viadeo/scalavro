@@ -27,7 +27,7 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.0`, built against Scala 2.10.2.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.0`, built against Scala 2.10.3.
 
 Using SBT:
 
