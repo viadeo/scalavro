@@ -66,18 +66,18 @@
 </ol><h2>
 <a name="obtaining-scalavro" class="anchor" href="#obtaining-scalavro"><span class="octicon octicon-link"></span></a>Obtaining Scalavro</h2>
 
-<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.5.0</code>, built against Scala 2.10.2.</p>
+<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.5.1</code>, built against Scala 2.10.3.</p>
 
 <p>Using SBT:</p>
 
-<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.5.0"</span>
+<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.5.1"</span>
 </pre></div>
 
 <h2>
 <a name="api-documentation" class="anchor" href="#api-documentation"><span class="octicon octicon-link"></span></a>API Documentation</h2>
 
 <ul>
-<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.0</a>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.1</a>
 </li>
 </ul><h2>
 <a name="index-of-examples" class="anchor" href="#index-of-examples"><span class="octicon octicon-link"></span></a>Index of Examples</h2>
@@ -619,7 +619,7 @@
 
 <p><strong>Whoa -- what happened there?!</strong></p>
 
-<p>Scalavro as of version <code>0.5.0</code> supports <em>reference tracking</em> for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.</p>
+<p>Scalavro as of version <code>0.5.x</code> supports <em>reference tracking</em> for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.</p>
 
 <p>Scalavro implements this by replacing any nested record type within a schema with a binary union of the target type and a <code>Reference</code> schema.  References are encoded as an Avro <code>long</code> value.  Here is the schema for <code>Reference</code>:</p>
 
@@ -635,7 +635,7 @@
 <span class="p">}</span>
 </pre></div>
 
-<p>For comparison, in versions of Scalavro before <code>0.5.0</code>, the <code>SantaList</code> schema looked like this:</p>
+<p>For comparison, in versions of Scalavro before <code>0.5.x</code>, the <code>SantaList</code> schema looked like this:</p>
 
 <div class="highlight highlight-json"><pre><span class="p">{</span>
   <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"SantaList"</span><span class="p">,</span>
