@@ -148,9 +148,13 @@ object AvroProtocol {
     }
 
     protected[this] def typeNames: mutable.Set[String] = {
-      val requestTypeNames = request.dependentNamedTypes.map(_.fullyQualifiedName)
-      val responseTypeNames = response.dependentNamedTypes.map(_.fullyQualifiedName)
-      mutable.Set[String]() ++ requestTypeNames ++ responseTypeNames
+      val types = {
+        Seq(AvroType[Reference].asInstanceOf[AvroNamedType[_]]) ++
+          request.dependentNamedTypes ++
+          response.dependentNamedTypes
+      }
+
+      mutable.Set[String](types.map(_.fullyQualifiedName): _*)
     }
 
     /**
