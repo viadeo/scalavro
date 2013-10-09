@@ -61,7 +61,8 @@ case class AvroProtocol(
     }
   }
 
-  lazy val normalizedDeclarations: Seq[AvroType[_]] = AvroType[Reference] +: Sorting.stableSort(types)
+  lazy val normalizedDeclarations: Seq[AvroNamedType[_]] =
+    AvroType[Reference].asInstanceOf[AvroNamedType[_]] +: Sorting.stableSort(types)
 
   def schema(): JsValue = {
     val requiredParams = ListMap(
@@ -86,7 +87,11 @@ case class AvroProtocol(
 
     ListMap(
       "protocol" -> fullyQualifiedName.toJson,
-      "types" -> normalizedDeclarations.asInstanceOf[Seq[CanonicalForm]].toJson,
+      "types" -> normalizedDeclarations.view.zipWithIndex.map {
+        case (protocolType, index) =>
+          val previousTypeNames = mutable.Set[String](normalizedDeclarations.view(0, index).map(_.fullyQualifiedName): _*)
+          schemaToParsingCanonicalForm(protocolType.selfContainedSchema(previousTypeNames))
+      }.toSeq.toJson,
       "messages" -> messages.asInstanceOf[Map[String, CanonicalForm]].toJson
     ).toJson
   }
