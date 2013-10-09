@@ -9,6 +9,7 @@ import com.gensler.scalavro.types.SelfDescribingSchemaHelpers._
 
 import scala.language.existentials
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 
 import java.security.MessageDigest
 
@@ -82,6 +83,7 @@ case class AvroProtocol(
     */
   def parsingCanonicalForm(): JsValue = {
     val fullyQualifiedName = namespace.map { "%s.%s" format (_, protocol) } getOrElse protocol
+
     ListMap(
       "protocol" -> fullyQualifiedName.toJson,
       "types" -> normalizedDeclarations.asInstanceOf[Seq[CanonicalForm]].toJson,
@@ -141,27 +143,14 @@ object AvroProtocol {
     }.toMap
 
     def schema(): JsValue = {
-      val requiredParams = Map(
-        "request" -> requestParameters.toSeq.map {
-          case (paramName, paramType) =>
-            new JsObject(Map("name" -> paramName.toJson, "type" -> paramType.canonicalFormOrFullyQualifiedName.toJson))
-        }.asInstanceOf[Seq[JsValue]].toJson,
-        "response" -> response.canonicalFormOrFullyQualifiedName
-      )
+      val docParam = Map("doc" -> doc) collect { case (k, Some(v)) => (k, v.toJson) }
+      new JsObject(parsingCanonicalForm.asJsObject.fields ++ docParam)
+    }
 
-      val errorParam = Map("errors" -> errors) collect {
-        case (k, Some(union)) => (k, union.schema)
-      }
-
-      val docParam = Map("doc" -> doc) collect {
-        case (k, Some(v)) => (k, v.toJson)
-      }
-
-      val oneWayParam = Map("one-way" -> oneWay) collect {
-        case (k, Some(v)) => (k, v.toJson)
-      }
-
-      new JsObject(requiredParams ++ errorParam ++ docParam ++ oneWayParam)
+    protected[this] def typeNames: mutable.Set[String] = {
+      val requestTypeNames = request.dependentNamedTypes.map(_.fullyQualifiedName)
+      val responseTypeNames = response.dependentNamedTypes.map(_.fullyQualifiedName)
+      mutable.Set[String]() ++ requestTypeNames ++ responseTypeNames
     }
 
     /**
@@ -170,14 +159,21 @@ object AvroProtocol {
     def parsingCanonicalForm(): JsValue = {
       val requiredParams = Map(
         "request" -> requestParameters.toSeq.map {
-          case (paramName, paramType) =>
-            new JsObject(ListMap("type" -> paramType.canonicalFormOrFullyQualifiedName, "name" -> paramName.toJson))
+          case (paramName, paramType) => {
+            val typeSchema = schemaToParsingCanonicalForm(paramType.selfContainedSchema(typeNames))
+            new JsObject(ListMap("type" -> typeSchema, "name" -> paramName.toJson))
+          }
         }.asInstanceOf[Seq[JsValue]].toJson,
-        "response" -> response.canonicalFormOrFullyQualifiedName
+        "response" -> schemaToParsingCanonicalForm(response.selfContainedSchema(typeNames))
       )
 
       val errorParam = Map("errors" -> errors) collect {
-        case (k, Some(union)) => (k, schemaToParsingCanonicalForm(union.canonicalFormOrFullyQualifiedName))
+        case (k, Some(errorUnion)) => {
+          val errorUnionTypes = AvroType[Reference].asInstanceOf[AvroNamedType[_]] +: errorUnion.dependentNamedTypes
+          val errorUnionTypeNames = mutable.Set(errorUnionTypes.map(_.fullyQualifiedName): _*)
+          val errorUnionSchema = errorUnion.selfContainedSchema(errorUnionTypeNames)
+          k -> schemaToParsingCanonicalForm(errorUnionSchema)
+        }
       }
 
       val oneWayParam = Map("one-way" -> oneWay) collect {

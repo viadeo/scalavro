@@ -14,7 +14,7 @@ object ScalavroBuild extends Build {
 
   val ORGANIZATION = "com.gensler"
   val PROJECT_NAME = "scalavro"
-  val PROJECT_VERSION = "0.5.1"
+  val PROJECT_VERSION = "0.5.2-SNAPSHOT"
   val SCALA_VERSION = "2.10.3"
 
 
