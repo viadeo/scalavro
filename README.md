@@ -38,6 +38,9 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
 ## API Documentation
 
 - Generated [Scaladoc for version 0.5.1](http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.5.0](http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.3.0](http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package)
+- Generated [Scaladoc for version 0.3.1](http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package)
 
 ## Index of Examples
 
