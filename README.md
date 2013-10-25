@@ -238,7 +238,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
     </tr>
     <tr>
       <td><em>
-        Supertypes of non-recursive case classes without type parameters
+        Supertypes of case classes without type parameters
       </em></td>
       <td><code>
         union
@@ -246,7 +246,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
     </tr>
     <tr>
       <td><em>
-        Non-recursive case classes without type parameters
+        Case classes without type parameters
       </em></td>
       <td><code>
         record
