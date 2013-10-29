@@ -5,6 +5,8 @@ import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
+import com.typesafe.config.{ Config, ConfigFactory }
+
 /**
   * Companion object for [[ReflectionHelpers]]
   */
@@ -44,36 +46,31 @@ trait ReflectionHelpers extends Logging {
     import org.reflections.Reflections
     import org.reflections.util.{ ConfigurationBuilder, FilterBuilder }
     import org.reflections.scanners.SubTypesScanner
+    import scala.collection.JavaConversions._
+
+    val config = ConfigFactory.load.getConfig("com.gensler.scalavro").withFallback(
+      ConfigFactory.parseString("""
+        reflections-excluded-packages = [
+          "java",
+          "javax",
+          "scala",
+          "com.gensler.scalavro.io",
+          "com.gensler.scalavro.types"
+        ]
+      """)
+    )
+
+    val reflectionsExcludedPackages = config.getStringList("reflections-excluded-packages")
+
+    log.debug(
+      "Reflections class loader scanner will ignore the following packages:\n    {}\n",
+      reflectionsExcludedPackages.mkString("\n    ")
+    )
 
     val classFilter = new FilterBuilder
-    classFilter.excludePackage("java")
-    classFilter.excludePackage("javax")
-    classFilter.excludePackage("scala")
-    classFilter.excludePackage("ch.qos.logback")
-    classFilter.excludePackage("com.gensler.scalavro.io")
-    classFilter.excludePackage("com.gensler.scalavro.types")
-    classFilter.excludePackage("com.google.common")
-    classFilter.excludePackage("com.google.guava")
-    classFilter.excludePackage("com.google.code.findbugs")
-    classFilter.excludePackage("org.dom4j")
-    classFilter.excludePackage("org.parboiled")
-    classFilter.excludePackage("org.scalatest")
-    classFilter.excludePackage("com.thoughtworks.paranamer")
-    classFilter.excludePackage("org.tukaani.xz")
-    classFilter.excludePackage("org.apache.avro")
-    classFilter.excludePackage("org.apache.commons")
-    classFilter.excludePackage("org.codehaus.jackson")
-    classFilter.excludePackage("org.javassist")
-    classFilter.excludePackage("org.w3c.dom")
-    classFilter.excludePackage("org.xerial.snappy")
-    classFilter.excludePackage("org.xml.sax")
-    classFilter.excludePackage("org.scalatest")
-    classFilter.excludePackage("org.slf4j")
-    classFilter.excludePackage("org.reflections")
-    classFilter.excludePackage("sbt")
-    classFilter.excludePackage("spray.json")
+    reflectionsExcludedPackages.foreach { packageName => classFilter.excludePackage(packageName) }
 
-    val urls = getClass.getClassLoader.asInstanceOf[java.net.URLClassLoader].getURLs
+    val urls = this.getClass.getClassLoader.asInstanceOf[java.net.URLClassLoader].getURLs
 
     val configBuilder = new ConfigurationBuilder
     configBuilder setUrls (urls: _*)

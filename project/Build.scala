@@ -27,6 +27,7 @@ object ScalavroBuild extends Build {
   val LOGBACK_VERSION = "1.0.9"
   val SCALATEST_VERSION = "2.0.M5b"
   val REFLECTIONS_VERSION = "0.9.9-RC1"
+  val TYPESAFE_CONFIG_VERSION = "1.0.2"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -69,7 +70,10 @@ object ScalavroBuild extends Build {
     base = file("util"),
     settings = commonSettings
   ) settings(
-    libraryDependencies += "org.reflections" % "reflections" % REFLECTIONS_VERSION
+    libraryDependencies ++= Seq(
+      "org.reflections" % "reflections" % REFLECTIONS_VERSION,
+      "com.typesafe" % "config" % TYPESAFE_CONFIG_VERSION
+    )
   )
 
 
