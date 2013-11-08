@@ -167,9 +167,13 @@ object AvroProtocol {
       */
     def parsingCanonicalForm(): JsValue = {
       val requiredParams = Map(
-        "request" -> schemaToParsingCanonicalForm(
-          request.selfContainedSchema(typeNames - request.fullyQualifiedName)
-        ).asJsObject.fields("fields"),
+
+        "request" -> Seq(
+          new JsObject(ListMap(
+            "type" -> schemaToParsingCanonicalForm(request.selfContainedSchema(typeNames)),
+            "name" -> request.name.toJson // "request".toJson 
+          ))
+        ).toJson,
 
         "response" -> schemaToParsingCanonicalForm(response.selfContainedSchema(typeNames))
       )
