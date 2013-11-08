@@ -171,7 +171,7 @@ object AvroProtocol {
         "request" -> Seq(
           new JsObject(ListMap(
             "type" -> schemaToParsingCanonicalForm(request.selfContainedSchema(typeNames)),
-            "name" -> request.name.toJson // "request".toJson 
+            "name" -> "request".toJson
           ))
         ).toJson,
 
