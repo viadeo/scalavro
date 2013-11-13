@@ -6,6 +6,8 @@ import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializat
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -25,5 +27,18 @@ trait AvroDoubleIO extends AvroPrimitiveTypeIO[Double] {
   }
 
   def read(decoder: BinaryDecoder) = decoder.readDouble
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writePrimitiveJson(value: Double) = JsNumber(BigDecimal(value))
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsNumber(bigDecimal) if bigDecimal.isValidDouble => bigDecimal.toDouble
+      case _ => throw new AvroDeserializationException[Double]
+    }
+  }
 
 }

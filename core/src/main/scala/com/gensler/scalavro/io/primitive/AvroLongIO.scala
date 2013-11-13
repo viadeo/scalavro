@@ -10,11 +10,17 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
+import spray.json._
+
 object AvroLongIO extends AvroLongIO
 
 trait AvroLongIO extends AvroPrimitiveTypeIO[Long] {
 
   val avroType = AvroLong
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
     value: Long,
@@ -25,5 +31,18 @@ trait AvroLongIO extends AvroPrimitiveTypeIO[Long] {
   }
 
   def read(decoder: BinaryDecoder) = decoder.readLong
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writePrimitiveJson(value: Long) = JsNumber(BigDecimal(value))
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsNumber(bigDecimal) if bigDecimal.isValidLong => bigDecimal.toLong
+      case _ => throw new AvroDeserializationException[Long]
+    }
+  }
 
 }

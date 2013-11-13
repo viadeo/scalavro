@@ -10,11 +10,17 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
+import spray.json._
+
 object AvroFloatIO extends AvroFloatIO
 
 trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
 
   val avroType = AvroFloat
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
     value: Float,
@@ -25,5 +31,18 @@ trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
   }
 
   def read(decoder: BinaryDecoder) = decoder.readFloat
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writePrimitiveJson(value: Float) = JsNumber(BigDecimal(value))
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsNumber(bigDecimal) if bigDecimal.isValidFloat => bigDecimal.toFloat
+      case _ => throw new AvroDeserializationException[Float]
+    }
+  }
 
 }

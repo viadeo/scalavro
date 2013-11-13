@@ -10,11 +10,17 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
+import spray.json._
+
 object AvroCharIO extends AvroCharIO
 
 trait AvroCharIO extends AvroPrimitiveTypeIO[Char] {
 
   val avroType = AvroChar
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
     value: Char,
@@ -25,5 +31,18 @@ trait AvroCharIO extends AvroPrimitiveTypeIO[Char] {
   }
 
   def read(decoder: BinaryDecoder) = decoder.readInt.toChar
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writePrimitiveJson(value: Char) = JsString(value.toString)
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsString(value) if value.length == 1 => value.head
+      case _                                    => throw new AvroDeserializationException[Char]
+    }
+  }
 
 }

@@ -15,6 +15,8 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
+import spray.json._
+
 import java.io.{ InputStream, OutputStream }
 
 abstract class AvroTypeIO[T: TypeTag] extends Logging {
@@ -23,6 +25,10 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * Returns the corresponding AvroType to this AvroTypeIO wrapper.
     */
   def avroType: AvroType[T]
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   /**
     * Writes a serialized representation of the supplied object according to
@@ -71,6 +77,39 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     decoder: BinaryDecoder,
     references: mutable.ArrayBuffer[Any],
     topLevel: Boolean): T
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  /**
+    * Writes a serialized representation of the supplied object according to
+    * the Avro specification for JSON encoding.  Throws an
+    * AvroSerializationException if writing is unsuccessful.
+    *
+    * Output buffering is dependent upon the supplied `OutputStream`.
+    *
+    * The caller is responsible for calling `flush`; this method
+    * does NOT flush the target stream.
+    */
+  @throws[AvroSerializationException[_]]
+  def writeJson[G <: T: TypeTag](obj: G): JsValue
+
+  /**
+    * Attempts to create an object of type T by reading the required data from
+    * the supplied JsValue.
+    */
+  @throws[AvroDeserializationException[_]]
+  def readJson(json: JsValue): Try[T]
+
+  /**
+    * Attempts to create an object of type T by reading the required data from
+    * the supplied JSON String.
+    */
+  @throws[AvroDeserializationException[_]]
+  final def readJson(jsonString: String): Try[T] = Try {
+    readJson(jsonString.asJson).get
+  }
 
 }
 
