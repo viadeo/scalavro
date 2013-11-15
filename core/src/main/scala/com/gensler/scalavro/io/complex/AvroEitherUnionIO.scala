@@ -97,7 +97,7 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
   protected[this] def writeJsonHelper[A: TypeTag](obj: Any, argType: AvroType[A]) = {
     val value = obj.asInstanceOf[A]
     val valueJson = argType.io.writeJson(value)
-    JsObject(argType.compactSchema.toString -> valueJson)
+    JsObject(simpleSchemaText(argType) -> valueJson)
   }
 
   def readJson(json: JsValue) = Try {
@@ -109,9 +109,9 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
       }
       case JsObject(fields) if fields.size == 1 => {
         val (compactSchema, valueJson) = fields.head
-        if (leftAvroType.compactSchema == compactSchema)
+        if (simpleSchemaText(leftAvroType) == compactSchema)
           Left(readJsonHelper(valueJson, leftAvroType))
-        else if (rightAvroType.compactSchema == compactSchema)
+        else if (simpleSchemaText(rightAvroType) == compactSchema)
           Right(readJsonHelper(valueJson, rightAvroType))
         else throw new AvroDeserializationException[T]
       }

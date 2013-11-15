@@ -1,6 +1,7 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
+import com.gensler.scalavro.types.AvroType
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.util.Union
@@ -8,6 +9,8 @@ import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.Schema
 import org.apache.avro.Schema.Parser
+
+import spray.json._
 
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
@@ -40,5 +43,13 @@ object AvroUnionIO {
 }
 
 abstract class AvroUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag] extends AvroTypeIO[T] {
-  protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
+
+  protected[this] lazy val avroSchema: Schema = (new Parser()) parse avroType.selfContainedSchema().toString
+
+  protected[this] def simpleSchemaText(avroType: AvroType[_]) =
+    avroType.compactSchema match {
+      case JsString(simpleSchema) => simpleSchema
+      case complexSchema: JsValue => complexSchema.toString
+    }
+
 }

@@ -120,4 +120,23 @@ class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
     readResult should equal (myList)
   }
 
+  it should "read and write simple records as JSON" in {
+    val personIO = AvroType[Person].io
+
+    val julius = Person("Julius Caesar", 2112)
+    val json = personIO writeJson julius
+    personIO readJson json should equal (Success(julius))
+  }
+
+  it should "read and write complex record instances as JSON" in {
+    val santaListIO = AvroType[SantaList].io
+
+    val sList = SantaList(
+      nice = Seq(Person("Suzie", 9)),
+      naughty = Seq(Person("Tommy", 7), Person("Eve", 3))
+    )
+
+    val json = santaListIO writeJson sList
+    santaListIO readJson json should equal (Success(sList))
+  }
 }

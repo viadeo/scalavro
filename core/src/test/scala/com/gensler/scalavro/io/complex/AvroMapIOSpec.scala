@@ -44,7 +44,7 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
     val in = new ByteArrayInputStream(out.toByteArray)
     val Success(readResult) = io read in
     readResult should equal (m1)
-    readResult.get("cinque") should be (Some(5))
+    readResult("cinque") should equal (5)
   }
 
   it should "read and write maps of bytes" in {
@@ -67,7 +67,7 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
     val Success(readResult) = io read in
 
     readResult should equal (bytesMap)
-    readResult.get("due") should be (Some("two".getBytes.toSeq))
+    readResult("due") should equal ("two".getBytes.toSeq)
   }
 
   it should "return properly typed Map subtypes when reading" in {
@@ -87,4 +87,21 @@ class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
     readResult.isInstanceOf[ListMap[_, _]] should be (true)
   }
 
+  it should "read and write maps as JSON" in {
+
+    val io = intMapType.io
+
+    val m1: Map[String, Int] = Map(
+      "uno" -> 1,
+      "due" -> 2,
+      "tre" -> 3,
+      "quattro" -> 4,
+      "cinque" -> 5
+    )
+
+    val json = io writeJson m1
+    val Success(readResult) = io readJson json
+    readResult should equal (m1)
+    readResult("cinque") should equal (5)
+  }
 }

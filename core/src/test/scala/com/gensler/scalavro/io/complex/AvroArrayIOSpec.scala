@@ -49,4 +49,10 @@ class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
     readResult.isInstanceOf[ArrayBuffer[_]] should be (true)
   }
 
+  it should "read and write arrays as JSON" in {
+    val s1 = (0 to 1000).toSeq
+    val json = io.writeJson(s1)
+    io readJson json should equal (Success(s1))
+  }
+
 }

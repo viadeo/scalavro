@@ -35,15 +35,7 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
     references: mutable.Map[Any, Long],
     topLevel: Boolean): Unit = {
 
-    /*
-    val staticTypeOfObj = typeOf[X]
-    val runtimeTypeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
-    val objTypeTag = ReflectionHelpers.tagForType(runtimeTypeOfObj)
-    writeBare(obj, encoder, references, topLevel)(objTypeTag)
-*/
-
     ??? // Not Implemented!
-
   }
 
   def writeBare[X: prove[T]#containsType: TypeTag](
@@ -81,25 +73,7 @@ private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: Type
 
   def writeJson[X <: T: TypeTag](obj: X) = {
 
-    /*
-    val staticTypeOfObj = typeOf[X]
-    val runtimeTypeOfObj = ReflectionHelpers.classLoaderMirror.staticClass(obj.getClass.getName).toType
-    val objTypeTag = ReflectionHelpers.tagForType(runtimeTypeOfObj)
-
-    avroType.memberAvroTypes.find {
-      at => staticTypeOfObj <:< at.tag.tpe || runtimeTypeOfObj <:< at.tag.tpe
-    } match {
-      case None => throw new AvroSerializationException(obj)
-      case Some(memberType) => {
-        val argType = memberType.asInstanceOf[AvroType[X]]
-        val valueJson = argType.io.writeJson(obj)(objTypeTag.asInstanceOf[TypeTag[X]])
-        JsObject(argType.compactSchema.toString -> valueJson)
-      }
-    }
-*/
-
     ??? // Not Implemented!
-
   }
 
   def readJson(json: JsValue) = Try {

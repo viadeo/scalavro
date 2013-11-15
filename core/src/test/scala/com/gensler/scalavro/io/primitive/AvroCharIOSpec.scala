@@ -37,4 +37,12 @@ class AvroCharIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success('%'))
   }
 
+  it should "read and write Chars as JSON" in {
+    val aJson = io writeJson 'A'
+    val percentJson = io writeJson '%'
+
+    io readJson aJson should equal (Success('A'))
+    io readJson percentJson should equal (Success('%'))
+  }
+
 }

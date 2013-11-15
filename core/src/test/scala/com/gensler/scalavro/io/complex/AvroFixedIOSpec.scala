@@ -36,4 +36,12 @@ class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
     readResult should equal (Success(MD5(testBytes)))
   }
 
+  it should "read and write instances of FixedData subclasses as JSON" in {
+    val testBytes = "abcd1234defg5678".getBytes.toIndexedSeq
+    val json = md5Type.io writeJson MD5(testBytes)
+
+    val readResult = md5Type.io readJson json
+    readResult should equal (Success(MD5(testBytes)))
+  }
+
 }

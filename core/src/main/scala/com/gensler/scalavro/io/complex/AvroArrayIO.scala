@@ -95,7 +95,7 @@ case class AvroArrayIO[T, S <: Seq[T]](avroType: AvroArray[T, S]) extends AvroTy
     json match {
       case JsArray(itemsAsJson) => {
         val items = itemsAsJson.map { json =>
-          avroType.itemType.io.readJson(json)
+          avroType.itemType.io.readJson(json).get
         }
         originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
       }

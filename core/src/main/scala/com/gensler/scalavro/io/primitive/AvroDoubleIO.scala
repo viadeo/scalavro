@@ -36,8 +36,8 @@ trait AvroDoubleIO extends AvroPrimitiveTypeIO[Double] {
 
   def readJson(json: JsValue) = Try {
     json match {
-      case JsNumber(bigDecimal) if bigDecimal.isValidDouble => bigDecimal.toDouble
-      case _ => throw new AvroDeserializationException[Double]
+      case JsNumber(bigDecimal) => bigDecimal.toDouble
+      case _                    => throw new AvroDeserializationException[Double]
     }
   }
 

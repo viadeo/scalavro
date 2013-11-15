@@ -73,10 +73,10 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
     references: mutable.ArrayBuffer[Any]) = {
 
     (AvroLongIO read decoder) match {
+      case NULL_INDEX => None
       case NON_NULL_INDEX => Some(
         innerAvroType.io.read(decoder, references, false).asInstanceOf[A]
       )
-      case NULL_INDEX => None
       case index: Long => throw new AvroDeserializationException[T](
         detailedMessage = "Encountered an index that was not zero or one: [%s]".format(index)
       )
@@ -93,7 +93,7 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
   protected[this] def writeJsonHelper[X <: T: TypeTag, A: TypeTag](obj: X) = obj match {
     case Some(value) => {
       val valueJson = innerAvroType.asInstanceOf[AvroType[A]].io.writeJson(value.asInstanceOf[A])
-      JsObject(innerAvroType.compactSchema.toString -> valueJson)
+      JsObject(simpleSchemaText(innerAvroType) -> valueJson)
     }
     case None => JsNull
   }
@@ -105,7 +105,7 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case JsNull => None
       case JsObject(fields) if fields.size == 1 => {
         val valueJson = fields.head._2
-        innerAvroType.io.readJson(valueJson).get.asInstanceOf[A]
+        Some(innerAvroType.io.readJson(valueJson).get).asInstanceOf[A]
       }
       case _ => throw new AvroDeserializationException[T]
     }

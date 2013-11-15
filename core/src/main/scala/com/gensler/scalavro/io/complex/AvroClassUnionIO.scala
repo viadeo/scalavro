@@ -77,7 +77,7 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
       case Some(memberType) => {
         val argType = memberType.asInstanceOf[AvroType[X]]
         val valueJson = argType.io.writeJson(obj)(objTypeTag.asInstanceOf[TypeTag[X]])
-        JsObject(argType.compactSchema.toString -> valueJson)
+        JsObject(simpleSchemaText(argType) -> valueJson)
       }
     }
   }
@@ -85,7 +85,7 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
   def readJson(json: JsValue) = Try {
     val subclassInstance = json match {
       case JsNull => {
-        resolveMemberTypeFromCompactSchema(AvroNull.compactSchema) match {
+        resolveMemberTypeFromCompactSchema(simpleSchemaText(AvroNull)) match {
           case None           => throw new AvroDeserializationException[T]
           case Some(nullType) => Unit
         }
@@ -93,7 +93,7 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
       case JsObject(fields) if fields.size == 1 => {
         val (compactSchema, valueJson) = fields.head
 
-        resolveMemberTypeFromCompactSchema(AvroNull.compactSchema) match {
+        resolveMemberTypeFromCompactSchema(compactSchema) match {
           case None             => throw new AvroDeserializationException[T]
           case Some(memberType) => readJsonHelper(valueJson, memberType)
         }
@@ -102,10 +102,10 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
     subclassInstance.asInstanceOf[T]
   }
 
-  protected[this] def resolveMemberTypeFromCompactSchema(schema: JsValue): Option[AvroType[_]] =
-    avroType.memberAvroTypes.find { _.compactSchema == schema }
-
   protected[this] def readJsonHelper[A: TypeTag](json: JsValue, argType: AvroType[A]) =
     argType.io.readJson(json).get
+
+  protected[this] def resolveMemberTypeFromCompactSchema(schema: String): Option[AvroType[_]] =
+    avroType.memberAvroTypes.find { simpleSchemaText(_) == schema }
 
 }

@@ -26,7 +26,7 @@ case class Delta() extends Beta
 
 case class Epsilon[T]() extends Beta
 
-case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
+// case class AlphaWrapper(inner: Alpha) extends Alpha { def magic = inner.magic }
 
 class AlphaCollection(as: Seq[Alpha]) extends Seq[Alpha] {
   def apply(idx: Int): Alpha = as apply idx

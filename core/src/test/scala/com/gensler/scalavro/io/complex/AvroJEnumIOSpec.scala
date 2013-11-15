@@ -37,4 +37,16 @@ class AvroJEnumIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success(JDirection.EAST))
   }
 
+  it should "read and write enumerations as JSON" in {
+    val json1 = io writeJson JDirection.NORTH
+    val json2 = io writeJson JDirection.SOUTH
+    val json3 = io writeJson JDirection.WEST
+    val json4 = io writeJson JDirection.EAST
+
+    io readJson json1 should equal (Success(JDirection.NORTH))
+    io readJson json2 should equal (Success(JDirection.SOUTH))
+    io readJson json3 should equal (Success(JDirection.WEST))
+    io readJson json4 should equal (Success(JDirection.EAST))
+  }
+
 }

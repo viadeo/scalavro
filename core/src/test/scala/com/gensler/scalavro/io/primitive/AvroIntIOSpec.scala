@@ -37,4 +37,12 @@ class AvroIntIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success(8675309))
   }
 
+  it should "read and write Ints as JSON" in {
+    val json1 = io writeJson -55
+    val json2 = io writeJson 8675309
+
+    io readJson json1 should equal (Success(-55))
+    io readJson json2 should equal (Success(8675309))
+  }
+
 }

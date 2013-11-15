@@ -36,4 +36,11 @@ class AvroStringIOSpec extends FlatSpec with ShouldMatchers {
     io.read(in).get should equal (text)
   }
 
+  it should "read and write Strings as JSON" in {
+    val text = "The quick brown fox jumped over the lazy dog."
+
+    val json = io writeJson text
+    io readJson json should equal (Success(text))
+  }
+
 }

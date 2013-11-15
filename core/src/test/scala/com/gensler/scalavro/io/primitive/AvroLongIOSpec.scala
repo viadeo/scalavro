@@ -27,14 +27,22 @@ class AvroLongIOSpec extends FlatSpec with ShouldMatchers {
   it should "read and write Longs" in {
     val out = new ByteArrayOutputStream
 
-    io.write(55L, out)
+    io.write(-55L, out)
     io.write(8675309L, out)
 
     val bytes = out.toByteArray
     val in = new ByteArrayInputStream(bytes)
 
-    io read in should equal (Success(55L))
+    io read in should equal (Success(-55L))
     io read in should equal (Success(8675309L))
+  }
+
+  it should "read and write Ints as JSON" in {
+    val json1 = io writeJson -55L
+    val json2 = io writeJson 8675309L
+
+    io readJson json1 should equal (Success(-55L))
+    io readJson json2 should equal (Success(8675309L))
   }
 
 }

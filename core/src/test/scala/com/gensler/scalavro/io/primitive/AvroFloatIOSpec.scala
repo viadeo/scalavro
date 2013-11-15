@@ -37,4 +37,12 @@ class AvroFloatIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success(-88.421F))
   }
 
+  it should "read and write Floats as JSON" in {
+    val json1 = io writeJson 5.3F
+    val json2 = io writeJson -88.421F
+
+    io readJson json1 should equal (Success(5.3F))
+    io readJson json2 should equal (Success(-88.421F))
+  }
+
 }

@@ -67,12 +67,12 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
 
   def readJson(json: JsValue) = Try {
     json match {
-      case JsString(byteString) => {
+      case byteString: JsString => {
         val bytes = AvroBytesIO.readJson(byteString).get
         if (bytes.length != avroType.size) throw new AvroDeserializationException[T](
           detailedMessage = "The deserialized value has a length inconsistent with this fixed data type."
         )
-        bytesConstructorMirror.apply(bytes).asInstanceOf[T]
+        bytesConstructorMirror.apply(bytes.toIndexedSeq).asInstanceOf[T]
       }
       case _ => throw new AvroDeserializationException[T]()(avroType.tag)
     }

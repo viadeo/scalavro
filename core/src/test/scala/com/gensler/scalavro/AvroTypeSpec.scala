@@ -206,22 +206,13 @@ class AvroTypeSpec extends AvroSpec {
       case avroType: AvroUnion[_, _] => {
         // prettyPrint(avroType.schema)
 
-        avroType.union.typeMembers should have size (3)
+        avroType.union.typeMembers should have size (2)
         avroType.union.contains[Gamma] should be (true)
         avroType.union.contains[Delta] should be (true)
         avroType.union.contains[AlphaCollection] should be (false)
       }
       case _ => fail
     }
-  }
-
-  it should "return valid AvroRecord types for case classes with abstract signatures" in {
-    val avroType = AvroType[AlphaWrapper]
-
-    // prettyPrint(avroType.schema)
-
-    avroType.isInstanceOf[AvroRecord[_]] should be (true)
-    typeOf[avroType.scalaType] =:= typeOf[AlphaWrapper] should be (true)
   }
 
   // fixed-length data

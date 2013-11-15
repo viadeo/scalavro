@@ -35,4 +35,9 @@ class AvroNullIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success(()))
   }
 
+  it should "read and write Units as JSON" in {
+    val json = io writeJson ()
+    io readJson json should equal (Success(()))
+  }
+
 }

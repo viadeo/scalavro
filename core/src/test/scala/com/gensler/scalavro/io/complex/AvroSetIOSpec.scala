@@ -61,4 +61,18 @@ class AvroSetIOSpec extends FlatSpec with ShouldMatchers {
     readResult.isInstanceOf[ListSet[_]] should be (true)
   }
 
+  it should "read and write sets as JSON" in {
+    val s1 = Set(
+      Person("Russel", 45),
+      Person("Whitehead", 53),
+      Person("Wittgenstein", 22),
+      Person("Godel", 37),
+      Person("Church", 17),
+      Person("Turing", 24)
+    )
+    val json = io.writeJson(s1)
+    val Success(readResult) = io readJson json
+    readResult should equal (s1)
+  }
+
 }

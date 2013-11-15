@@ -47,4 +47,11 @@ class AvroBooleanIOSpec extends FlatSpec with ShouldMatchers {
     io read falseStream should equal (Success(false))
   }
 
+  it should "read and write Booleans as JSON" in {
+    val trueJson = io writeJson true
+    val falseJson = io writeJson false
+    io readJson trueJson should equal (Success(true))
+    io readJson falseJson should equal (Success(false))
+  }
+
 }

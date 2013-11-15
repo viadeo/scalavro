@@ -40,8 +40,8 @@ trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
 
   def readJson(json: JsValue) = Try {
     json match {
-      case JsNumber(bigDecimal) if bigDecimal.isValidFloat => bigDecimal.toFloat
-      case _ => throw new AvroDeserializationException[Float]
+      case JsNumber(bigDecimal) => bigDecimal.toFloat
+      case _                    => throw new AvroDeserializationException[Float]
     }
   }
 

@@ -34,4 +34,10 @@ class AvroBytesIOSpec extends FlatSpec with ShouldMatchers {
     io.read(in).get.toSeq should equal (text.getBytes.toSeq)
   }
 
+  it should "read and write bytes as JSON" in {
+    val text = "The quick brown fox jumped over the lazy dog."
+    val json = io writeJson text.getBytes.toSeq
+    (io readJson json).get should equal (text.getBytes.toSeq)
+  }
+
 }

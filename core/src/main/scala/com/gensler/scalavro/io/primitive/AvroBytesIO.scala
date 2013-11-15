@@ -56,7 +56,9 @@ trait AvroBytesIO extends AvroPrimitiveTypeIO[Seq[Byte]] {
     json match {
       case JsString(value) => {
         val byteBuf = utf8Encoder.encode(CharBuffer.wrap(value))
-        byteBuf.array.toSeq
+        val bytes = new Array[Byte](byteBuf.remaining)
+        byteBuf.get(bytes)
+        bytes.toSeq
       }
       case _ => throw new AvroDeserializationException[Seq[Byte]]
     }

@@ -99,10 +99,10 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
   def readJson(json: JsValue) = Try {
     json match {
       case JsObject(fields) => {
-        val items = fields.map {
+        val items: Seq[(String, T)] = fields.map {
           case (key, valueAsJson) =>
-            key -> avroType.itemType.io.readJson(valueAsJson)
-        }
+            key -> avroType.itemType.io.readJson(valueAsJson).get
+        }.toSeq
         originalTypeVarargsApply(items).asInstanceOf[M] // a Seq of tuples is passed to varargs MethodMirror.apply
       }
       case _ => throw new AvroDeserializationException[M]

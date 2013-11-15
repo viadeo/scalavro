@@ -39,4 +39,18 @@ class AvroDoubleIOSpec extends FlatSpec with ShouldMatchers {
     io read in should equal (Success(-1500.123))
   }
 
+  it should "read and write Doubles as JSON" in {
+    val piJson = io writeJson math.Pi
+    val smallJson = io writeJson 1.23
+    val bigNegJson = io writeJson -1500.123
+    val biggestJson = io writeJson Double.MaxValue
+    val smallestJson = io writeJson Double.MinValue
+
+    io readJson piJson should equal (Success(math.Pi))
+    io readJson smallJson should equal (Success(1.23))
+    io readJson bigNegJson should equal (Success(-1500.123))
+    io readJson biggestJson should equal (Success(Double.MaxValue))
+    io readJson smallestJson should equal (Success(Double.MinValue))
+  }
+
 }
