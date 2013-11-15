@@ -25,18 +25,47 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 4. To dynamically generate Scala bindings for reading and writing Avro-mapped Scala types to and from Avro binary.
 5. Generally, to minimize fuss required to create an Avro-capable Scala application.
 
+## Overview
+
+Interacting with Scalavro is easy from a user's perspective.  Scalavro will use reflection to inspect some Scala type you supply and return an instance of `AvroType`.  With this object in hand, you one or two method calls away from schema generation, type dependency graph inspection, or binary/JSON (de)serialization.
+
+**"Crash Course" of Major Features, for the Impatient:**
+
+```scala
+import com.gensler.scalavro.types.AvroType
+import scala.util.{ Try, Success, Failure }
+
+// obtaining an instance of AvroType
+val intSeqType = AvroType[Seq[Int]]
+
+// obtaining an Avro schema for a given AvroType
+intSeqType.schema
+
+// obtaining an AvroTypeIO object for a given AvroType (via the `io` method)
+val io: AvroTypeIO[Seq[Int]] = intSeqType.io
+
+// binary I/O
+io.write(Seq(1, 2, 3), outputStream)
+val Sucess(readResult) = io read inputStream
+
+// json I/O
+val json = io writeJson Seq(1, 2, 3) // [1,2,3]
+val Success(readResult) = io readJson json
+```
+
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.5.1`, built against Scala 2.10.3.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.6.0`, built against Scala 2.10.3.
 
 Using SBT:
 
 ```scala
-libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
+libraryDependencies += "com.gensler" %% "scalavro" % "0.6.0"
 ```
 
 ## API Documentation
 
+- Generated [Scaladoc for version 0.6.0](http://genslerappspod.github.io/scalavro/api/0.6.0/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.5.1](http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.5.0](http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.3.0](http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package)
@@ -51,6 +80,7 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
 - [Fixed-Length Data](#fixed)
 - [Records](#records)
 - [Binary IO](#binary-io)
+- [JSON IO](#json-io)
 
 ## Type Mapping Strategy
 
@@ -258,18 +288,17 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.5.1"
 ## General Information
 - Built against Scala 2.10.2 with SBT 0.12.4
 - Depends upon [spray-json](https://github.com/spray/spray-json)
-- The `io` sub-project depends upon the Apache Java implementation of Avro (Version 1.7.5)
+- Depends upon the Apache Java implementation of Avro (Version 1.7.5)
 
 ## Current Capabilities
 - Dynamic Avro schema generation from vanilla Scala types
 - Avro protocol definitions and schema generation
 - Support for recursively defined record types
-- Convenient, dynamic binary IO
+- Convenient, dynamic binary and JSON (de)serialization
 - Avro RPC protocol representation and schema generation
 - Schema conversion to "Parsing Canonical Form" (useful for Avro RPC protocol applications)
 
 ## Current Limitations
-- JSON IO is not yet implemented
 - Schema resolution (taking the writer's schema into account when reading) is not yet implemented
 - Although recursively defined records (case classes) are supported, serializing all such instances is not.  In particular, reading and writing cyclic object graphs is not supported.
 - Although records are supported (via case classes), only the case class's default constructor parameters are serialized.
@@ -787,7 +816,60 @@ santaListType.io.write(santaList, outStream)
 val inStream: java.io.InputStream = // some stream...
 
 santaListType.io.read(inStream) match {
-  case Success(readResult) => // readResult is an instance of SantaList
+  case Success(readResult) => assert(readResult == santaList) // true
+  case Failure(cause)      => // handle failure...
+}
+```
+
+## Scalavro by Example: JSON IO
+
+```scala
+import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.io.AvroTypeIO
+import scala.util.{Try, Success, Failure}
+
+case class Person(name: String, age: Int)
+case class SantaList(nice: Seq[Person], naughty: Seq[Person])
+
+val santaList = SantaList(
+  nice = Seq(
+    Person("John", 17),
+    Person("Eve", 3)
+  ),
+  naughty = Seq(
+    Person("Jane", 25),
+    Person("Alice", 65)
+  )
+)
+
+val santaListType = AvroType[SantaList]
+
+val json = santaListType.io writeJson santaList
+
+/*
+  json.prettyPrint now yields:
+
+  {
+    "nice": [{
+      "name": "John",
+      "age": 17
+    }, {
+      "name": "Eve",
+      "age": 3
+    }],
+    "naughty": [{
+      "name": "Jane",
+      "age": 25
+    }, {
+      "name": "Alice",
+      "age": 65
+    }]
+  }
+
+*/
+
+santaListType.io.readJson(json) match {
+  case Success(readResult) => assert(readResult == santaList) // true
   case Failure(cause)      => // handle failure...
 }
 ```
