@@ -64,26 +64,58 @@
 <li>To dynamically generate Scala bindings for reading and writing Avro-mapped Scala types to and from Avro binary.</li>
 <li>Generally, to minimize fuss required to create an Avro-capable Scala application.</li>
 </ol><h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>Interacting with Scalavro is easy from a user's perspective.  Scalavro will use reflection to inspect some Scala type you supply and return an instance of <code>AvroType</code>.  With this object in hand, you one or two method calls away from schema generation, type dependency graph inspection, or binary/JSON (de)serialization.</p>
+
+<p><strong>"Crash Course" of Major Features, for the Impatient:</strong></p>
+
+<div class="highlight highlight-scala"><pre><span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
+<span class="k">import</span> <span class="nn">scala.util.</span><span class="o">{</span> <span class="nc">Try</span><span class="o">,</span> <span class="nc">Success</span><span class="o">,</span> <span class="nc">Failure</span> <span class="o">}</span>
+
+<span class="c1">// obtaining an instance of AvroType</span>
+<span class="k">val</span> <span class="n">intSeqType</span> <span class="k">=</span> <span class="nc">AvroType</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span>
+
+<span class="c1">// obtaining an Avro schema for a given AvroType</span>
+<span class="n">intSeqType</span><span class="o">.</span><span class="n">schema</span>
+
+<span class="c1">// obtaining an AvroTypeIO object for a given AvroType (via the `io` method)</span>
+<span class="k">val</span> <span class="n">io</span><span class="k">:</span> <span class="kt">AvroTypeIO</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">intSeqType</span><span class="o">.</span><span class="n">io</span>
+
+<span class="c1">// binary I/O</span>
+<span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">),</span> <span class="n">outputStream</span><span class="o">)</span>
+<span class="k">val</span> <span class="nc">Sucess</span><span class="o">(</span><span class="n">readResult</span><span class="o">)</span> <span class="k">=</span> <span class="n">io</span> <span class="n">read</span> <span class="n">inputStream</span>
+
+<span class="c1">// json I/O</span>
+<span class="k">val</span> <span class="n">json</span> <span class="k">=</span> <span class="n">io</span> <span class="n">writeJson</span> <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span> <span class="c1">// [1,2,3]</span>
+<span class="k">val</span> <span class="nc">Success</span><span class="o">(</span><span class="n">readResult</span><span class="o">)</span> <span class="k">=</span> <span class="n">io</span> <span class="n">readJson</span> <span class="n">json</span>
+</pre></div>
+
+<h2>
 <a name="obtaining-scalavro" class="anchor" href="#obtaining-scalavro"><span class="octicon octicon-link"></span></a>Obtaining Scalavro</h2>
 
-<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.5.1</code>, built against Scala 2.10.3.</p>
+<p>The <code>Scalavro</code> artifacts are available from Maven Central. The current release is <code>0.6.0</code>, built against Scala 2.10.3.</p>
 
 <p>Using SBT:</p>
 
-<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.5.1"</span>
+<div class="highlight highlight-scala"><pre><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.gensler"</span> <span class="o">%%</span> <span class="s">"scalavro"</span> <span class="o">%</span> <span class="s">"0.6.0"</span>
 </pre></div>
 
 <h2>
 <a name="api-documentation" class="anchor" href="#api-documentation"><span class="octicon octicon-link"></span></a>API Documentation</h2>
 
 <ul>
-  <li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.1</a></li>
-  <li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.0</a></li>
-  <li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.4.0</a></li>
-  <li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package">Scaladoc for version 0.3.1</a></li>  
-</ul>
-
-<h2>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.6.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.6.0</a>
+</li>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.1</a>
+</li>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.5.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.5.0</a>
+</li>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.4.0/index.html#com.gensler.scalavro.package">Scaladoc for version 0.3.0</a>
+</li>
+<li>Generated <a href="http://genslerappspod.github.io/scalavro/api/0.3.1/index.html#com.gensler.scalavro.package">Scaladoc for version 0.3.1</a>
+</li>
+</ul><h2>
 <a name="index-of-examples" class="anchor" href="#index-of-examples"><span class="octicon octicon-link"></span></a>Index of Examples</h2>
 
 <ul>
@@ -94,6 +126,7 @@
 <li><a href="#fixed">Fixed-Length Data</a></li>
 <li><a href="#records">Records</a></li>
 <li><a href="#binary-io">Binary IO</a></li>
+<li><a href="#json-io">JSON IO</a></li>
 </ul><h2>
 <a name="type-mapping-strategy" class="anchor" href="#type-mapping-strategy"><span class="octicon octicon-link"></span></a>Type Mapping Strategy</h2>
 
@@ -277,7 +310,7 @@
     </tr>
 <tr>
 <td><em>
-        Supertypes of non-recursive case classes without type parameters
+        Supertypes of case classes without type parameters
       </em></td>
       <td><code>
         union
@@ -285,7 +318,7 @@
     </tr>
 <tr>
 <td><em>
-        Non-recursive case classes without type parameters
+        Case classes without type parameters
       </em></td>
       <td><code>
         record
@@ -299,7 +332,7 @@
 <li>Built against Scala 2.10.2 with SBT 0.12.4</li>
 <li>Depends upon <a href="https://github.com/spray/spray-json">spray-json</a>
 </li>
-<li>The <code>io</code> sub-project depends upon the Apache Java implementation of Avro (Version 1.7.5)</li>
+<li>Depends upon the Apache Java implementation of Avro (Version 1.7.5)</li>
 </ul><h2>
 <a name="current-capabilities" class="anchor" href="#current-capabilities"><span class="octicon octicon-link"></span></a>Current Capabilities</h2>
 
@@ -307,14 +340,13 @@
 <li>Dynamic Avro schema generation from vanilla Scala types</li>
 <li>Avro protocol definitions and schema generation</li>
 <li>Support for recursively defined record types</li>
-<li>Convenient, dynamic binary IO</li>
+<li>Convenient, dynamic binary and JSON (de)serialization</li>
 <li>Avro RPC protocol representation and schema generation</li>
 <li>Schema conversion to "Parsing Canonical Form" (useful for Avro RPC protocol applications)</li>
 </ul><h2>
 <a name="current-limitations" class="anchor" href="#current-limitations"><span class="octicon octicon-link"></span></a>Current Limitations</h2>
 
 <ul>
-<li>JSON IO is not yet implemented</li>
 <li>Schema resolution (taking the writer's schema into account when reading) is not yet implemented</li>
 <li>Although recursively defined records (case classes) are supported, serializing all such instances is not.  In particular, reading and writing cyclic object graphs is not supported.</li>
 <li>Although records are supported (via case classes), only the case class's default constructor parameters are serialized.</li>
@@ -623,7 +655,7 @@
 
 <p><strong>Whoa -- what happened there?!</strong></p>
 
-<p>Scalavro as of version <code>0.5.x</code> supports <em>reference tracking</em> for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.</p>
+<p>Scalavro as of version <code>0.5.1</code> supports <em>reference tracking</em> for record instances.  Every time Scalavro writes a record to binary, it saves the source object reference and assigns a reference number.  If that same instance is required to be written again, it simply writes the reference number instead.  Scalavro reverses this process when reading from binary.  Therefore, references to shared data exist in the source object graph, then those references in the deserialized object graph will also be shared.  This imposes little performance penalty during serialization, and in general reduces serialized data size as well as deserialization time.</p>
 
 <p>Scalavro implements this by replacing any nested record type within a schema with a binary union of the target type and a <code>Reference</code> schema.  References are encoded as an Avro <code>long</code> value.  Here is the schema for <code>Reference</code>:</p>
 
@@ -639,7 +671,7 @@
 <span class="p">}</span>
 </pre></div>
 
-<p>For comparison, in versions of Scalavro before <code>0.5.x</code>, the <code>SantaList</code> schema looked like this:</p>
+<p>For comparison, in versions of Scalavro before <code>0.5.1</code>, the <code>SantaList</code> schema looked like this:</p>
 
 <div class="highlight highlight-json"><pre><span class="p">{</span>
   <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"SantaList"</span><span class="p">,</span>
@@ -827,7 +859,60 @@
 <span class="k">val</span> <span class="n">inStream</span><span class="k">:</span> <span class="kt">java.io.InputStream</span> <span class="o">=</span> <span class="c1">// some stream...</span>
 
 <span class="n">santaListType</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read</span><span class="o">(</span><span class="n">inStream</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
-  <span class="k">case</span> <span class="nc">Success</span><span class="o">(</span><span class="n">readResult</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="c1">// readResult is an instance of SantaList</span>
+  <span class="k">case</span> <span class="nc">Success</span><span class="o">(</span><span class="n">readResult</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">assert</span><span class="o">(</span><span class="n">readResult</span> <span class="o">==</span> <span class="n">santaList</span><span class="o">)</span> <span class="c1">// true</span>
+  <span class="k">case</span> <span class="nc">Failure</span><span class="o">(</span><span class="n">cause</span><span class="o">)</span>      <span class="k">=&gt;</span> <span class="c1">// handle failure...</span>
+<span class="o">}</span>
+</pre></div>
+
+<h2>
+<a name="scalavro-by-example-json-io" class="anchor" href="#scalavro-by-example-json-io"><span class="octicon octicon-link"></span></a>Scalavro by Example: JSON IO</h2>
+
+<div class="highlight highlight-scala"><pre><span class="k">import</span> <span class="nn">com.gensler.scalavro.types.AvroType</span>
+<span class="k">import</span> <span class="nn">com.gensler.scalavro.io.AvroTypeIO</span>
+<span class="k">import</span> <span class="nn">scala.util.</span><span class="o">{</span><span class="nc">Try</span><span class="o">,</span> <span class="nc">Success</span><span class="o">,</span> <span class="nc">Failure</span><span class="o">}</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Person</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">age</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">SantaList</span><span class="o">(</span><span class="n">nice</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Person</span><span class="o">],</span> <span class="n">naughty</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Person</span><span class="o">])</span>
+
+<span class="k">val</span> <span class="n">santaList</span> <span class="k">=</span> <span class="nc">SantaList</span><span class="o">(</span>
+  <span class="n">nice</span> <span class="k">=</span> <span class="nc">Seq</span><span class="o">(</span>
+    <span class="nc">Person</span><span class="o">(</span><span class="s">"John"</span><span class="o">,</span> <span class="mi">17</span><span class="o">),</span>
+    <span class="nc">Person</span><span class="o">(</span><span class="s">"Eve"</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span>
+  <span class="o">),</span>
+  <span class="n">naughty</span> <span class="k">=</span> <span class="nc">Seq</span><span class="o">(</span>
+    <span class="nc">Person</span><span class="o">(</span><span class="s">"Jane"</span><span class="o">,</span> <span class="mi">25</span><span class="o">),</span>
+    <span class="nc">Person</span><span class="o">(</span><span class="s">"Alice"</span><span class="o">,</span> <span class="mi">65</span><span class="o">)</span>
+  <span class="o">)</span>
+<span class="o">)</span>
+
+<span class="k">val</span> <span class="n">santaListType</span> <span class="k">=</span> <span class="nc">AvroType</span><span class="o">[</span><span class="kt">SantaList</span><span class="o">]</span>
+
+<span class="k">val</span> <span class="n">json</span> <span class="k">=</span> <span class="n">santaListType</span><span class="o">.</span><span class="n">io</span> <span class="n">writeJson</span> <span class="n">santaList</span>
+
+<span class="cm">/*</span>
+<span class="cm">  json.prettyPrint now yields:</span>
+
+<span class="cm">  {</span>
+<span class="cm">    "nice": [{</span>
+<span class="cm">      "name": "John",</span>
+<span class="cm">      "age": 17</span>
+<span class="cm">    }, {</span>
+<span class="cm">      "name": "Eve",</span>
+<span class="cm">      "age": 3</span>
+<span class="cm">    }],</span>
+<span class="cm">    "naughty": [{</span>
+<span class="cm">      "name": "Jane",</span>
+<span class="cm">      "age": 25</span>
+<span class="cm">    }, {</span>
+<span class="cm">      "name": "Alice",</span>
+<span class="cm">      "age": 65</span>
+<span class="cm">    }]</span>
+<span class="cm">  }</span>
+
+<span class="cm">*/</span>
+
+<span class="n">santaListType</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">readJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nc">Success</span><span class="o">(</span><span class="n">readResult</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">assert</span><span class="o">(</span><span class="n">readResult</span> <span class="o">==</span> <span class="n">santaList</span><span class="o">)</span> <span class="c1">// true</span>
   <span class="k">case</span> <span class="nc">Failure</span><span class="o">(</span><span class="n">cause</span><span class="o">)</span>      <span class="k">=&gt;</span> <span class="c1">// handle failure...</span>
 <span class="o">}</span>
 </pre></div>
