@@ -2,13 +2,15 @@ package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.primitive.AvroLongIO
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.{ AvroType, AvroComplexType, AvroNamedType, AvroPrimitiveType }
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
+
+import spray.json._
 
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
@@ -22,6 +24,10 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
   val TypeRef(_, _, List(leftType, rightType)) = typeOf[T]
   val leftAvroType = avroType.memberAvroTypes.find { at => leftType <:< at.tag.tpe }.get
   val rightAvroType = avroType.memberAvroTypes.find { at => rightType <:< at.tag.tpe }.get
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write[X <: T: TypeTag](
     obj: X,
@@ -40,8 +46,19 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
     references: mutable.Map[Any, Long],
     topLevel: Boolean) = obj match {
 
-    case Left(value)  => leftAvroType.asInstanceOf[AvroType[A]].io.write(value.asInstanceOf[A], encoder, references, false)
-    case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].io.write(value.asInstanceOf[B], encoder, references, false)
+    case Left(value) => leftAvroType.asInstanceOf[AvroType[A]].io.write(
+      value.asInstanceOf[A],
+      encoder,
+      references,
+      false
+    )
+
+    case Right(value) => rightAvroType.asInstanceOf[AvroType[B]].io.write(
+      value.asInstanceOf[B],
+      encoder,
+      references,
+      false
+    )
   }
 
   protected[scalavro] def read(
@@ -63,4 +80,46 @@ private[scalavro] case class AvroEitherUnionIO[U <: Union.not[_]: TypeTag, T <: 
       case _ => throw new AvroDeserializationException[T]
     }
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[X <: T: TypeTag](obj: X) =
+    try {
+      if (obj.isLeft) writeJsonHelper(obj.left.get, leftAvroType)
+      else writeJsonHelper(obj.right.get, rightAvroType)
+    }
+    catch {
+      case cause: Throwable => throw new AvroSerializationException(obj, cause)
+    }
+
+  protected[this] def writeJsonHelper[A: TypeTag](obj: Any, argType: AvroType[A]) = {
+    val value = obj.asInstanceOf[A]
+    val valueJson = argType.io.writeJson(value)
+    JsObject(argType.compactSchema.toString -> valueJson)
+  }
+
+  def readJson(json: JsValue) = Try {
+    val eitherInstance = json match {
+      case JsNull => {
+        if (leftAvroType.tag.tpe =:= typeOf[Unit]) Left(Unit)
+        else if (rightAvroType.tag.tpe =:= typeOf[Unit]) Right(Unit)
+        else throw new AvroDeserializationException[T]
+      }
+      case JsObject(fields) if fields.size == 1 => {
+        val (compactSchema, valueJson) = fields.head
+        if (leftAvroType.compactSchema == compactSchema)
+          Left(readJsonHelper(valueJson, leftAvroType))
+        else if (rightAvroType.compactSchema == compactSchema)
+          Right(readJsonHelper(valueJson, rightAvroType))
+        else throw new AvroDeserializationException[T]
+      }
+    }
+    eitherInstance.asInstanceOf[T]
+  }
+
+  protected[this] def readJsonHelper[A: TypeTag](json: JsValue, argType: AvroType[A]) =
+    argType.io.readJson(json).get
+
 }

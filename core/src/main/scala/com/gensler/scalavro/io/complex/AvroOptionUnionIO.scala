@@ -2,13 +2,15 @@ package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.primitive.{ AvroLongIO, AvroNullIO }
-import com.gensler.scalavro.types.AvroType
+import com.gensler.scalavro.types.{ AvroType, AvroComplexType, AvroNamedType, AvroPrimitiveType }
 import com.gensler.scalavro.types.complex.AvroUnion
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union._
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
+
+import spray.json._
 
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
@@ -27,6 +29,10 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
   val TypeRef(_, _, List(innerType)) = typeOf[T]
 
   val innerAvroType = avroType.memberAvroTypes.find { at => innerType <:< at.tag.tpe }.get
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write[X <: T: TypeTag](
     obj: X,
@@ -76,4 +82,33 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
       )
     }
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[X <: T: TypeTag](obj: X) =
+    writeJsonHelper(obj)(typeTag[X], innerAvroType.tag)
+
+  protected[this] def writeJsonHelper[X <: T: TypeTag, A: TypeTag](obj: X) = obj match {
+    case Some(value) => {
+      val valueJson = innerAvroType.asInstanceOf[AvroType[A]].io.writeJson(value.asInstanceOf[A])
+      JsObject(innerAvroType.compactSchema.toString -> valueJson)
+    }
+    case None => JsNull
+  }
+
+  def readJson(json: JsValue) = Try { readJsonHelper(json)(innerAvroType.tag).asInstanceOf[T] }
+
+  protected[this] def readJsonHelper[A: TypeTag](json: JsValue) = {
+    json match {
+      case JsNull => None
+      case JsObject(fields) if fields.size == 1 => {
+        val valueJson = fields.head._2
+        innerAvroType.io.readJson(valueJson).get.asInstanceOf[A]
+      }
+      case _ => throw new AvroDeserializationException[T]
+    }
+  }
+
 }

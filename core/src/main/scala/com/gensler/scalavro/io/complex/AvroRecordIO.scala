@@ -16,6 +16,8 @@ import org.apache.avro.io.EncoderFactory
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.{ TypeTag, typeTag }
@@ -40,6 +42,10 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
   protected[this] lazy val factory = new CaseClassFactory[T]
 
   protected[this] lazy val fieldReaders: Seq[AvroTypeIO[_]] = avroType.fields.map { _.fieldType.io }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   val UNION_INDEX_RECORD: Long = 0
   val UNION_INDEX_REFERENCE: Long = 1
@@ -131,6 +137,44 @@ case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avro
         cause,
         "The object's arguments were: [%s]" format args.mkString(", ")
       )
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[R <: T: TypeTag](obj: R) = {
+
+    val fields = avroType.fields.map { field =>
+      try {
+        val value = extractors(field.name).extractFrom(obj).asInstanceOf[Any]
+        val fieldTag = field.fieldType.tag.asInstanceOf[TypeTag[Any]]
+        field.name -> field.fieldType.io.asInstanceOf[AvroTypeIO[Any]].writeJson(value)(fieldTag)
+      }
+      catch {
+        case cause: Throwable => throw new AvroSerializationException(
+          obj,
+          cause,
+          "Could not extract a value for field [%s]" format field.name
+        )
+      }
+    }
+
+    JsObject(fields.toSeq: _*)
+  }
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsObject(fields) => {
+
+        val args = (fields.values zip fieldReaders).map {
+          case (fieldJson, reader) => reader.readJson(fieldJson).get
+        }
+
+        factory buildWith args.toSeq
+      }
+      case _ => throw new AvroDeserializationException[T]
     }
   }
 

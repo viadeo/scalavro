@@ -11,6 +11,8 @@ import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericArray, GenericDatumWriter }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -29,6 +31,10 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
         "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
     )
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write[G <: Set[T]: TypeTag](
     items: G,
@@ -72,4 +78,26 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
     originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
   }
 
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[G <: Set[T]: TypeTag](items: G) = {
+    val itemsAsJson = items.map { item =>
+      avroType.itemType.io.writeJson(item)
+    }
+    JsArray(itemsAsJson.toSeq: _*)
+  }
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsArray(itemsAsJson) => {
+        val items = itemsAsJson.map { json =>
+          avroType.itemType.io.readJson(json)
+        }
+        originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
+      }
+      case _ => throw new AvroDeserializationException[S]
+    }
+  }
 }

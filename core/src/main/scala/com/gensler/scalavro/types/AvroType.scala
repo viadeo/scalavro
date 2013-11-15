@@ -65,6 +65,15 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     resolvedSymbols: mutable.Set[String] = mutable.Set[String]()): spray.json.JsValue
 
   /**
+    * Returns the the schema of this Avro type in its most compact form.  That
+    * is, with all named types represented as their fully qualified name.
+    */
+  def compactSchema(): spray.json.JsValue = {
+    val knownTypeNames = mutable.Set(dependentNamedTypes.map(_.fullyQualifiedName): _*)
+    selfContainedSchema(knownTypeNames)
+  }
+
+  /**
     * Returns the schema name if this is an instance of [[AvroNamedType]], or
     * the expanded schema otherwise.
     */

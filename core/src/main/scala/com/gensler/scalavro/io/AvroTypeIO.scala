@@ -83,14 +83,9 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
   ////////////////////////////////////////////////////////////////////////////
 
   /**
-    * Writes a serialized representation of the supplied object according to
+    * Returns a serialized representation of the supplied object according to
     * the Avro specification for JSON encoding.  Throws an
     * AvroSerializationException if writing is unsuccessful.
-    *
-    * Output buffering is dependent upon the supplied `OutputStream`.
-    *
-    * The caller is responsible for calling `flush`; this method
-    * does NOT flush the target stream.
     */
   @throws[AvroSerializationException[_]]
   def writeJson[G <: T: TypeTag](obj: G): JsValue

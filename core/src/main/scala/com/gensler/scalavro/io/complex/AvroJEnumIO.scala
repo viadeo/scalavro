@@ -10,6 +10,8 @@ import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericEnumSymbol, GenericDatumWriter, GenericDatumReader }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -20,8 +22,12 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
 
-  protected[scalavro] def write[F <: E: TypeTag](
-    obj: F,
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  protected[scalavro] def write[T <: E: TypeTag](
+    obj: T,
     encoder: BinaryEncoder,
     references: mutable.Map[Any, Long],
     topLevel: Boolean): Unit = {
@@ -52,4 +58,16 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
     }
   }
 
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[T <: E: TypeTag](obj: T) = JsString(obj.toString)
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsString(valueName) => avroType.symbolMap(valueName)
+      case _                   => throw new AvroDeserializationException[E]()(avroType.tag)
+    }
+  }
 }

@@ -12,6 +12,8 @@ import org.apache.avro.generic.{ GenericData, GenericDatumWriter }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 import org.apache.avro.util.Utf8
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -30,6 +32,10 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
         "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
     )
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write[M <: Map[String, T]: TypeTag](
     map: M,
@@ -76,6 +82,31 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
     var itemsRead = readBlock()
     while (itemsRead != 0L) { itemsRead = readBlock() }
     originalTypeVarargsApply(items).asInstanceOf[M] // a Seq of tuples is passed to varargs MethodMirror.apply
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[G <: Map[String, T]: TypeTag](map: G) = {
+    val fields = map.map {
+      case (key, value) =>
+        key -> avroType.itemType.io.writeJson(value)
+    }
+    JsObject(fields.toSeq: _*)
+  }
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsObject(fields) => {
+        val items = fields.map {
+          case (key, valueAsJson) =>
+            key -> avroType.itemType.io.readJson(valueAsJson)
+        }
+        originalTypeVarargsApply(items).asInstanceOf[M] // a Seq of tuples is passed to varargs MethodMirror.apply
+      }
+      case _ => throw new AvroDeserializationException[M]
+    }
   }
 
 }

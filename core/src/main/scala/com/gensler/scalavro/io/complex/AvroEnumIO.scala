@@ -10,6 +10,8 @@ import org.apache.avro.Schema.Parser
 import org.apache.avro.generic.{ GenericData, GenericEnumSymbol, GenericDatumWriter, GenericDatumReader }
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
+import spray.json._
+
 import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
@@ -29,6 +31,10 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
   }
 
   val enumeration = moduleMirror.instance.asInstanceOf[E]
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write[T <: E#Value: TypeTag](
     obj: T,
@@ -62,6 +68,19 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
     datumReader.read(null, decoder) match {
       case genericEnumSymbol: GenericEnumSymbol => enumeration withName genericEnumSymbol.toString
       case _                                    => throw new AvroDeserializationException[E#Value]()(avroType.tag)
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // JSON ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
+  def writeJson[T <: E#Value: TypeTag](obj: T) = JsString(obj.toString)
+
+  def readJson(json: JsValue) = Try {
+    json match {
+      case JsString(valueName) => enumeration withName valueName
+      case _                   => throw new AvroDeserializationException[E#Value]()(avroType.tag)
     }
   }
 
