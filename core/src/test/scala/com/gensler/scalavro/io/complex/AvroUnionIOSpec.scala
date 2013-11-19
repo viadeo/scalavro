@@ -181,11 +181,6 @@ class AvroUnionIOSpec extends FlatSpec with ShouldMatchers {
     val json1 = classUnion writeJson first
     val json2 = classUnion writeJson second
 
-    (classUnion readJson json1) match {
-      case Success(result) => println("result: " + result)
-      case Failure(cause)  => cause.printStackTrace
-    }
-
     classUnion readJson json1 should equal (Success(first))
     classUnion readJson json2 should equal (Success(second))
   }

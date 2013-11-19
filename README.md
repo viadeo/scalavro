@@ -27,7 +27,7 @@ Scalavro takes a code-first, reflection based approach to schema generation and 
 
 ## Overview
 
-Interacting with Scalavro is easy from a user's perspective.  Scalavro will use reflection to inspect some Scala type you supply and return an instance of `AvroType`.  With this object in hand, you one or two method calls away from schema generation, type dependency graph inspection, or binary/JSON (de)serialization.
+Interacting with Scalavro is easy from a user's perspective.  Scalavro will use reflection to inspect some Scala type you supply and return an instance of `AvroType`.  With this object in hand, you are one or two method calls away from schema generation, type dependency graph inspection, or binary/JSON (de)serialization.
 
 **"Crash Course" of Major Features, for the Impatient:**
 

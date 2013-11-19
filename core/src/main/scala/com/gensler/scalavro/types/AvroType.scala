@@ -130,26 +130,41 @@ abstract class AvroType[T: TypeTag] extends JsonSchemifiable with CanonicalForm 
     * specify this AvroType, including recursive/transitive
     * type dependencies.
     */
-  lazy val dependentNamedTypes: Seq[AvroNamedType[_]] = {
-    this match {
-      case at: AvroPrimitiveType[_] => Seq()
-      case at: AvroArray[_, _]      => at.itemType.dependentNamedTypes
-      case at: AvroSet[_, _]        => at.itemType.dependentNamedTypes
-      case at: AvroMap[_, _]        => at.itemType.dependentNamedTypes
+  lazy val dependentNamedTypes: Seq[AvroNamedType[_]] = this.computeDependencies()
 
-      case at: AvroUnion[_, _] => {
-        at.memberAvroTypes.foldLeft(Seq[AvroNamedType[_]]()) {
-          (aggregate, memberType) => aggregate ++ memberType.dependentNamedTypes
+  /**
+    * == Internal API ==
+    *
+    * Helper method for dependentNamedTypes to short-circuit infinite recursion
+    * in case of cyclic type dependency graphs.
+    */
+  protected[scalavro] def computeDependencies(
+    previouslyEncounteredTypes: Set[AvroType[_]] = Set[AvroType[_]]()): Seq[AvroNamedType[_]] = {
+
+    if (previouslyEncounteredTypes contains this) Seq()
+    else {
+      val knownTypes = previouslyEncounteredTypes + this
+
+      this match {
+        case at: AvroPrimitiveType[_] => Seq()
+        case at: AvroArray[_, _]      => at.itemType.computeDependencies(knownTypes)
+        case at: AvroSet[_, _]        => at.itemType.computeDependencies(knownTypes)
+        case at: AvroMap[_, _]        => at.itemType.computeDependencies(knownTypes)
+
+        case at: AvroUnion[_, _] => {
+          at.memberAvroTypes.foldLeft(Seq[AvroNamedType[_]]()) {
+            (aggregate, memberType) => aggregate ++ memberType.computeDependencies(knownTypes)
+          }
         }
-      }
 
-      case at: AvroRecord[_] => {
-        at +: at.fields.map { _.fieldType }.foldLeft(Seq[AvroNamedType[_]]()) {
-          (aggregate, fieldType) => aggregate ++ fieldType.dependentNamedTypes
+        case at: AvroRecord[_] => {
+          at +: at.fields.map { _.fieldType }.foldLeft(Seq[AvroNamedType[_]]()) {
+            (aggregate, fieldType) => aggregate ++ fieldType.computeDependencies(knownTypes)
+          }
         }
-      }
 
-      case at: AvroNamedType[_] => Seq(at)
+        case at: AvroNamedType[_] => Seq(at)
+      }
     }
   }.distinct
 

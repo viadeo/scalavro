@@ -7,6 +7,12 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
+package recursive {
+  abstract class A { def n: Double }
+  class B extends A { val n = math.Pi }
+  case class C(a: A) extends A { def n = a.n }
+}
+
 class RecursiveRecordSpec extends AvroSpec {
 
   "The AvroType object" should "create an AvroType for recursive case classes" in {
@@ -37,6 +43,14 @@ class RecursiveRecordSpec extends AvroSpec {
 }
 """.replaceAll("\\s", "")
     )
+  }
+
+  it should "compute dependentNamedTypes for a record derived from a recursively defined type" in {
+    val aType = AvroType[recursive.A]
+    val cType = AvroType[recursive.C]
+
+    aType.dependentNamedTypes should equal (Seq(cType))
+    cType.dependentNamedTypes should equal (Seq(cType))
   }
 
 }
