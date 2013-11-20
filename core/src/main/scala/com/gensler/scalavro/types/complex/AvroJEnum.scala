@@ -11,6 +11,9 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.Success
 
+/**
+  * Represents a mapping from a Java enum type to a corresponding Avro type.
+  */
 class AvroJEnum[E: TypeTag](
     val name: String,
     val symbols: Seq[String],

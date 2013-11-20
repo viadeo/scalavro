@@ -10,6 +10,10 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.reflect.runtime.universe.TypeTag
 
+/**
+  * Represents a mapping from a Scala type (a case class subclass of
+  * scala.Product) to a corresponding Avro type.
+  */
 class AvroRecord[T: TypeTag](
     val name: String,
     val fields: Seq[AvroRecord.Field[_]],

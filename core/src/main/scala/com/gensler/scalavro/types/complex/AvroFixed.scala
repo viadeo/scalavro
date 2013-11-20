@@ -11,6 +11,10 @@ import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
+/**
+  * Represents a mapping from a Scala type (a subclass of
+  * com.gensler.scalavro.util.FixedData) to a corresponding Avro type.
+  */
 class AvroFixed[T <: FixedData: TypeTag](
     val name: String,
     val size: Int,

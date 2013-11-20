@@ -11,6 +11,10 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.Success
 
+/**
+  * Represents a mapping from a Scala type (a subclass of Seq[_]) to a
+  * corresponding Avro type.
+  */
 class AvroArray[T, S <: Seq[T]](
   implicit val itemTypeTag: TypeTag[T],
   implicit val originalTypeTag: TypeTag[S])

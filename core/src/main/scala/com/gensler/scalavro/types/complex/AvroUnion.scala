@@ -14,6 +14,14 @@ import scala.util.Success
 
 import spray.json._
 
+/**
+  * Represents a mapping from a source Scala type to a corresponding
+  * Avro type.
+  *
+  * Valid source types are many, including scala.Option, scala.Either,
+  * com.gensler.scalavro.util.Union, or any abstract type with known concrete
+  * case class subclasses.
+  */
 class AvroUnion[U <: Union.not[_]: TypeTag, T](
     val union: Union[U],
     val originalType: TypeTag[T]) extends AvroComplexType()(originalType) {

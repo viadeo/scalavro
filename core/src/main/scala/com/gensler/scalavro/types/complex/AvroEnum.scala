@@ -10,6 +10,10 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.Success
 
+/**
+  * Represents a mapping from a Scala type (a subclass of scala.Enumeration)
+  * to a corresponding Avro type.
+  */
 class AvroEnum[E <: Enumeration: TypeTag](
     val name: String,
     val symbols: Seq[String],
