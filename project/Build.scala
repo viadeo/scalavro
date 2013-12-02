@@ -24,10 +24,11 @@ object ScalavroBuild extends Build {
 
   val SPRAY_JSON_VERSION = "1.2.5"
   val AVRO_VERSION = "1.7.5"
-  val LOGBACK_VERSION = "1.0.9"
   val SCALATEST_VERSION = "2.0.M5b"
   val REFLECTIONS_VERSION = "0.9.9-RC1"
   val TYPESAFE_CONFIG_VERSION = "1.0.2"
+  val SLF4J_VERSION   = "1.7.2"
+  val LOGBACK_VERSION = "1.0.9"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -89,7 +90,8 @@ object ScalavroBuild extends Build {
     scalaVersion := SCALA_VERSION,
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
-      "ch.qos.logback" % "logback-classic" % LOGBACK_VERSION,
+      "org.slf4j" % "slf4j-api" % SLF4J_VERSION,
+      "ch.qos.logback" % "logback-classic" % LOGBACK_VERSION % "runtime",
       "org.scalatest" %% "scalatest" % SCALATEST_VERSION % "test"
     ),
     scalacOptions in Compile ++= Seq(
