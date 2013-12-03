@@ -144,6 +144,7 @@ object AvroTypeIO {
 
   // complex types
   def avroTypeToIO[T, S <: Seq[T]](array: AvroArray[T, S]): AvroArrayIO[T, S] = AvroArrayIO(array)
+  def avroTypeToIO[T](array: AvroJArray[T]): AvroJArrayIO[T] = AvroJArrayIO(array)
   def avroTypeToIO[T, S <: Set[T]](set: AvroSet[T, S]): AvroSetIO[T, S] = AvroSetIO(set)
   def avroTypeToIO[T <: Enumeration](enum: AvroEnum[T]): AvroEnumIO[T] = AvroEnumIO(enum)
   def avroTypeToIO[T](enum: AvroJEnum[T]): AvroJEnumIO[T] = AvroJEnumIO(enum)
@@ -157,6 +158,7 @@ object AvroTypeIO {
     at match {
       case t: AvroPrimitiveType[_] => avroTypeToIO(t)
       case t: AvroArray[_, _]      => avroTypeToIO(t)
+      case t: AvroJArray[_]        => avroTypeToIO(t)
       case t: AvroSet[_, _]        => avroTypeToIO(t)
       case t: AvroEnum[_]          => avroTypeToIO(t)
       case t: AvroJEnum[_]         => avroTypeToIO(t)

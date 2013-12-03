@@ -288,7 +288,7 @@ object AvroType extends Logging {
               )
             }
 
-            makeSet(ReflectionHelpers.tagForType(itemType))
+            makeSet(ReflectionHelpers tagForType itemType)
           }
 
           // string-keyed maps
@@ -315,7 +315,7 @@ object AvroType extends Logging {
               )
             }
 
-            makeMap(ReflectionHelpers.tagForType(itemType))
+            makeMap(ReflectionHelpers tagForType itemType)
           }
 
           // sequences
@@ -342,7 +342,21 @@ object AvroType extends Logging {
               )
             }
 
-            makeArray(ReflectionHelpers.tagForType(itemType))
+            makeArray(ReflectionHelpers tagForType itemType)
+          }
+
+          // bare arrays
+          else if (tpe <:< typeOf[Array[_]]) {
+            val itemType = tpe.typeSymbol.asType.typeParams(0).asType.toTypeIn(tpe)
+
+            if (processedTypes.exists { _ =:= itemType })
+              cyclicTypeDependencyException()
+
+            def makeJArray[I](itemTag: TypeTag[I]) = {
+              new AvroJArray()(itemTag, tt.asInstanceOf[TypeTag[Array[I]]])
+            }
+
+            makeJArray(ReflectionHelpers tagForType itemType)
           }
 
           // Scala enumerations

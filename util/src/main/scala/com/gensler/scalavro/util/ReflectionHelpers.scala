@@ -206,6 +206,13 @@ trait ReflectionHelpers extends Logging {
   }
 
   /**
+    * Returns a ClassTag from the current class loader mirror for the supplied
+    * type.
+    */
+  protected[scalavro] def classTagForType(tpe: Type): ClassTag[_] =
+    ClassTag(classLoaderMirror runtimeClass tpe)
+
+  /**
     * Returns a TypeTag in the current runtime universe for the supplied type.
     */
   protected[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(

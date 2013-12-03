@@ -23,6 +23,14 @@ class AvroTypeSpec extends AvroSpec {
   }
 
   // arrays
+
+  it should "return valid AvroArray types for Arrays" in {
+    val avroType = AvroType[Array[Int]]
+    avroType.schema.prettyPrint
+    avroType.isInstanceOf[AvroJArray[_]] should be (true)
+    typeOf[avroType.scalaType] =:= typeOf[Array[Int]] should be (true)
+  }
+
   it should "return valid AvroArray types for Seqs" in {
     AvroType.fromType[Seq[Int]] match {
       case Success(avroType) => {
