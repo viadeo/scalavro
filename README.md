@@ -197,6 +197,14 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.6.0"
   <tbody>
     <tr>
       <td><code>
+        Array[T]
+      </code></td>
+      <td><code>
+        array
+      </code></td>
+    </tr>
+    <tr>
+      <td><code>
         scala.collection.Seq[T]
       </code></td>
       <td><code>
@@ -307,6 +315,22 @@ libraryDependencies += "com.gensler" %% "scalavro" % "0.6.0"
 
 <a name="arrays"></a>
 ### Arrays
+
+#### scala.Array
+
+```scala
+import com.gensler.scalavro.types.AvroType
+AvroType[Array[String]].schema
+```
+
+Which yields:
+
+```json
+{
+  "type" : "array",
+  "items" : "string"
+}
+```
 
 #### scala.Seq
 
