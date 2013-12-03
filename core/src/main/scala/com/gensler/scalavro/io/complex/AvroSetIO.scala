@@ -17,8 +17,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO[S]()(avroType.originalTypeTag) {
 
   implicit def itemTypeTag = avroType.itemType.tag

@@ -18,8 +18,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends AvroTypeIO[M]()(avroType.originalTypeTag) {
 
   implicit def itemTypeTag = avroType.itemType.tag

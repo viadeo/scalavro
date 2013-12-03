@@ -8,7 +8,6 @@ import spray.json._
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.util.Success
 
 /**
   * Represents a mapping from a Scala type (a subclass of scala.Enumeration)

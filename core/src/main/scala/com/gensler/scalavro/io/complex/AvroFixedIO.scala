@@ -20,8 +20,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends AvroTypeIO[T] {
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString

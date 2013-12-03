@@ -20,8 +20,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
-import java.io.{ InputStream, OutputStream }
-
 private[scalavro] case class AvroBareUnionIO[U <: Union.not[_]: TypeTag, T: TypeTag](
     avroType: AvroUnion[U, T]) extends AvroUnionIO[U, T] {
 

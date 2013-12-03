@@ -1,7 +1,6 @@
 package com.gensler.scalavro.types.complex
 
 import com.gensler.scalavro.types.{ AvroType, AvroComplexType }
-import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.JsonSchemaProtocol._
 import com.gensler.scalavro.util.ReflectionHelpers
 
@@ -10,7 +9,6 @@ import com.gensler.scalavro.util.Union.union
 
 import scala.reflect.runtime.universe._
 import scala.collection.mutable
-import scala.util.Success
 
 import spray.json._
 

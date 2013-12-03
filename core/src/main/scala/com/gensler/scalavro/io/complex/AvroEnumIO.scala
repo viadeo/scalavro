@@ -16,8 +16,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeIO[E#Value]()(avroType.tag) {
 
   // AvroEnum exposes two TypeTags:

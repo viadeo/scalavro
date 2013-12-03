@@ -22,8 +22,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.{ TypeTag, typeTag }
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroRecordIO[T](avroType: AvroRecord[T]) extends AvroTypeIO[T]()(avroType.tag) {
 
   implicit val tt: TypeTag[T] = avroType.tag

@@ -16,8 +16,6 @@ import scala.collection.mutable
 import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe.TypeTag
 
-import java.io.{ InputStream, OutputStream }
-
 case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroType.tag) {
 
   protected lazy val avroSchema: Schema = (new Parser) parse avroType.selfContainedSchema().toString
