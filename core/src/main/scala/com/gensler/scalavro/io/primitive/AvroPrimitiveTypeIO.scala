@@ -2,12 +2,12 @@ package com.gensler.scalavro.io.primitive
 
 import com.gensler.scalavro.io.AvroTypeIO
 
+import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
+
 import spray.json._
 
 import scala.collection.mutable
 import scala.reflect.runtime.universe.TypeTag
-
-import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 trait AvroPrimitiveTypeIO[T] extends AvroTypeIO[T] {
 
@@ -15,10 +15,7 @@ trait AvroPrimitiveTypeIO[T] extends AvroTypeIO[T] {
     value: V,
     encoder: BinaryEncoder,
     references: mutable.Map[Any, Long],
-    topLevel: Boolean): Unit = {
-
-    write(value, encoder)
-  }
+    topLevel: Boolean): Unit = write(value, encoder)
 
   protected[scalavro] def write(value: T, encoder: BinaryEncoder): Unit
 

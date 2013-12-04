@@ -44,7 +44,6 @@ private[scalavro] case class AvroClassUnionIO[U <: Union.not[_]: TypeTag, T: Typ
         AvroLongIO.write(index.toLong, encoder)
         val memberType = avroType.memberAvroTypes(index).asInstanceOf[AvroType[X]]
         memberType.io.write(obj, encoder, references, false)(objTypeTag.asInstanceOf[TypeTag[X]])
-        encoder.flush
       }
     }
   }

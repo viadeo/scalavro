@@ -1,16 +1,13 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroNull
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
-import scala.collection.mutable
-import scala.util.{ Try, Success, Failure }
-import scala.reflect.runtime.universe.TypeTag
-
 import spray.json._
+
+import scala.util.Try
 
 object AvroNullIO extends AvroNullIO
 

@@ -202,7 +202,8 @@ object AvroType extends Logging {
       typeOf[Short] -> AvroShort,
       typeOf[Int] -> AvroInt,
       typeOf[Long] -> AvroLong,
-      typeOf[String] -> AvroString
+      typeOf[String] -> AvroString,
+      typeOf[scala.xml.Node] -> AvroXml
     )
 
     // complex type cache table, initially empty
@@ -281,12 +282,7 @@ object AvroType extends Logging {
               new AvroSet()(itemTag, tt.asInstanceOf[TypeTag[Set[I]]])
             }
 
-            if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
-              throw new IllegalArgumentException(
-                "Set subclasses must have a companion object with a public varargs " +
-                  "apply method, but no such method was found for type [%s].".format(tpe)
-              )
-            }
+            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
 
             makeSet(ReflectionHelpers tagForType itemType)
           }
@@ -308,19 +304,13 @@ object AvroType extends Logging {
               new AvroMap()(itemTag, tt.asInstanceOf[TypeTag[Map[String, I]]])
             }
 
-            if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
-              throw new IllegalArgumentException(
-                "String-keyed map subclasses must have a companion object with a public varargs " +
-                  "apply method, but no such method was found for type [%s].".format(tpe)
-              )
-            }
+            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
 
             makeMap(ReflectionHelpers tagForType itemType)
           }
 
           // sequences
           else if (tpe <:< typeOf[Seq[_]]) {
-
             // Traverse up to the Seq supertype and get the type of items
             val seqSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
               bcSymbol == typeOf[Seq[_]].typeSymbol
@@ -335,12 +325,7 @@ object AvroType extends Logging {
               new AvroArray()(itemTag, tt.asInstanceOf[TypeTag[Seq[I]]])
             }
 
-            if (!ReflectionHelpers.companionVarargsApply[T].isDefined) {
-              throw new IllegalArgumentException(
-                "Sequence subclasses must have a companion object with a public varargs " +
-                  "apply method, but no such method was found for type [%s].".format(tpe)
-              )
-            }
+            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
 
             makeArray(ReflectionHelpers tagForType itemType)
           }

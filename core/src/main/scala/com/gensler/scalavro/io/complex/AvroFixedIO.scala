@@ -38,7 +38,6 @@ case class AvroFixedIO[T <: FixedData: TypeTag](avroType: AvroFixed[T]) extends 
     topLevel: Boolean): Unit = {
 
     encoder writeFixed obj.bytes.toArray
-    encoder.flush
   }
 
   protected[scalavro] def read(

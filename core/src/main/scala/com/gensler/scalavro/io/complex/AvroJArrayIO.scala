@@ -44,7 +44,6 @@ case class AvroJArrayIO[T](avroType: AvroJArray[T]) extends AvroTypeIO[Array[T]]
         avroType.itemType.io.write(item, encoder, references, false)
       }
       encoder.writeArrayEnd
-      encoder.flush
     }
     catch {
       case cause: Throwable =>

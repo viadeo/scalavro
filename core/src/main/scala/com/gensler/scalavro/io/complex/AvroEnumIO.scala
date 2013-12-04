@@ -49,7 +49,6 @@ case class AvroEnumIO[E <: Enumeration](avroType: AvroEnum[E]) extends AvroTypeI
         )
         case _ => throw new AvroSerializationException(obj)
       }
-      encoder.flush
     }
     catch {
       case cause: Throwable =>

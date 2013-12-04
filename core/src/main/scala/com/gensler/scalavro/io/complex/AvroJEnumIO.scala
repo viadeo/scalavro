@@ -36,7 +36,6 @@ case class AvroJEnumIO[E](avroType: AvroJEnum[E]) extends AvroTypeIO[E]()(avroTy
         new GenericData.EnumSymbol(avroSchema, obj.toString),
         encoder
       )
-      encoder.flush
     }
     catch {
       case cause: Throwable =>

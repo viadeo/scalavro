@@ -22,13 +22,7 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
   implicit def itemTypeTag = avroType.itemType.tag
   implicit def originalTypeTag = avroType.originalTypeTag
 
-  val originalTypeVarargsApply = ReflectionHelpers.companionVarargsApply[S] match {
-    case Some(methodMirror) => methodMirror
-    case None => throw new IllegalArgumentException(
-      "Set subclasses must have a companion object with a public varargs " +
-        "apply method, but no such method was found for type [%s].".format(avroType.originalTypeTag.tpe)
-    )
-  }
+  val originalTypeFactory = ReflectionHelpers.varargsFactory[S].get
 
   ////////////////////////////////////////////////////////////////////////////
   // BINARY ENCODING
@@ -48,7 +42,6 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
         avroType.itemType.io.write(item, encoder, references, false)
       }
       encoder.writeArrayEnd
-      encoder.flush
     }
     catch {
       case cause: Throwable =>
@@ -73,7 +66,7 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
 
     var itemsRead = readBlock()
     while (itemsRead != 0L) { itemsRead = readBlock() }
-    originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
+    originalTypeFactory(items)
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -93,7 +86,7 @@ case class AvroSetIO[T, S <: Set[T]](avroType: AvroSet[T, S]) extends AvroTypeIO
         val items = itemsAsJson.map { json =>
           avroType.itemType.io.readJson(json).get
         }
-        originalTypeVarargsApply(items).asInstanceOf[S] // a Seq is passed to varargs MethodMirror.apply
+        originalTypeFactory(items)
       }
       case _ => throw new AvroDeserializationException[S]
     }

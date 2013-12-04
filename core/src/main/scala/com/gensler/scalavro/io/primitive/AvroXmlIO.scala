@@ -1,40 +1,42 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.types.primitive.AvroFloat
+import com.gensler.scalavro.types.primitive.AvroXml
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
+import org.apache.avro.generic.GenericData
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
 import scala.util.Try
+import scala.xml.{ XML, Node }
 
-object AvroFloatIO extends AvroFloatIO
+object AvroXmlIO extends AvroXmlIO
 
-trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
+trait AvroXmlIO extends AvroPrimitiveTypeIO[Node] {
 
-  val avroType = AvroFloat
+  val avroType = AvroXml
 
   ////////////////////////////////////////////////////////////////////////////
   // BINARY ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
-    value: Float,
-    encoder: BinaryEncoder): Unit = encoder writeFloat value
+    value: Node,
+    encoder: BinaryEncoder): Unit = encoder writeString value.toString
 
-  def read(decoder: BinaryDecoder) = decoder.readFloat
+  def read(decoder: BinaryDecoder) = XML loadString decoder.readString
 
   ////////////////////////////////////////////////////////////////////////////
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: Float) = JsNumber(BigDecimal(value))
+  def writePrimitiveJson(value: Node) = JsString(value.toString)
 
   def readJson(json: JsValue) = Try {
     json match {
-      case JsNumber(bigDecimal) => bigDecimal.toFloat
-      case _                    => throw new AvroDeserializationException[Float]
+      case JsString(value) => XML loadString value
+      case _               => throw new AvroDeserializationException[Node]
     }
   }
 

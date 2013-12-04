@@ -1,16 +1,13 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroLong
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
-import scala.collection.mutable
-import scala.util.{ Try, Success, Failure }
-import scala.reflect.runtime.universe.TypeTag
-
 import spray.json._
+
+import scala.util.Try
 
 object AvroLongIO extends AvroLongIO
 
@@ -24,11 +21,7 @@ trait AvroLongIO extends AvroPrimitiveTypeIO[Long] {
 
   protected[scalavro] def write(
     value: Long,
-    encoder: BinaryEncoder): Unit = {
-
-    encoder writeLong value
-    encoder.flush
-  }
+    encoder: BinaryEncoder): Unit = encoder writeLong value
 
   def read(decoder: BinaryDecoder) = decoder.readLong
 

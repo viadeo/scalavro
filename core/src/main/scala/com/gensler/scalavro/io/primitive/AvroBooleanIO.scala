@@ -7,9 +7,7 @@ import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
-import scala.collection.mutable
-import scala.reflect.runtime.universe.TypeTag
-import scala.util.{ Try, Success, Failure }
+import scala.util.Try
 
 object AvroBooleanIO extends AvroBooleanIO
 
@@ -27,11 +25,7 @@ trait AvroBooleanIO extends AvroPrimitiveTypeIO[Boolean] {
     */
   protected[scalavro] def write(
     value: Boolean,
-    encoder: BinaryEncoder): Unit = {
-
-    encoder writeBoolean value
-    encoder.flush
-  }
+    encoder: BinaryEncoder): Unit = encoder writeBoolean value
 
   protected[scalavro] def read(decoder: BinaryDecoder) = decoder.readBoolean
 

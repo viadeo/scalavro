@@ -38,18 +38,24 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     * Output buffering is dependent upon the supplied `OutputStream`.
     *
     * The caller is responsible for calling `flush`; this method
-    * does NOT flush the target stream.
+    * may not flush the target stream.
     */
   @throws[AvroSerializationException[_]]
   final def write[G <: T: TypeTag](obj: G, stream: OutputStream): Unit = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     write(obj, encoder, mutable.Map[Any, Long](), true)
+    encoder.flush
   }
 
   /**
     * Writes a serialized representation of the supplied object according to
     * the Avro specification for binary encoding.  Throws an
     * AvroSerializationException if writing is unsuccessful.
+    *
+    * Output buffering is dependent upon the supplied `BinaryEncoder`.
+    *
+    * The caller is responsible for calling `flush`; this method
+    * may not flush the target stream.
     */
   @throws[AvroSerializationException[_]]
   protected[scalavro] def write[G <: T: TypeTag](
@@ -140,6 +146,7 @@ object AvroTypeIO {
       case AvroLong    => AvroLongIO
       case AvroNull    => AvroNullIO
       case AvroString  => AvroStringIO
+      case AvroXml     => AvroXmlIO
     }
 
   // complex types

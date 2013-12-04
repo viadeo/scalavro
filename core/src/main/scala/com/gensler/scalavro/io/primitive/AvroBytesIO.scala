@@ -1,6 +1,5 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroBytes
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
@@ -8,9 +7,7 @@ import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
-import scala.collection.mutable
-import scala.util.{ Try, Success, Failure }
-import scala.reflect.runtime.universe.TypeTag
+import scala.util.Try
 
 import java.nio.{ ByteBuffer, CharBuffer }
 import java.nio.charset.Charset
@@ -27,11 +24,7 @@ trait AvroBytesIO extends AvroPrimitiveTypeIO[Seq[Byte]] {
 
   protected[scalavro] def write(
     bytes: Seq[Byte],
-    encoder: BinaryEncoder): Unit = {
-
-    encoder writeBytes bytes.toArray
-    encoder.flush
-  }
+    encoder: BinaryEncoder): Unit = encoder writeBytes bytes.toArray
 
   protected[scalavro] def read(decoder: BinaryDecoder) = {
     val numBytes = decoder.readLong

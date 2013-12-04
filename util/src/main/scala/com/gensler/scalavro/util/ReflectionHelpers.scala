@@ -4,6 +4,7 @@ import scala.collection.immutable.ListMap
 import scala.reflect.api.{ Universe, Mirror, TypeCreator }
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+import scala.collection.mutable.Builder
 
 import com.typesafe.config.{ Config, ConfigFactory }
 
@@ -223,37 +224,123 @@ trait ReflectionHelpers extends Logging {
   )
 
   /**
+    * Returns Success(methodMirror) for a varargs factory method derived from
+    * the supplied type's companion object, if one can be derived.  Returns a
+    * Failure otherwise.
+    */
+  protected[scalavro] def varargsFactory[T: TypeTag]: scala.util.Try[(Any*) => T] = scala.util.Try {
+
+    val tpe = typeOf[T]
+
+    lazy val varargsApply = companionVarargsApply[T]
+    lazy val builderFactory = companionBuilderFactory[T]
+    // lazy val fromSeq = companionFromSeqFactory[T]
+
+    if (varargsApply.isDefined) {
+      def factory(args: Any*): T = varargsApply.get.apply(args).asInstanceOf[T]
+      factory
+    }
+    else if (builderFactory.isDefined) {
+      def factory(args: Any*): T = {
+        val builder = builderFactory.get.apply().asInstanceOf[Builder[Any, _]]
+        builder ++= args
+        builder.result.asInstanceOf[T]
+      }
+      factory
+    }
+    else throw new IllegalArgumentException(
+      """
+        |Searched the companion object for one of the following:
+        |  - a public varargs apply method
+        |  - a public Builder-valued 0-argument method
+        |
+        |but no such method was found for type [%s]!"
+      """.format(tpe).stripMargin
+    )
+  }
+
+  /**
+    * Wraps information about a companion object for a type.
+    */
+  protected[this] case class CompanionMetadata[T](
+    symbol: ModuleSymbol,
+    instance: Any,
+    instanceMirror: InstanceMirror,
+    classType: Type)
+
+  object CompanionMetadata {
+    /**
+      * Returns a Some wrapping CompanionMetadata for the supplied class type, if
+      * that class type has a companion, and None otherwise.
+      */
+    def apply[T: TypeTag]: Option[CompanionMetadata[T]] = {
+
+      val typeSymbol = typeOf[T].typeSymbol
+
+      val companionSymbol: Option[ModuleSymbol] = {
+        if (!typeSymbol.isClass) None // supplied type is not a class
+        else {
+          val classSymbol = typeSymbol.asClass
+          if (!classSymbol.companionSymbol.isModule) None // supplied class type has no companion
+          else Some(classSymbol.companionSymbol.asModule)
+        }
+      }
+
+      companionSymbol.map { symbol =>
+        val instance = classLoaderMirror.reflectModule(symbol).instance
+        val instanceMirror = classLoaderMirror reflect instance
+        val classType = symbol.moduleClass.asClass.asType.toType
+        CompanionMetadata(symbol, instance, instanceMirror, classType)
+      }
+    }
+  }
+
+  /**
     * Returns Some(methodMirror) for the public varargs apply method of the
     * supplied type's companion object, if one exists.  Returns None otherwise.
     */
-  protected[scalavro] def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
+  protected[this] def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
 
-    def isPublicAndVarargs(methodSymbol: MethodSymbol): Boolean = {
-      methodSymbol.isPublic && methodSymbol.isVarargs
-    }
+    def publicVarargs(ms: MethodSymbol): Boolean = ms.isPublic && ms.isVarargs
 
-    val typeSymbol = typeOf[T].typeSymbol
-    if (!typeSymbol.isClass) None // supplied type is not a class
-    else {
-      val classSymbol = typeSymbol.asClass
-      if (!classSymbol.companionSymbol.isModule) None // supplied class type has no companion
-      else {
-        val moduleSymbol = classSymbol.companionSymbol.asModule
-        val companionInstance = classLoaderMirror.reflectModule(moduleSymbol).instance
-        val companionInstanceMirror = classLoaderMirror reflect companionInstance
-        val companionClassType = moduleSymbol.moduleClass.asClass.asType.toType
-
-        val applySymbol: Option[MethodSymbol] = {
-          val symbol = companionClassType.member("apply": TermName)
-          if (symbol.isMethod && isPublicAndVarargs(symbol.asMethod)) Some(symbol.asMethod)
-          else {
-            val choices = symbol.asTerm.alternatives
-            choices.map(_.asMethod).find(isPublicAndVarargs)
-          }
+    CompanionMetadata[T].flatMap { companion =>
+      val applySymbol: Option[MethodSymbol] = {
+        val symbol = companion.classType.member("apply": TermName)
+        if (symbol.isMethod) {
+          val methodSymbol = symbol.asMethod
+          if (publicVarargs(methodSymbol)) Some(methodSymbol)
+          else None
         }
-
-        applySymbol.map { symbol => companionInstanceMirror reflectMethod symbol }
+        else {
+          if (symbol.isTerm) {
+            val choices = symbol.asTerm.alternatives
+            choices.view.filter(_.isMethod).map(_.asMethod).find(publicVarargs)
+          }
+          else None
+        }
       }
+
+      applySymbol.map { apply => companion.instanceMirror reflectMethod apply }
+    }
+  }
+
+  /**
+    * Returns Some(methodMirror) for the Builder-valued 0-argument method of
+    * the supplied type's companion object, if one exists.  Returns None
+    * otherwise.
+    */
+  protected[this] def companionBuilderFactory[T: TypeTag]: Option[MethodMirror] = {
+    CompanionMetadata[T].flatMap { companion =>
+      val newBuilderSymbol = companion.classType.declarations.toTraversable.find { symbol =>
+        symbol.isMethod && {
+          val methodSymbol = symbol.asMethod
+          val isNullary = methodSymbol.paramss == List()
+          val returnsBuilder = methodSymbol.returnType.typeConstructor =:= typeOf[Builder[_, _]].typeConstructor
+          isNullary && returnsBuilder
+        }
+      }
+
+      newBuilderSymbol.map { newBuilder => companion.instanceMirror reflectMethod newBuilder.asMethod }
     }
   }
 

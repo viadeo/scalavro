@@ -1,6 +1,5 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.types.primitive.AvroString
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
@@ -9,9 +8,7 @@ import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
-import scala.collection.mutable
-import scala.util.{ Try, Success, Failure }
-import scala.reflect.runtime.universe.TypeTag
+import scala.util.Try
 
 object AvroStringIO extends AvroStringIO
 
@@ -19,13 +16,13 @@ trait AvroStringIO extends AvroPrimitiveTypeIO[String] {
 
   val avroType = AvroString
 
+  ////////////////////////////////////////////////////////////////////////////
+  // BINARY ENCODING
+  ////////////////////////////////////////////////////////////////////////////
+
   protected[scalavro] def write(
     value: String,
-    encoder: BinaryEncoder): Unit = {
-
-    encoder writeString value
-    encoder.flush
-  }
+    encoder: BinaryEncoder): Unit = encoder writeString value
 
   def read(decoder: BinaryDecoder) = decoder.readString
 

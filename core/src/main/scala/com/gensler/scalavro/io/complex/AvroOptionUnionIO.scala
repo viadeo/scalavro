@@ -40,7 +40,6 @@ private[scalavro] case class AvroOptionUnionIO[U <: Union.not[_]: TypeTag, T <: 
 
     AvroLongIO.write(if (obj.isDefined) NON_NULL_INDEX else NULL_INDEX, encoder)
     writeHelper(obj, encoder, references, topLevel)(typeTag[X], innerAvroType.tag)
-    encoder.flush
   }
 
   protected[this] def writeHelper[X <: T: TypeTag, A: TypeTag](
