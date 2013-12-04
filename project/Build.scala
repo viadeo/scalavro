@@ -82,7 +82,11 @@ object ScalavroBuild extends Build {
 // SHARED SETTINGS
 //////////////////////////////////////////////////////////////////////////////
 
-  lazy val commonSettings = Project.defaultSettings ++ basicSettings ++ formatSettings ++ publishSettings
+  lazy val commonSettings = Project.defaultSettings ++
+                            basicSettings ++
+                            formatSettings ++
+                            net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+                            publishSettings
 
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
