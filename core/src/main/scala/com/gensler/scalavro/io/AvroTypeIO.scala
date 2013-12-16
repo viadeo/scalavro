@@ -44,7 +44,6 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
   final def write[G <: T: TypeTag](obj: G, stream: OutputStream): Unit = {
     val encoder = EncoderFactory.get.directBinaryEncoder(stream, null)
     write(obj, encoder, mutable.Map[Any, Long](), true)
-    encoder.flush
   }
 
   /**
