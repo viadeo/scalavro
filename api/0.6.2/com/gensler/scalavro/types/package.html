@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>types - com.gensler.scalavro.types</title>
+          <meta name="description" content="types - com.gensler.scalavro.types" />
+          <meta name="keywords" content="types com.gensler.scalavro.types" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../index.html';
+            var hash = 'com.gensler.scalavro.types.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../package.html" class="extype" name="com">com</a>.<a href="../../package.html" class="extype" name="com.gensler">gensler</a>.<a href="../package.html" class="extype" name="com.gensler.scalavro">scalavro</a></p>
+        <h1>types</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">types</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="com.gensler.scalavro.types.AvroComplexType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AvroComplexType[T]extendsAvroType[T]withSelfDescribingSchemaHelpers"></a>
+      <a id="AvroComplexType[T]:AvroComplexType[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroComplexType.html"><span class="name">AvroComplexType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="AvroType.html" class="extype" name="com.gensler.scalavro.types.AvroType">AvroType</a>[<span class="extype" name="com.gensler.scalavro.types.AvroComplexType.T">T</span>] with <a href="SelfDescribingSchemaHelpers.html" class="extype" name="com.gensler.scalavro.types.SelfDescribingSchemaHelpers">SelfDescribingSchemaHelpers</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parent class of all composite and parameterized Avro types.</p>
+    </li><li name="com.gensler.scalavro.types.AvroNamedType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AvroNamedType[T]extendsAvroComplexType[T]"></a>
+      <a id="AvroNamedType[T]:AvroNamedType[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroNamedType.html"><span class="name">AvroNamedType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="AvroComplexType.html" class="extype" name="com.gensler.scalavro.types.AvroComplexType">AvroComplexType</a>[<span class="extype" name="com.gensler.scalavro.types.AvroNamedType.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parent class of all &quot;named types&quot;.</p>
+    </li><li name="com.gensler.scalavro.types.AvroPrimitiveType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AvroPrimitiveType[T]extendsAvroType[T]"></a>
+      <a id="AvroPrimitiveType[T]:AvroPrimitiveType[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroPrimitiveType.html"><span class="name">AvroPrimitiveType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="AvroType.html" class="extype" name="com.gensler.scalavro.types.AvroType">AvroType</a>[<span class="extype" name="com.gensler.scalavro.types.AvroPrimitiveType.T">T</span>]</span>
+      </span>
+      </h4>
+      <p class="comment cmt">Parent class of all simple Avro types.</p>
+    </li><li name="com.gensler.scalavro.types.AvroType" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="AvroType[T]extendsJsonSchemifiablewithCanonicalForm"></a>
+      <a id="AvroType[T]:AvroType[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroType.html"><span class="name">AvroType</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="../JsonSchemifiable.html" class="extype" name="com.gensler.scalavro.JsonSchemifiable">JsonSchemifiable</a> with <a href="../CanonicalForm.html" class="extype" name="com.gensler.scalavro.CanonicalForm">CanonicalForm</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Abstract parent class of all Avro types.</p>
+    </li><li name="com.gensler.scalavro.types.SelfDescribingSchemaHelpers" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="SelfDescribingSchemaHelpersextendsAnyRef"></a>
+      <a id="SelfDescribingSchemaHelpers:SelfDescribingSchemaHelpers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SelfDescribingSchemaHelpers.html"><span class="name">SelfDescribingSchemaHelpers</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="com.gensler.scalavro.types.AvroType" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AvroType"></a>
+      <a id="AvroType:AvroType"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="AvroType$.html"><span class="name">AvroType</span></a><span class="result"> extends <a href="../util/Logging.html" class="extype" name="com.gensler.scalavro.util.Logging">Logging</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt">Companion object for <a href="AvroType.html" class="extype" name="com.gensler.scalavro.types.AvroType">AvroType</a>.</p>
+    </li><li name="com.gensler.scalavro.types.SelfDescribingSchemaHelpers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SelfDescribingSchemaHelpers"></a>
+      <a id="SelfDescribingSchemaHelpers:SelfDescribingSchemaHelpers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="SelfDescribingSchemaHelpers$.html"><span class="name">SelfDescribingSchemaHelpers</span></a><span class="result"> extends <a href="SelfDescribingSchemaHelpers.html" class="extype" name="com.gensler.scalavro.types.SelfDescribingSchemaHelpers">SelfDescribingSchemaHelpers</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="com.gensler.scalavro.types.complex" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="complex"></a>
+      <a id="complex:complex"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="complex/package.html"><span class="name">complex</span></a>
+      </span>
+      </h4>
+      
+    </li><li name="com.gensler.scalavro.types.primitive" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="primitive"></a>
+      <a id="primitive:primitive"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="primitive/package.html"><span class="name">primitive</span></a>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../../lib/template.js"></script>
+    </body>
+      </html>
