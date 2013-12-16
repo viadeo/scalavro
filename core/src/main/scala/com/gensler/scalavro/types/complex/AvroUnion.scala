@@ -55,6 +55,7 @@ class AvroReferenceUnion[U <: Union.not[_]: TypeTag, T](
 object AvroUnion {
 
   import com.gensler.scalavro.Reference
+  import com.gensler.scalavro.util.ReflectionHelpers
 
   def referenceUnionFor[T](recordType: AvroRecord[T]): AvroReferenceUnion[_, _] = {
     implicit val recordTypeTag: TypeTag[T] = recordType.tag
@@ -63,6 +64,93 @@ object AvroUnion {
       new Union[union[T]#or[Reference]],
       typeTag[Either[T, Reference]]
     )
+  }
+
+  private[types] def fromType[T: TypeTag](processedTypes: Set[Type]): AvroType[T] = {
+    val tt = typeTag[T]
+    val tpe = tt.tpe
+
+    // binary unions via scala.Either[A, B]
+    if (tpe <:< typeOf[Either[_, _]]) tpe match {
+      case TypeRef(_, _, List(left, right)) => {
+        if (processedTypes.exists { pt => pt =:= left || pt =:= right }) AvroType.cyclicTypeDependencyException[T]
+
+        new AvroUnion(
+          Union.combine(
+            Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
+            ReflectionHelpers.tagForType(right)
+          ),
+          tt
+        )
+      }
+    }
+
+    // binary unions via scala.Option[T]
+    else if (tpe <:< typeOf[Option[_]]) tpe match {
+      case TypeRef(_, _, List(innerType)) => {
+
+        if (processedTypes.exists { _ =:= innerType }) AvroType.cyclicTypeDependencyException[T]
+
+        new AvroUnion(
+          Union.combine(
+            Union.unary(typeTag[Unit]).underlyingConjunctionTag,
+            ReflectionHelpers.tagForType(innerType)
+          ),
+          tt
+        )
+      }
+    }
+
+    // N-ary unions
+    else if (tpe <:< typeOf[Union.not[_]]) {
+      new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
+    }
+
+    // N-ary unions
+    else if (tpe <:< typeOf[Union[_]]) {
+      val TypeRef(_, _, List(notType)) = tpe
+      val notTypeTag = ReflectionHelpers.tagForType(notType).asInstanceOf[TypeTag[Union.not[_]]]
+      new AvroUnion(new Union()(notTypeTag), tt)
+    }
+
+    // super types of concrete avro-typable types
+    else if (tpe.typeSymbol.isClass) {
+      // last-ditch attempt: union of avro-typeable subtypes of T
+      import scala.language.existentials
+
+      val subTypeTags = ReflectionHelpers.typeableSubTypesOf[T].filter { subTypeTag =>
+        AvroType.fromTypeHelper(
+          subTypeTag,
+          processedTypes + tpe
+        ).toOption.isDefined
+      }
+
+      if (subTypeTags.nonEmpty) {
+        var u = Union.unary(subTypeTags.head)
+
+        subTypeTags.tail.foreach { subTypeTag =>
+          u = Union.combine(
+            u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
+            subTypeTag
+          )
+        }
+
+        new AvroUnion(u, tt)
+      }
+      else throw new IllegalArgumentException(
+        "Could not find any avro-typeable sub types of [%s]" format tpe
+      )
+    }
+
+    else throw new IllegalArgumentException("""
+      |Could not create a union from type [%s]
+      |Union types may only be synthesized from:"
+      | - Either[_, _]
+      | - Option[_]
+      | - com.gensler.scalavro.util.Union.not
+      | - com.gensler.scalavro.util.Union
+      | - Super types of concrete avro-typeable types
+    """.format(tpe).stripMargin)
   }
 
 }

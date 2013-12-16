@@ -29,3 +29,29 @@ class AvroMap[T, M <: Map[String, T]](
   ))
 
 }
+
+object AvroMap {
+
+  import com.gensler.scalavro.util.ReflectionHelpers
+
+  private[types] def fromType[T <: Map[String, _]: TypeTag](processedTypes: Set[Type]): AvroType[T] = {
+
+    val tt = typeTag[T]
+
+    // Traverse up to the Map supertype and get the type of items
+    val mapSuperSymbol = tt.tpe.baseClasses.map(_.asType).find { bcSymbol =>
+      bcSymbol == typeOf[Map[_, _]].typeSymbol
+    }
+
+    val itemType = mapSuperSymbol.map(_.typeParams(1).asType.toTypeIn(tt.tpe)).get
+
+    if (processedTypes.exists { _ =:= itemType }) AvroType.cyclicTypeDependencyException[T]
+
+    def makeMap[I](itemTag: TypeTag[I]) = new AvroMap()(itemTag, tt.asInstanceOf[TypeTag[Map[String, I]]])
+
+    ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
+
+    makeMap(ReflectionHelpers tagForType itemType).asInstanceOf[AvroType[T]]
+  }
+
+}

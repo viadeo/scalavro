@@ -56,6 +56,30 @@ class AvroRecord[T: TypeTag](
 
 object AvroRecord {
 
+  import com.gensler.scalavro.util.ReflectionHelpers
+  import scala.reflect.runtime.universe._
+
+  private[types] def fromType[T <: Product: TypeTag](processedTypes: Set[Type]) = {
+    val tt = typeTag[T]
+    val classSymbol = tt.tpe.typeSymbol.asClass
+    if (classSymbol.isCaseClass && classSymbol.typeParams.isEmpty) {
+      tt.tpe match {
+        case TypeRef(prefix, symbol, _) =>
+          new AvroRecord[T](
+            name = symbol.name.toString,
+            fields = ReflectionHelpers.caseClassParamsOf[T].toSeq map {
+              case (name, tag) => AvroRecord.Field(name)(tag)
+            },
+            namespace = Some(prefix.toString stripSuffix ".type")
+          ).asInstanceOf[AvroType[T]]
+      }
+    }
+    else throw new IllegalArgumentException("""
+      |Could not create an AvroRecord from type [%s]
+      |Product types must be case classes with no type parameters
+    """.format(tt.tpe).stripMargin)
+  }
+
   /**
     * Records fields have:
     *

@@ -39,3 +39,24 @@ class AvroEnum[E <: Enumeration: TypeTag](
   }
 
 }
+
+object AvroEnum {
+
+  import com.gensler.scalavro.util.ReflectionHelpers
+
+  private[types] def fromType[T <: Enumeration: TypeTag](processedTypes: Set[Type]): AvroType[T] = {
+    val tt = typeTag[T]
+    tt.tpe match {
+      case TypeRef(prefix, symbol, _) =>
+
+        val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
+
+        new AvroEnum(
+          name = symbol.name.toString,
+          symbols = ReflectionHelpers.symbolsOf(enumTypeTag),
+          namespace = Some(prefix.toString stripSuffix ".type")
+        )(enumTypeTag).asInstanceOf[AvroType[T]]
+    }
+  }
+
+}

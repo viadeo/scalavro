@@ -44,3 +44,38 @@ class AvroFixed[T <: FixedData: TypeTag](
   }
 
 }
+
+object AvroFixed {
+
+  import com.gensler.scalavro.util.ReflectionHelpers
+  import scala.collection.immutable
+
+  private[types] def fromType[T <: FixedData: TypeTag](processedTypes: Set[Type] = Set[Type]()): AvroType[T] = {
+    val tt = typeTag[T]
+    FixedData.lengthAnnotationInstance(tt.tpe.typeSymbol.asClass) match {
+      case Some(FixedData.Length(dataLength)) => {
+        val TypeRef(prefix, symbol, _) = tt.tpe
+
+        if (tt.tpe.typeSymbol.asClass.typeParams.nonEmpty)
+          throw new IllegalArgumentException(
+            "FixedData classes with type parameters are not supported"
+          )
+
+        if (!ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].isDefined)
+          throw new IllegalArgumentException(
+            "FixedData classes must define a public single-argument constructor taking a Seq[Byte]"
+          )
+
+        new AvroFixed(
+          name = symbol.name.toString,
+          size = dataLength,
+          namespace = Some(prefix.toString stripSuffix ".type")
+        )
+      }
+      case None => throw new IllegalArgumentException(
+        "FixedData classes must be decorated with a FixedData.Length annotation"
+      )
+    }
+  }
+
+}

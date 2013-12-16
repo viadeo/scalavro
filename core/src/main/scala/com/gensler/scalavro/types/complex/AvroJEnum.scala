@@ -43,3 +43,17 @@ class AvroJEnum[E: TypeTag](
   }
 
 }
+
+object AvroJEnum {
+
+  private[types] def fromType[T: TypeTag](processedTypes: Set[Type]): AvroType[T] = {
+    val tt = typeTag[T]
+    val enumClass = ReflectionHelpers.classLoaderMirror.runtimeClass(tt.tpe.typeSymbol.asClass)
+    new AvroJEnum[T](
+      name = enumClass.getSimpleName,
+      symbols = enumClass.getEnumConstants.map(_.toString),
+      namespace = Some(enumClass.getPackage.getName)
+    )
+  }
+
+}

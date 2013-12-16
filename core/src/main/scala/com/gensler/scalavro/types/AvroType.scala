@@ -234,6 +234,13 @@ object AvroType extends Logging {
     */
   def apply[T: TypeTag]: AvroType[T] = fromType[T].get
 
+  protected[types] def cyclicTypeDependencyException[T: TypeTag] {
+    throw new CyclicTypeDependencyException(
+      "A cyclic type dependency was detected while attempting to " +
+        "synthesize an AvroType for  type [%s]" format typeOf[T]
+    )
+  }
+
   /**
     * Returns a `Success[AvroType[T]]` if an analogous AvroType is available
     * for the supplied type.
@@ -244,14 +251,7 @@ object AvroType extends Logging {
     implicit tt: TypeTag[T],
     processedTypes: Set[Type] = Set[Type]()): Try[AvroType[T]] = Try {
 
-    def cyclicTypeDependencyException() {
-      throw new CyclicTypeDependencyException(
-        "A cyclic type dependency was detected while attempting to " +
-          "synthesize an AvroType for  type [%s]" format tt.tpe
-      )
-    }
-
-    if (processedTypes exists { _ =:= tt.tpe }) cyclicTypeDependencyException()
+    if (processedTypes exists { _ =:= tt.tpe }) cyclicTypeDependencyException[T]
 
     val tpe = tt.tpe
 
@@ -266,233 +266,39 @@ object AvroType extends Logging {
         val newComplexType = {
 
           // sets
-          if (tpe <:< typeOf[Set[_]]) {
-
-            // Traverse up to the Seq supertype and get the type of items
-            val setSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
-              bcSymbol == typeOf[Set[_]].typeSymbol
-            }
-
-            val itemType = setSuperSymbol.map(_.typeParams(0).asType.toTypeIn(tpe)).get
-
-            if (processedTypes.exists { _ =:= itemType })
-              cyclicTypeDependencyException()
-
-            def makeSet[I](itemTag: TypeTag[I]) = {
-              new AvroSet()(itemTag, tt.asInstanceOf[TypeTag[Set[I]]])
-            }
-
-            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
-
-            makeSet(ReflectionHelpers tagForType itemType)
-          }
+          if (tpe <:< typeOf[Set[_]])
+            AvroSet.fromType(processedTypes)(tt.asInstanceOf[TypeTag[Set[_]]])
 
           // string-keyed maps
-          else if (tpe <:< typeOf[Map[String, _]]) {
+          else if (tpe <:< typeOf[Map[String, _]])
+            AvroMap.fromType(processedTypes)(tt.asInstanceOf[TypeTag[Map[String, _]]])
 
-            // Traverse up to the Map supertype and get the type of items
-            val mapSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
-              bcSymbol == typeOf[Map[_, _]].typeSymbol
-            }
-
-            val itemType = mapSuperSymbol.map(_.typeParams(1).asType.toTypeIn(tpe)).get
-
-            if (processedTypes.exists { _ =:= itemType })
-              cyclicTypeDependencyException()
-
-            def makeMap[I](itemTag: TypeTag[I]) = {
-              new AvroMap()(itemTag, tt.asInstanceOf[TypeTag[Map[String, I]]])
-            }
-
-            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
-
-            makeMap(ReflectionHelpers tagForType itemType)
-          }
-
-          // sequences
-          else if (tpe <:< typeOf[Seq[_]]) {
-            // Traverse up to the Seq supertype and get the type of items
-            val seqSuperSymbol = tpe.baseClasses.map(_.asType).find { bcSymbol =>
-              bcSymbol == typeOf[Seq[_]].typeSymbol
-            }
-
-            val itemType = seqSuperSymbol.map(_.typeParams(0).asType.toTypeIn(tpe)).get
-
-            if (processedTypes.exists { _ =:= itemType })
-              cyclicTypeDependencyException()
-
-            def makeArray[I](itemTag: TypeTag[I]) = {
-              new AvroArray()(itemTag, tt.asInstanceOf[TypeTag[Seq[I]]])
-            }
-
-            ReflectionHelpers.varargsFactory[T].get // throws an exception if one can't be derived
-
-            makeArray(ReflectionHelpers tagForType itemType)
-          }
-
-          // bare arrays
-          else if (tpe <:< typeOf[Array[_]]) {
-            val itemType = tpe.typeSymbol.asType.typeParams(0).asType.toTypeIn(tpe)
-
-            if (processedTypes.exists { _ =:= itemType })
-              cyclicTypeDependencyException()
-
-            def makeJArray[I](itemTag: TypeTag[I]) = {
-              new AvroJArray()(itemTag, tt.asInstanceOf[TypeTag[Array[I]]])
-            }
-
-            makeJArray(ReflectionHelpers tagForType itemType)
-          }
+          // sequences and arrays
+          else if (tpe <:< typeOf[Seq[_]] ||
+            tpe <:< typeOf[Array[_]]) AvroArray.fromType(processedTypes)(tt.asInstanceOf[TypeTag[_]])
 
           // Scala enumerations
-          else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol) {
-            tpe match {
-              case TypeRef(prefix, symbol, _) =>
-
-                val enumTypeTag = ReflectionHelpers.enumForValue(tt.asInstanceOf[TypeTag[_ <: Enumeration#Value]])
-
-                new AvroEnum(
-                  name = symbol.name.toString,
-                  symbols = ReflectionHelpers.symbolsOf(enumTypeTag),
-                  namespace = Some(prefix.toString stripSuffix ".type")
-                )(enumTypeTag)
-            }
-          }
+          else if (tpe.baseClasses.head.owner == typeOf[Enumeration].typeSymbol)
+            AvroEnum.fromType(processedTypes)(tt.asInstanceOf[TypeTag[Enumeration]])
 
           // Java enums
-          else if (ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass).isEnum) {
-            val enumClass = ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass)
-            new AvroJEnum[T](
-              name = enumClass.getSimpleName,
-              symbols = enumClass.getEnumConstants.map(_.toString),
-              namespace = Some(enumClass.getPackage.getName)
-            )
-          }
+          else if (ReflectionHelpers.classLoaderMirror.runtimeClass(tpe.typeSymbol.asClass).isEnum)
+            AvroJEnum.fromType(processedTypes)(tt)
 
           // fixed-length data
-          else if (tpe <:< typeOf[FixedData]) {
-            FixedData.lengthAnnotationInstance(tpe.typeSymbol.asClass) match {
-              case Some(FixedData.Length(dataLength)) => {
-                val TypeRef(prefix, symbol, _) = tpe
-
-                if (tpe.typeSymbol.asClass.typeParams.nonEmpty) {
-                  throw new IllegalArgumentException(
-                    "FixedData classes with type parameters are not supported"
-                  )
-                }
-
-                if (!ReflectionHelpers.singleArgumentConstructor[T, immutable.Seq[Byte]].isDefined) {
-                  throw new IllegalArgumentException(
-                    "FixedData classes must define a public single-argument constructor taking a Seq[Byte]"
-                  )
-                }
-
-                new AvroFixed(
-                  name = symbol.name.toString,
-                  size = dataLength,
-                  namespace = Some(prefix.toString stripSuffix ".type")
-                )(tt.asInstanceOf[TypeTag[FixedData]])
-              }
-              case None => throw new IllegalArgumentException(
-                "FixedData classes must be decorated with a FixedData.Length annotation"
-              )
-            }
-          }
+          else if (tpe <:< typeOf[FixedData])
+            AvroFixed.fromType(processedTypes)(tt.asInstanceOf[TypeTag[FixedData]])
 
           // case classes
-          else if (tpe <:< typeOf[Product] &&
-            tpe.typeSymbol.asClass.isCaseClass &&
-            tpe.typeSymbol.asClass.typeParams.isEmpty) {
-            tpe match {
-              case TypeRef(prefix, symbol, _) =>
-                new AvroRecord[T](
-                  name = symbol.name.toString,
-                  fields = ReflectionHelpers.caseClassParamsOf[T].toSeq map {
-                    case (name, tag) => {
-                      // val fieldType = fromTypeHelper(tag, (processedTypes + tt.tpe)).get
-                      // AvroRecord.Field(name, fieldType)
-                      AvroRecord.Field(name)(tag)
-                    }
-                  },
-                  namespace = Some(prefix.toString stripSuffix ".type")
-                )
-            }
-          }
+          else if (tpe <:< typeOf[Product] && tpe.typeSymbol.asClass.isCaseClass)
+            AvroRecord.fromType(processedTypes)(tt.asInstanceOf[TypeTag[Product]])
 
-          // binary unions via scala.Either[A, B]
-          else if (tpe <:< typeOf[Either[_, _]]) tpe match {
-            case TypeRef(_, _, List(left, right)) => {
-              if (processedTypes.exists { pt => pt =:= left || pt =:= right })
-                cyclicTypeDependencyException()
-
-              new AvroUnion(
-                Union.combine(
-                  Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
-                  ReflectionHelpers.tagForType(right)
-                ),
-                tt
-              )
-            }
-          }
-
-          // binary unions via scala.Option[T]
-          else if (tpe <:< typeOf[Option[_]]) tpe match {
-            case TypeRef(_, _, List(innerType)) => {
-
-              if (processedTypes.exists { _ =:= innerType })
-                cyclicTypeDependencyException()
-
-              new AvroUnion(
-                Union.combine(
-                  Union.unary(typeTag[Unit]).underlyingConjunctionTag,
-                  ReflectionHelpers.tagForType(innerType)
-                ),
-                tt
-              )
-            }
-          }
-
-          // N-ary unions
-          else if (tpe <:< typeOf[Union.not[_]]) {
-            new AvroUnion(new Union()(tt.asInstanceOf[TypeTag[Union.not[_]]]), tt)
-          }
-
-          // N-ary unions
-          else if (tpe <:< typeOf[Union[_]]) {
-            val TypeRef(_, _, List(notType)) = tpe
-            val notTypeTag = ReflectionHelpers.tagForType(notType).asInstanceOf[TypeTag[Union.not[_]]]
-            new AvroUnion(new Union()(notTypeTag), tt)
-          }
-
-          // abstract super types of concrete avro-typable types
-          else if (tpe.typeSymbol.isClass) {
-            // last-ditch attempt: union of avro-typeable subtypes of T
-            import ReflectionHelpers._
-
-            val subTypeTags = typeableSubTypesOf[T].filter { subTypeTag =>
-              fromTypeHelper(
-                subTypeTag,
-                processedTypes + tpe
-              ).toOption.isDefined
-            }
-
-            if (subTypeTags.nonEmpty) {
-              var u = Union.unary(subTypeTags.head)
-
-              subTypeTags.tail.foreach { subTypeTag =>
-                u = Union.combine(
-                  u.underlyingConjunctionTag.asInstanceOf[TypeTag[Any]],
-                  subTypeTag
-                )
-              }
-
-              new AvroUnion(u, tt)
-            } // other types are not handled
-
-            else throw new IllegalArgumentException(
-              "Unable to find or make an AvroType for the supplied type [%s]" format tpe
-            )
-          }
+          // unions
+          else if (tpe <:< typeOf[Either[_, _]] ||
+            tpe <:< typeOf[Option[_]] ||
+            tpe <:< typeOf[Union.not[_]] ||
+            tpe <:< typeOf[Union[_]] ||
+            tpe.typeSymbol.isClass) AvroUnion.fromType(processedTypes)(tt)
 
           else throw new IllegalArgumentException(
             "Unable to find or make an AvroType for the supplied type [%s]" format tpe
