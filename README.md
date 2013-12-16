@@ -55,16 +55,17 @@ val Success(readResult) = io readJson json
 
 ## Obtaining Scalavro
 
-The `Scalavro` artifacts are available from Maven Central. The current release is `0.6.1`, built against Scala 2.10.3.
+The `Scalavro` artifacts are available from Maven Central. The current release is `0.6.2`, built against Scala 2.10.3.
 
 Using SBT:
 
 ```scala
-libraryDependencies += "com.gensler" %% "scalavro" % "0.6.1"
+libraryDependencies += "com.gensler" %% "scalavro" % "0.6.2"
 ```
 
 ## API Documentation
 
+- Generated [Scaladoc for version 0.6.2](http://genslerappspod.github.io/scalavro/api/0.6.2/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.6.1](http://genslerappspod.github.io/scalavro/api/0.6.1/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.6.0](http://genslerappspod.github.io/scalavro/api/0.6.0/index.html#com.gensler.scalavro.package)
 - Generated [Scaladoc for version 0.5.1](http://genslerappspod.github.io/scalavro/api/0.5.1/index.html#com.gensler.scalavro.package)
