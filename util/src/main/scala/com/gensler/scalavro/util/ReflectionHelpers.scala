@@ -21,7 +21,7 @@ trait ReflectionHelpers extends Logging {
     * Returns a sequence of Strings, each of which names a value of the
     * supplied enumeration type.
     */
-  protected[scalavro] def symbolsOf[E <: Enumeration: TypeTag]: Seq[String] = {
+  def symbolsOf[E <: Enumeration: TypeTag]: Seq[String] = {
     val valueType = typeOf[E#Value]
 
     val isValueType = (sym: Symbol) => {
@@ -38,7 +38,7 @@ trait ReflectionHelpers extends Logging {
     * Returns a type tag for the parent `scala.Enumeration` of the supplied
     * enumeration value type.
     */
-  protected[scalavro] def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {
+  def enumForValue[V <: Enumeration#Value: TypeTag]: TypeTag[_ <: Enumeration] = {
     val TypeRef(enclosing, _, _) = typeOf[V]
     tagForType(enclosing).asInstanceOf[TypeTag[_ <: Enumeration]]
   }
@@ -86,7 +86,7 @@ trait ReflectionHelpers extends Logging {
     * Returns `true` iff the supplied class symbol corresponds to a
     * serializable type.
     */
-  protected[scalavro] def classSymbolIsTypeable(sym: ClassSymbol): Boolean = {
+  def classSymbolIsTypeable(sym: ClassSymbol): Boolean = {
 
     val symType = sym.selfType
 
@@ -109,7 +109,7 @@ trait ReflectionHelpers extends Logging {
     * Returns a TypeTag for each currently loaded avro-typeable subtype of
     * the supplied type.
     */
-  protected[scalavro] def typeableSubTypesOf[T: TypeTag]: Seq[TypeTag[_]] = {
+  def typeableSubTypesOf[T: TypeTag]: Seq[TypeTag[_]] = {
     import scala.collection.JavaConversions.asScalaSet
     import java.lang.reflect.Modifier
 
@@ -148,8 +148,10 @@ trait ReflectionHelpers extends Logging {
     * Returns a map from formal parameter names to type tags, containing one
     * mapping for each constructor argument.  The resulting map (a ListMap)
     * preserves the order of the primary constructor's parameter list.
+    *
+    * @tparam T  the type of the case class to inspect
     */
-  protected[scalavro] def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
+  def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
     val tpe = typeOf[T]
     val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
     val defaultConstructor =
@@ -165,6 +167,38 @@ trait ReflectionHelpers extends Logging {
   }
 
   /**
+    * Returns `Some(value)` if there is a default value for the supplied
+    * parameter name for the supplied case class type and `None` otherwise.
+    * If the supplied parameter is not defined for the type's apply method,
+    * this method simply returns `None`.
+    *
+    * @tparam T         the type of the case class to inspect
+    * @param parameter  the name of the parameter to find a default value for
+    */
+  def defaultCaseClassValues[T: TypeTag]: Map[String, Option[Any]] = {
+    val companion = CompanionMetadata[T].get
+
+    val applySymbol: MethodSymbol = {
+      val symbol = companion.classType.member("apply": TermName)
+      if (symbol.isMethod) symbol.asMethod
+      else symbol.asTerm.alternatives.head.asMethod // symbol.isTerm
+    }
+
+    def valueFor(i: Int): Option[Any] = {
+      val defaultValueThunkName = s"apply$$default$$${i + 1}": TermName
+      val defaultValueThunkSymbol = companion.classType member defaultValueThunkName
+
+      if (defaultValueThunkSymbol == NoSymbol) None
+      else {
+        val defaultValueThunk = companion.instanceMirror reflectMethod defaultValueThunkSymbol.asMethod
+        Some(defaultValueThunk.apply())
+      }
+    }
+
+    applySymbol.paramss.flatten.zipWithIndex.map { case (p, i) => p.name.toString -> valueFor(i) }.toMap
+  }
+
+  /**
     * Returns Some(MethodMirror) for the public construcor of the supplied
     * class type that takes the supplied argument type as its only parameter.
     *
@@ -175,8 +209,7 @@ trait ReflectionHelpers extends Logging {
     *           constructor
     * @tparam A the type of the constructor's formal parameter
     */
-  protected[scalavro] def singleArgumentConstructor[T: TypeTag, A: TypeTag]: Option[MethodMirror] = {
-
+  def singleArgumentConstructor[T: TypeTag, A: TypeTag]: Option[MethodMirror] = {
     val classType = typeOf[T]
     val targetArgType = typeOf[A]
     val constructorSymbol = classType.declaration(nme.CONSTRUCTOR)
@@ -210,13 +243,13 @@ trait ReflectionHelpers extends Logging {
     * Returns a ClassTag from the current class loader mirror for the supplied
     * type.
     */
-  protected[scalavro] def classTagForType(tpe: Type): ClassTag[_] =
+  def classTagForType(tpe: Type): ClassTag[_] =
     ClassTag(classLoaderMirror runtimeClass tpe)
 
   /**
     * Returns a TypeTag in the current runtime universe for the supplied type.
     */
-  protected[scalavro] def tagForType(tpe: Type): TypeTag[_] = TypeTag(
+  def tagForType(tpe: Type): TypeTag[_] = TypeTag(
     classLoaderMirror,
     new TypeCreator {
       def apply[U <: Universe with Singleton](m: Mirror[U]) = tpe.asInstanceOf[U#Type]
@@ -228,13 +261,10 @@ trait ReflectionHelpers extends Logging {
     * the supplied type's companion object, if one can be derived.  Returns a
     * Failure otherwise.
     */
-  protected[scalavro] def varargsFactory[T: TypeTag]: scala.util.Try[(Any*) => T] = scala.util.Try {
-
+  def varargsFactory[T: TypeTag]: scala.util.Try[(Any*) => T] = scala.util.Try {
     val tpe = typeOf[T]
-
     lazy val varargsApply = companionVarargsApply[T]
     lazy val builderFactory = companionBuilderFactory[T]
-    // lazy val fromSeq = companionFromSeqFactory[T]
 
     if (varargsApply.isDefined) {
       def factory(args: Any*): T = varargsApply.get.apply(args).asInstanceOf[T]
@@ -262,7 +292,7 @@ trait ReflectionHelpers extends Logging {
   /**
     * Wraps information about a companion object for a type.
     */
-  protected[this] case class CompanionMetadata[T](
+  case class CompanionMetadata[T](
     symbol: ModuleSymbol,
     instance: Any,
     instanceMirror: InstanceMirror,
@@ -299,7 +329,7 @@ trait ReflectionHelpers extends Logging {
     * Returns Some(methodMirror) for the public varargs apply method of the
     * supplied type's companion object, if one exists.  Returns None otherwise.
     */
-  protected[this] def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
+  def companionVarargsApply[T: TypeTag]: Option[MethodMirror] = {
 
     def publicVarargs(ms: MethodSymbol): Boolean = ms.isPublic && ms.isVarargs
 
@@ -329,7 +359,7 @@ trait ReflectionHelpers extends Logging {
     * the supplied type's companion object, if one exists.  Returns None
     * otherwise.
     */
-  protected[this] def companionBuilderFactory[T: TypeTag]: Option[MethodMirror] = {
+  def companionBuilderFactory[T: TypeTag]: Option[MethodMirror] = {
     CompanionMetadata[T].flatMap { companion =>
       val newBuilderSymbol = companion.classType.declarations.toTraversable.find { symbol =>
         symbol.isMethod && {
