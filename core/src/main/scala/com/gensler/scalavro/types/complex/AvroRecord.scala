@@ -65,10 +65,13 @@ object AvroRecord {
     if (classSymbol.isCaseClass && classSymbol.typeParams.isEmpty) {
       tt.tpe match {
         case TypeRef(prefix, symbol, _) =>
+
+          val defaultValues = ReflectionHelpers.defaultCaseClassValues[T]
+
           new AvroRecord[T](
             name = symbol.name.toString,
             fields = ReflectionHelpers.caseClassParamsOf[T].toSeq map {
-              case (name, tag) => AvroRecord.Field(name)(tag)
+              case (name, tag) => AvroRecord.Field(name, defaultValues(name))(tag.asInstanceOf[TypeTag[Any]])
             },
             namespace = Some(prefix.toString stripSuffix ".type")
           ).asInstanceOf[AvroType[T]]
@@ -106,16 +109,19 @@ object AvroRecord {
     default: Option[U] = None,
     order: Option[Order] = None,
     aliases: Seq[String] = Seq(),
-    doc: Option[String] = None) extends JsonSchemifiable
+    doc: Option[String] = None)
+      extends JsonSchemifiable
       with CanonicalForm
       with SelfDescribingSchemaHelpers {
 
     lazy val fieldType: AvroType[U] = AvroType[U]
 
     def optionalParams = {
-      //    val defaultParam = ListMap("default" -> default).collect {
-      //      case (k, Some(u)) => (k, fieldType writeAsJson u)
-      //    }
+
+      val defaultParam = ListMap("default" -> default).collect {
+        case (k, Some(u)) => (k, fieldType.io.writeJson(u))
+      }
+
       val orderParam = ListMap("order" -> order).collect {
         case (k, Some(o)) => (k, o.schema)
       }
@@ -128,7 +134,7 @@ object AvroRecord {
         case (k, Some(v)) => (k, v.toJson)
       }
 
-      /* defaultParam ++ */ orderParam ++ aliasesParam ++ docParam
+      defaultParam ++ orderParam ++ aliasesParam ++ docParam
     }
 
     def schema(): spray.json.JsValue = selfContainedSchema()

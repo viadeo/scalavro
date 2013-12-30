@@ -11,3 +11,6 @@ class A
 abstract class B extends A
 case class C() extends A
 case class D() extends B
+
+// a case class with default values
+case class Exclamation(volume: Int, word: String = "Eureka!")

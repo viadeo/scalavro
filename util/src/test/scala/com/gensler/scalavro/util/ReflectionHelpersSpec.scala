@@ -34,4 +34,11 @@ class ReflectionHelpersSpec extends FlatSpec with ShouldMatchers {
     typeableSubTypesOf[B] should have size (1)
   }
 
+  it should "extract default values for case class parameters" in {
+    val default = Exclamation(volume = 11)
+    val defaultArgs = defaultCaseClassValues[Exclamation]
+    defaultArgs("word") should equal (Some(default.word))
+    defaultArgs("volume") should equal (None)
+  }
+
 }
