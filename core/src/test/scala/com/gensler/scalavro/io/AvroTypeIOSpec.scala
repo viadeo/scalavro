@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.{ ShouldMatchers, Matcher, MatchResult }
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -14,7 +14,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 import com.gensler.scalavro.io.complex._
 import com.gensler.scalavro.io.primitive._
 
-class AvroTypeIOSpec extends FlatSpec with ShouldMatchers {
+class AvroTypeIOSpec extends FlatSpec with Matchers {
 
   it should "resolve AvroTypeIO objects for primitive types implicitly" in {
     AvroBoolean.io should equal (AvroBooleanIO)

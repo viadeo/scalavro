@@ -43,8 +43,9 @@ trait ReflectionHelpers extends Logging {
     tagForType(enclosing).asInstanceOf[TypeTag[_ <: Enumeration]]
   }
 
-  private lazy val reflections = {
-    import org.reflections.Reflections
+  import org.reflections.Reflections
+
+  private lazy val reflections: Reflections = {
     import org.reflections.util.{ ConfigurationBuilder, FilterBuilder }
     import org.reflections.scanners.SubTypesScanner
     import scala.collection.JavaConversions._
@@ -91,7 +92,7 @@ trait ReflectionHelpers extends Logging {
     val symType = sym.selfType
 
     sym.isPrimitive ||
-      sym.isAbstractClass || sym.isTrait ||
+      sym.isAbstract || sym.isTrait ||
       (sym.isCaseClass && sym.typeParams.isEmpty) ||
       symType <:< typeOf[Set[_]] ||
       symType <:< typeOf[Map[String, _]] ||
@@ -113,8 +114,8 @@ trait ReflectionHelpers extends Logging {
     import scala.collection.JavaConversions.asScalaSet
     import java.lang.reflect.Modifier
 
-    val tType = typeOf[T]
-    val tSym = typeOf[T].typeSymbol
+    val tType: Type = typeOf[T]
+    val tSym: TypeSymbol = typeOf[T].typeSymbol.asType
 
     if (!tSym.isClass) Seq()
 
@@ -122,7 +123,7 @@ trait ReflectionHelpers extends Logging {
       tSym.asClass.knownDirectSubclasses.collect {
         case sym: Symbol if (
           sym.isClass &&
-          !sym.asClass.isAbstractType &&
+          !sym.asClass.isAbstract &&
           classSymbolIsTypeable(sym.asClass)
         ) => tagForType(sym.asClass.selfType)
       }.toSeq
@@ -131,7 +132,7 @@ trait ReflectionHelpers extends Logging {
     else {
       // filter out abstract classes
       val subClassSymbols = asScalaSet(
-        reflections.getSubTypesOf(classLoaderMirror.runtimeClass(typeOf[T]))
+        reflections.getSubTypesOf(classLoaderMirror.runtimeClass(tType))
       ).collect {
           case clazz: Class[_] if !Modifier.isAbstract(clazz.getModifiers) =>
             classLoaderMirror classSymbol clazz
@@ -153,7 +154,7 @@ trait ReflectionHelpers extends Logging {
     */
   def caseClassParamsOf[T: TypeTag]: ListMap[String, TypeTag[_]] = {
     val tpe = typeOf[T]
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val constructorSymbol = tpe.decl(termNames.CONSTRUCTOR)
     val defaultConstructor =
       if (constructorSymbol.isMethod) constructorSymbol.asMethod
       else {
@@ -161,7 +162,7 @@ trait ReflectionHelpers extends Logging {
         ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
       }
 
-    ListMap[String, TypeTag[_]]() ++ defaultConstructor.paramss.reduceLeft(_ ++ _).map {
+    ListMap[String, TypeTag[_]]() ++ defaultConstructor.paramLists.reduceLeft(_ ++ _).map {
       sym => sym.name.toString -> tagForType(tpe.member(sym.name).asMethod.returnType)
     }
   }
@@ -179,13 +180,13 @@ trait ReflectionHelpers extends Logging {
     val companion = CompanionMetadata[T].get
 
     val applySymbol: MethodSymbol = {
-      val symbol = companion.classType.member("apply": TermName)
+      val symbol = companion.classType.member(TermName("apply"))
       if (symbol.isMethod) symbol.asMethod
       else symbol.asTerm.alternatives.head.asMethod // symbol.isTerm
     }
 
     def valueFor(i: Int): Option[Any] = {
-      val defaultValueThunkName = s"apply$$default$$${i + 1}": TermName
+      val defaultValueThunkName = TermName(s"apply$$default$$${i + 1}")
       val defaultValueThunkSymbol = companion.classType member defaultValueThunkName
 
       if (defaultValueThunkSymbol == NoSymbol) None
@@ -195,7 +196,7 @@ trait ReflectionHelpers extends Logging {
       }
     }
 
-    applySymbol.paramss.flatten.zipWithIndex.map { case (p, i) => p.name.toString -> valueFor(i) }.toMap
+    applySymbol.paramLists.flatten.zipWithIndex.map { case (p, i) => p.name.toString -> valueFor(i) }.toMap
   }
 
   /**
@@ -212,11 +213,11 @@ trait ReflectionHelpers extends Logging {
   def singleArgumentConstructor[T: TypeTag, A: TypeTag]: Option[MethodMirror] = {
     val classType = typeOf[T]
     val targetArgType = typeOf[A]
-    val constructorSymbol = classType.declaration(nme.CONSTRUCTOR)
+    val constructorSymbol = classType.decl(termNames.CONSTRUCTOR)
 
     def isPublicAndMatchesArgument(methodSymbol: MethodSymbol): Boolean =
       methodSymbol.isPublic && {
-        methodSymbol.asMethod.paramss match {
+        methodSymbol.asMethod.paramLists match {
           case List(List(argSym)) => argSym.typeSignatureIn(classType) =:= targetArgType
           case _                  => false
         }
@@ -307,16 +308,16 @@ trait ReflectionHelpers extends Logging {
 
       val typeSymbol = typeOf[T].typeSymbol
 
-      val companionSymbol: Option[ModuleSymbol] = {
+      val companion: Option[ModuleSymbol] = {
         if (!typeSymbol.isClass) None // supplied type is not a class
         else {
           val classSymbol = typeSymbol.asClass
-          if (!classSymbol.companionSymbol.isModule) None // supplied class type has no companion
-          else Some(classSymbol.companionSymbol.asModule)
+          if (!classSymbol.companion.isModule) None // supplied class type has no companion
+          else Some(classSymbol.companion.asModule)
         }
       }
 
-      companionSymbol.map { symbol =>
+      companion.map { symbol =>
         val instance = classLoaderMirror.reflectModule(symbol).instance
         val instanceMirror = classLoaderMirror reflect instance
         val classType = symbol.moduleClass.asClass.asType.toType
@@ -335,7 +336,7 @@ trait ReflectionHelpers extends Logging {
 
     CompanionMetadata[T].flatMap { companion =>
       val applySymbol: Option[MethodSymbol] = {
-        val symbol = companion.classType.member("apply": TermName)
+        val symbol = companion.classType.member(TermName("apply"))
         if (symbol.isMethod) {
           val methodSymbol = symbol.asMethod
           if (publicVarargs(methodSymbol)) Some(methodSymbol)
@@ -361,10 +362,10 @@ trait ReflectionHelpers extends Logging {
     */
   def companionBuilderFactory[T: TypeTag]: Option[MethodMirror] = {
     CompanionMetadata[T].flatMap { companion =>
-      val newBuilderSymbol = companion.classType.declarations.toTraversable.find { symbol =>
+      val newBuilderSymbol = companion.classType.decls.toTraversable.find { symbol =>
         symbol.isMethod && {
           val methodSymbol = symbol.asMethod
-          val isNullary = methodSymbol.paramss == List()
+          val isNullary = methodSymbol.paramLists == List()
           val returnsBuilder = methodSymbol.returnType.typeConstructor =:= typeOf[Builder[_, _]].typeConstructor
           isNullary && returnsBuilder
         }
@@ -382,7 +383,7 @@ trait ReflectionHelpers extends Logging {
     * @param membername the name of the member value to extract
     */
   class ProductElementExtractor[P: TypeTag, T: TypeTag](memberName: String) {
-    val memberField = typeOf[P].declaration(memberName: TermName).asTerm.accessed.asTerm
+    val memberField = typeOf[P].decl(TermName(memberName)).asTerm.accessed.asTerm
     implicit val ct = ClassTag[P](classLoaderMirror runtimeClass typeOf[P])
 
     /**
@@ -415,7 +416,7 @@ trait ReflectionHelpers extends Logging {
 
     val classMirror = classLoaderMirror reflectClass classSymbol
 
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val constructorSymbol = tpe.decl(termNames.CONSTRUCTOR)
 
     val defaultConstructor =
       if (constructorSymbol.isMethod) constructorSymbol.asMethod

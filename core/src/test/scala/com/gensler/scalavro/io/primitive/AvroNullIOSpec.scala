@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.primitive._
@@ -15,7 +15,7 @@ import com.gensler.scalavro.io.AvroTypeIO
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
-class AvroNullIOSpec extends FlatSpec with ShouldMatchers {
+class AvroNullIOSpec extends FlatSpec with Matchers {
 
   val io = AvroNullIO
 
@@ -36,7 +36,7 @@ class AvroNullIOSpec extends FlatSpec with ShouldMatchers {
   }
 
   it should "read and write Units as JSON" in {
-    val json = io writeJson ()
+    val json = io.writeJson(())
     io readJson json should equal (Success(()))
   }
 

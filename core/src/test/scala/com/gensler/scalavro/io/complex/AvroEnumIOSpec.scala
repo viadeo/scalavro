@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -19,7 +19,7 @@ object Direction extends Enumeration {
   val NORTH, EAST, SOUTH, WEST = Value
 }
 
-class AvroEnumIOSpec extends FlatSpec with ShouldMatchers {
+class AvroEnumIOSpec extends FlatSpec with Matchers {
 
   val enumType = AvroType[Direction.type#Direction]
   val io = enumType.io

@@ -1,14 +1,14 @@
 package com.gensler.scalavro.util.test
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.util.Union
 import com.gensler.scalavro.util.Union.{ union, prove }
 
-class UnionSpec extends FlatSpec with ShouldMatchers {
+class UnionSpec extends FlatSpec with Matchers {
 
   def typeSubsetOf(a: Seq[Type], b: Seq[Type]): Boolean = {
     a.foldLeft(true) { (result, tpe) =>

@@ -82,10 +82,12 @@ object Union extends UnionTypeHelpers {
 
 private[scalavro] trait UnionTypeHelpers {
 
+  import annotation.unchecked._
+
   sealed trait not[-A] {
-    type or[B] = Disjunction[A]#or[B]#apply
-    type apply = not[A]
-    type unapply = A
+    type or[B] = Disjunction[A @uncheckedVariance]#or[B]#apply
+    type apply = not[A @uncheckedVariance]
+    type unapply = (A @uncheckedVariance)
   }
 
   trait Disjunction[A] {
@@ -127,7 +129,7 @@ class Union[U <: Union.not[_]: TypeTag] {
 
     actualParam.foreach { part =>
       if (part <:< notType) {
-        val partParams = part.typeSymbol.asType.typeParams.map { _.asType.toTypeIn(part).normalize }
+        val partParams = part.typeSymbol.asType.typeParams.map { _.asType.toTypeIn(part).dealias }
         members ++= partParams
       }
     }

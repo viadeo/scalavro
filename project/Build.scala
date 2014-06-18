@@ -15,20 +15,22 @@ object ScalavroBuild extends Build {
   val ORGANIZATION = "com.gensler"
   val PROJECT_NAME = "scalavro"
   val PROJECT_VERSION = "0.7.0-SNAPSHOT"
-  val SCALA_VERSION = "2.10.3"
+
+  val SCALA_VERSION = "2.11.1"
+  val SCALA_XML_VERSION = "1.0.2"
 
 
 //////////////////////////////////////////////////////////////////////////////
 // DEPENDENCY VERSIONS
 //////////////////////////////////////////////////////////////////////////////
 
-  val SPRAY_JSON_VERSION = "1.2.5"
-  val AVRO_VERSION = "1.7.5"
-  val SCALATEST_VERSION = "2.0.M5b"
+  val SPRAY_JSON_VERSION = "1.2.6"
+  val AVRO_VERSION = "1.7.6"
+  val SCALATEST_VERSION = "2.2.0"
   val REFLECTIONS_VERSION = "0.9.9-RC1"
   val TYPESAFE_CONFIG_VERSION = "1.0.2"
-  val SLF4J_VERSION   = "1.7.2"
-  val LOGBACK_VERSION = "1.0.9"
+  val SLF4J_VERSION   = "1.7.7"
+  val LOGBACK_VERSION = "1.1.2"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -59,6 +61,7 @@ object ScalavroBuild extends Build {
   ) settings (
     resolvers += "Spray Micro-Repository" at "http://repo.spray.io/",
     libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-xml" % SCALA_XML_VERSION,
       "io.spray" %% "spray-json" % SPRAY_JSON_VERSION,
       "org.apache.avro" % "avro" % AVRO_VERSION
     )

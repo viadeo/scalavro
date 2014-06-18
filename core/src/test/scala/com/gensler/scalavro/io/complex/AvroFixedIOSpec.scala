@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -18,7 +18,7 @@ import scala.collection.immutable
 
 import java.io.{ PipedInputStream, PipedOutputStream }
 
-class AvroFixedIOSpec extends FlatSpec with ShouldMatchers {
+class AvroFixedIOSpec extends FlatSpec with Matchers {
 
   val md5Type = AvroType[MD5]
   val io = md5Type.io

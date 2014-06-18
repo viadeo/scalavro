@@ -1,13 +1,13 @@
 package com.gensler.scalavro.util.test
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import scala.reflect.runtime.universe._
 
 import com.gensler.scalavro.util.ReflectionHelpers._
 
-class ReflectionHelpersSpec extends FlatSpec with ShouldMatchers {
+class ReflectionHelpersSpec extends FlatSpec with Matchers {
 
   object Direction extends Enumeration {
     type Direction = Value

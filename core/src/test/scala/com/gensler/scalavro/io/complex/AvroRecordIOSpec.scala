@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -24,7 +24,7 @@ case class Person(name: String, age: Int)
 // for testing
 case class SantaList(nice: Seq[Person], naughty: Seq[Person])
 
-class AvroRecordIOSpec extends FlatSpec with ShouldMatchers {
+class AvroRecordIOSpec extends FlatSpec with Matchers {
 
   "AvroRecordIO" should "be the AvroTypeIO for AvroRecord" in {
     val personIO = AvroType[Person].io

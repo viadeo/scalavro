@@ -29,7 +29,7 @@ trait AvroFloatIO extends AvroPrimitiveTypeIO[Float] {
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: Float) = JsNumber(BigDecimal(value))
+  def writePrimitiveJson(value: Float) = JsNumber(value.toDouble)
 
   def readJson(json: JsValue) = Try {
     json match {

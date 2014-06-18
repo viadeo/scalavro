@@ -71,33 +71,39 @@ object AvroUnion {
     val tpe = tt.tpe
 
     // binary unions via scala.Either[A, B]
-    if (tpe <:< typeOf[Either[_, _]]) tpe match {
-      case TypeRef(_, _, List(left, right)) => {
-        if (processedTypes.exists { pt => pt =:= left || pt =:= right }) AvroType.cyclicTypeDependencyException[T]
+    if (tpe <:< typeOf[Either[_, _]]) {
+      tpe match {
+        case TypeRef(_, _, List(left, right)) => {
+          if (processedTypes.exists { pt => pt =:= left || pt =:= right })
+            AvroType.cyclicTypeDependencyException[T]
 
-        new AvroUnion(
-          Union.combine(
-            Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
-            ReflectionHelpers.tagForType(right)
-          ),
-          tt
-        )
+          new AvroUnion(
+            Union.combine(
+              Union.unary(ReflectionHelpers.tagForType(left)).underlyingConjunctionTag,
+              ReflectionHelpers.tagForType(right)
+            ),
+            tt
+          )
+        }
       }
     }
 
     // binary unions via scala.Option[T]
-    else if (tpe <:< typeOf[Option[_]]) tpe match {
-      case TypeRef(_, _, List(innerType)) => {
+    else if (tpe <:< typeOf[Option[_]]) {
+      tpe match {
+        case TypeRef(_, _, List(innerType)) => {
 
-        if (processedTypes.exists { _ =:= innerType }) AvroType.cyclicTypeDependencyException[T]
+          if (processedTypes.exists { _ =:= innerType })
+            AvroType.cyclicTypeDependencyException[T]
 
-        new AvroUnion(
-          Union.combine(
-            Union.unary(typeTag[Unit]).underlyingConjunctionTag,
-            ReflectionHelpers.tagForType(innerType)
-          ),
-          tt
-        )
+          new AvroUnion(
+            Union.combine(
+              Union.unary(typeTag[Unit]).underlyingConjunctionTag,
+              ReflectionHelpers.tagForType(innerType)
+            ),
+            tt
+          )
+        }
       }
     }
 
@@ -116,7 +122,6 @@ object AvroUnion {
     // super types of concrete avro-typable types
     else if (tpe.typeSymbol.isClass) {
       // last-ditch attempt: union of avro-typeable subtypes of T
-      import scala.language.existentials
 
       val subTypeTags = ReflectionHelpers.typeableSubTypesOf[T].filter { subTypeTag =>
         AvroType.fromTypeHelper(
@@ -126,6 +131,7 @@ object AvroUnion {
       }
 
       if (subTypeTags.nonEmpty) {
+        import scala.language.existentials
         var u = Union.unary(subTypeTags.head)
 
         subTypeTags.tail.foreach { subTypeTag =>

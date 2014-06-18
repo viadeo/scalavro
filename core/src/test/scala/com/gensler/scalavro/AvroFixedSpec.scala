@@ -19,7 +19,7 @@ class AvroFixedSpec extends AvroSpec {
   }
 
   it should "fail to be created from a parameterized type" in {
-    evaluating { AvroType[BadFixed[String]] } should produce[IllegalArgumentException]
+    an[IllegalArgumentException] should be thrownBy { AvroType[BadFixed[String]] }
   }
 
   it should "be a complex AvroType" in {

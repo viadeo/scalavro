@@ -108,7 +108,7 @@ abstract class AvroTypeIO[T: TypeTag] extends Logging {
     */
   @throws[AvroDeserializationException[_]]
   final def readJson(jsonString: String): Try[T] = Try {
-    readJson(jsonString.asJson).get
+    readJson(jsonString.parseJson).get
   }
 
 }

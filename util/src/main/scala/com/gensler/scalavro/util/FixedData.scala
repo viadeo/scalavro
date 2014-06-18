@@ -67,12 +67,12 @@ object FixedData {
   private[scalavro] def lengthAnnotationInstance(classSymbol: ClassSymbol): Option[FixedData.Length] = {
     if (!(classSymbol.toType <:< typeOf[FixedData])) None
     else {
-      classSymbol.annotations.find { _.tpe =:= typeOf[FixedData.Length] }.map { lengthAnnotation =>
+      classSymbol.annotations.find { _.tree.tpe =:= typeOf[FixedData.Length] }.map { lengthAnnotation =>
         val lengthSymbol = ReflectionHelpers.classLoaderMirror.classSymbol(classOf[FixedData.Length])
         val lengthMirror = ReflectionHelpers.classLoaderMirror reflectClass lengthSymbol
-        val lengthConstructorSymbol = typeOf[FixedData.Length].declaration(nme.CONSTRUCTOR).asMethod
+        val lengthConstructorSymbol = typeOf[FixedData.Length].decl(termNames.CONSTRUCTOR).asMethod
         val lengthConstructorMirror = lengthMirror reflectConstructor lengthConstructorSymbol
-        val annotationArguments = lengthAnnotation.scalaArgs.map { _.productElement(0).asInstanceOf[Constant].value }
+        val annotationArguments = lengthAnnotation.tree.children.tail.map { _.productElement(0).asInstanceOf[Constant].value }
         lengthConstructorMirror(annotationArguments: _*).asInstanceOf[FixedData.Length]
       }
     }

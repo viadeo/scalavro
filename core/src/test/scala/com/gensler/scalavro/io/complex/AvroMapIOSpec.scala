@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -18,7 +18,7 @@ import java.io.{
   PipedOutputStream
 }
 
-class AvroMapIOSpec extends FlatSpec with ShouldMatchers {
+class AvroMapIOSpec extends FlatSpec with Matchers {
 
   val intMapType = AvroType.fromType[Map[String, Int]].get
 

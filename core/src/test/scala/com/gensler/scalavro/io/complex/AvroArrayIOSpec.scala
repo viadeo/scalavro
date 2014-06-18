@@ -4,7 +4,7 @@ import scala.util.{ Try, Success, Failure }
 import scala.reflect.runtime.universe._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.types._
 import com.gensler.scalavro.types.complex._
@@ -13,7 +13,7 @@ import com.gensler.scalavro.error._
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 
-class AvroArrayIOSpec extends FlatSpec with ShouldMatchers {
+class AvroArrayIOSpec extends FlatSpec with Matchers {
 
   val intArrayType = AvroType[Seq[Int]]
   val io = intArrayType.io

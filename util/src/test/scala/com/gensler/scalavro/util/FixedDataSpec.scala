@@ -1,7 +1,7 @@
 package com.gensler.scalavro.util.test
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.gensler.scalavro.util.FixedData
 
@@ -13,16 +13,16 @@ case class MissingLength(override val bytes: immutable.Seq[Byte]) extends FixedD
 @FixedData.Length(4)
 case class SmallFixed(override val bytes: immutable.Seq[Byte]) extends FixedData(bytes)
 
-class FixedDataSpec extends FlatSpec with ShouldMatchers {
+class FixedDataSpec extends FlatSpec with Matchers {
 
   val whoaBytes = "whoa".getBytes.toIndexedSeq
 
   "FixedData" should "initialize" in {
     val smallFixed = SmallFixed(whoaBytes)
 
-    evaluating {
+    an[java.lang.AssertionError] should be thrownBy {
       MissingLength(whoaBytes)
-    } should produce[java.lang.AssertionError]
+    }
   }
 
   it should "synthesize a FixedData.Length instance given a ClassSymbol" in {
