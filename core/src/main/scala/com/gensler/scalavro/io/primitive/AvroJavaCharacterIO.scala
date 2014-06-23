@@ -1,57 +1,56 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.types.primitive.AvroString
+import com.gensler.scalavro.types.primitive.AvroJavaCharacter
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.generic.GenericData
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
 import scala.util.Try
 
-object AvroStringIO extends AvroStringIO
+object AvroJavaCharacterIO extends AvroJavaCharacterIO
 
-trait AvroStringIO extends AvroNullablePrimitiveTypeIO[String] {
+trait AvroJavaCharacterIO extends AvroNullablePrimitiveTypeIO[java.lang.Character] {
 
-  val avroType = AvroString
+  val avroType = AvroJavaCharacter
 
   ////////////////////////////////////////////////////////////////////////////
   // BINARY ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
-    value: String,
+    value: java.lang.Character,
     encoder: BinaryEncoder): Unit =
     if (value == null) {
       AvroLongIO.write(UNION_INDEX_NULL, encoder)
     }
     else {
       AvroLongIO.write(UNION_INDEX_VALUE, encoder)
-      encoder writeString value
+      encoder writeInt value.toChar
     }
 
-  def read(decoder: BinaryDecoder): String =
+  def read(decoder: BinaryDecoder): java.lang.Character =
     AvroLongIO.read(decoder) match {
       case UNION_INDEX_NULL  => null
-      case UNION_INDEX_VALUE => decoder.readString
+      case UNION_INDEX_VALUE => decoder.readInt.toChar
     }
 
   ////////////////////////////////////////////////////////////////////////////
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: String) =
+  def writePrimitiveJson(value: java.lang.Character) =
     if (value == null)
       JsNull
     else
-      JsString(value)
+      JsString(value.toString)
 
-  def readJson(json: JsValue): Try[String] = Try {
+  def readJson(json: JsValue): Try[java.lang.Character] = Try {
     json match {
-      case JsString(value) => value
-      case JsNull          => null
-      case _               => throw new AvroDeserializationException[String]
+      case JsString(value) if value.length == 1 => value.head
+      case JsNull                               => null
+      case _                                    => throw new AvroDeserializationException[java.lang.Character]
     }
   }
 

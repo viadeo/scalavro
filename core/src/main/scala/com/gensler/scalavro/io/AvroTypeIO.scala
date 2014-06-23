@@ -134,18 +134,29 @@ object AvroTypeIO {
   // primitive types
   def avroTypeToIO[T](avroType: AvroPrimitiveType[T]): AvroTypeIO[T] =
     avroType match {
-      case AvroBoolean => AvroBooleanIO
-      case AvroBytes   => AvroBytesIO
-      case AvroDouble  => AvroDoubleIO
-      case AvroFloat   => AvroFloatIO
-      case AvroByte    => AvroByteIO
-      case AvroChar    => AvroCharIO
-      case AvroShort   => AvroShortIO
-      case AvroInt     => AvroIntIO
-      case AvroLong    => AvroLongIO
-      case AvroNull    => AvroNullIO
-      case AvroString  => AvroStringIO
-      case AvroXml     => AvroXmlIO
+      case AvroBoolean       => AvroBooleanIO
+      case AvroBytes         => AvroBytesIO
+      case AvroDouble        => AvroDoubleIO
+      case AvroFloat         => AvroFloatIO
+      case AvroByte          => AvroByteIO
+      case AvroChar          => AvroCharIO
+      case AvroShort         => AvroShortIO
+      case AvroInt           => AvroIntIO
+      case AvroLong          => AvroLongIO
+      case AvroNull          => AvroNullIO
+      case AvroString        => AvroStringIO // Covers Scala & Java strings (same class internally)
+      case AvroXml           => AvroXmlIO
+
+      case AvroJavaBoolean   => AvroJavaBooleanIO
+      //case AvroJavaBytes     => AvroJavaBytesIO
+      case AvroJavaDouble    => AvroJavaDoubleIO
+      case AvroJavaFloat     => AvroJavaFloatIO
+      case AvroJavaByte      => AvroJavaByteIO
+      case AvroJavaCharacter => AvroJavaCharacterIO
+      case AvroJavaShort     => AvroJavaShortIO
+      case AvroJavaInteger   => AvroJavaIntegerIO
+      case AvroJavaLong      => AvroJavaLongIO
+      //case AvroW3Xml         => AvroW3XmlIO
     }
 
   // complex types

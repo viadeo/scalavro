@@ -193,15 +193,23 @@ object AvroType extends Logging {
     private[this] val primitiveTypeCache: Map[Type, AvroType[_]] = Map(
       typeOf[Unit] -> AvroNull,
       typeOf[Boolean] -> AvroBoolean,
+      typeOf[java.lang.Boolean] -> AvroJavaBoolean,
       typeOf[Seq[Byte]] -> AvroBytes, // TODO: handle arbitrary subclasses of Seq[Byte]
       typeOf[immutable.Seq[Byte]] -> AvroBytes, // TODO: handle arbitrary subclasses of Seq[Byte]
       typeOf[Double] -> AvroDouble,
+      typeOf[java.lang.Double] -> AvroJavaDouble,
       typeOf[Float] -> AvroFloat,
+      typeOf[java.lang.Float] -> AvroJavaFloat,
       typeOf[Byte] -> AvroByte,
+      typeOf[java.lang.Byte] -> AvroJavaByte,
       typeOf[Char] -> AvroChar,
+      typeOf[java.lang.Character] -> AvroJavaCharacter,
       typeOf[Short] -> AvroShort,
+      typeOf[java.lang.Short] -> AvroJavaShort,
       typeOf[Int] -> AvroInt,
+      typeOf[java.lang.Integer] -> AvroJavaInteger,
       typeOf[Long] -> AvroLong,
+      typeOf[java.lang.Long] -> AvroJavaLong,
       typeOf[String] -> AvroString,
       typeOf[scala.xml.Node] -> AvroXml
     )

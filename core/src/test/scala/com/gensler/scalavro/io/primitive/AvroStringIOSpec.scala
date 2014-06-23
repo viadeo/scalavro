@@ -29,18 +29,23 @@ class AvroStringIOSpec extends FlatSpec with Matchers {
 
     val out = new ByteArrayOutputStream
     io.write(text, out)
+    io.write(null, out)
 
     val bytes = out.toByteArray
     val in = new ByteArrayInputStream(bytes)
 
     io.read(in).get should equal (text)
+    io.read(in).get should equal (null)
   }
 
   it should "read and write Strings as JSON" in {
     val text = "The quick brown fox jumped over the lazy dog."
 
     val json = io writeJson text
+    val nullJson = io writeJson null
+
     io readJson json should equal (Success(text))
+    io readJson nullJson should equal (Success(null))
   }
 
 }

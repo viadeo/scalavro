@@ -13,7 +13,7 @@ import scala.xml.{ XML, Node }
 
 object AvroXmlIO extends AvroXmlIO
 
-trait AvroXmlIO extends AvroPrimitiveTypeIO[Node] {
+trait AvroXmlIO extends AvroNullablePrimitiveTypeIO[Node] {
 
   val avroType = AvroXml
 
@@ -23,19 +23,28 @@ trait AvroXmlIO extends AvroPrimitiveTypeIO[Node] {
 
   protected[scalavro] def write(
     value: Node,
-    encoder: BinaryEncoder): Unit = encoder writeString value.toString
+    encoder: BinaryEncoder): Unit = AvroStringIO.write(value.toString, encoder)
 
-  def read(decoder: BinaryDecoder) = XML loadString decoder.readString
+  def read(decoder: BinaryDecoder) =
+    AvroStringIO.read(decoder) match {
+      case xml: String => XML.loadString(xml)
+      case null        => null
+    }
 
   ////////////////////////////////////////////////////////////////////////////
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: Node) = JsString(value.toString)
+  def writePrimitiveJson(value: Node) =
+    if (value == null)
+      JsNull
+    else
+      JsString(value.toString)
 
   def readJson(json: JsValue) = Try {
     json match {
       case JsString(value) => XML loadString value
+      case JsNull          => null
       case _               => throw new AvroDeserializationException[Node]
     }
   }

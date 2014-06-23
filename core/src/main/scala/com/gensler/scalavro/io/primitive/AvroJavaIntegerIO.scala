@@ -1,57 +1,56 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.types.primitive.AvroString
+import com.gensler.scalavro.types.primitive.AvroJavaInteger
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.generic.GenericData
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
 import scala.util.Try
 
-object AvroStringIO extends AvroStringIO
+object AvroJavaIntegerIO extends AvroJavaIntegerIO
 
-trait AvroStringIO extends AvroNullablePrimitiveTypeIO[String] {
+trait AvroJavaIntegerIO extends AvroNullablePrimitiveTypeIO[java.lang.Integer] {
 
-  val avroType = AvroString
+  val avroType = AvroJavaInteger
 
   ////////////////////////////////////////////////////////////////////////////
   // BINARY ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
   protected[scalavro] def write(
-    value: String,
+    value: java.lang.Integer,
     encoder: BinaryEncoder): Unit =
     if (value == null) {
       AvroLongIO.write(UNION_INDEX_NULL, encoder)
     }
     else {
       AvroLongIO.write(UNION_INDEX_VALUE, encoder)
-      encoder writeString value
+      encoder writeInt value
     }
 
-  def read(decoder: BinaryDecoder): String =
+  def read(decoder: BinaryDecoder): java.lang.Integer =
     AvroLongIO.read(decoder) match {
       case UNION_INDEX_NULL  => null
-      case UNION_INDEX_VALUE => decoder.readString
+      case UNION_INDEX_VALUE => decoder.readInt
     }
 
   ////////////////////////////////////////////////////////////////////////////
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: String) =
+  def writePrimitiveJson(value: java.lang.Integer) =
     if (value == null)
       JsNull
     else
-      JsString(value)
+      JsNumber(BigDecimal(value))
 
-  def readJson(json: JsValue): Try[String] = Try {
+  def readJson(json: JsValue): Try[java.lang.Integer] = Try {
     json match {
-      case JsString(value) => value
-      case JsNull          => null
-      case _               => throw new AvroDeserializationException[String]
+      case JsNumber(bigDecimal) if bigDecimal.isValidInt => bigDecimal.toInt
+      case JsNull => null
+      case _ => throw new AvroDeserializationException[java.lang.Integer]
     }
   }
 

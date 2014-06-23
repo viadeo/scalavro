@@ -1,57 +1,60 @@
 package com.gensler.scalavro.io.primitive
 
-import com.gensler.scalavro.types.primitive.AvroString
+import com.gensler.scalavro.types.primitive.AvroJavaBoolean
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 
-import org.apache.avro.generic.GenericData
 import org.apache.avro.io.{ BinaryEncoder, BinaryDecoder }
 
 import spray.json._
 
 import scala.util.Try
 
-object AvroStringIO extends AvroStringIO
+object AvroJavaBooleanIO extends AvroJavaBooleanIO
 
-trait AvroStringIO extends AvroNullablePrimitiveTypeIO[String] {
+trait AvroJavaBooleanIO extends AvroNullablePrimitiveTypeIO[java.lang.Boolean] {
 
-  val avroType = AvroString
+  val avroType = AvroJavaBoolean
 
   ////////////////////////////////////////////////////////////////////////////
   // BINARY ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
+  /**
+    * a boolean is written as a single byte whose value is either 0 (false) or
+    * 1 (true).
+    */
   protected[scalavro] def write(
-    value: String,
+    value: java.lang.Boolean,
     encoder: BinaryEncoder): Unit =
     if (value == null) {
       AvroLongIO.write(UNION_INDEX_NULL, encoder)
     }
     else {
       AvroLongIO.write(UNION_INDEX_VALUE, encoder)
-      encoder writeString value
+      encoder writeBoolean value
     }
 
-  def read(decoder: BinaryDecoder): String =
+  protected[scalavro] def read(decoder: BinaryDecoder): java.lang.Boolean =
     AvroLongIO.read(decoder) match {
       case UNION_INDEX_NULL  => null
-      case UNION_INDEX_VALUE => decoder.readString
+      case UNION_INDEX_VALUE => decoder.readBoolean
     }
 
   ////////////////////////////////////////////////////////////////////////////
   // JSON ENCODING
   ////////////////////////////////////////////////////////////////////////////
 
-  def writePrimitiveJson(value: String) =
+  def writePrimitiveJson(value: java.lang.Boolean) =
     if (value == null)
       JsNull
     else
-      JsString(value)
+      JsBoolean(value)
 
-  def readJson(json: JsValue): Try[String] = Try {
+  def readJson(json: JsValue): Try[java.lang.Boolean] = Try {
     json match {
-      case JsString(value) => value
-      case JsNull          => null
-      case _               => throw new AvroDeserializationException[String]
+      case JsBoolean(value) => value
+      case JsNull           => null
+      case _                => throw new AvroDeserializationException[java.lang.Boolean]
     }
   }
 

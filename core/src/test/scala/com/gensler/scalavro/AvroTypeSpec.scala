@@ -13,13 +13,27 @@ class AvroTypeSpec extends AvroSpec {
   // primitives
   "The AvroType companion object" should "return valid primitive avro types" in {
     AvroType[Boolean] should be (AvroBoolean)
+    AvroType[Byte] should be (AvroByte)
     AvroType[Seq[Byte]] should be (AvroBytes)
+    AvroType[Char] should be (AvroChar)
     AvroType[Double] should be (AvroDouble)
     AvroType[Float] should be (AvroFloat)
     AvroType[Int] should be (AvroInt)
     AvroType[Long] should be (AvroLong)
-    AvroType[Unit] should be (AvroNull)
+    AvroType[Short] should be (AvroShort)
     AvroType[String] should be (AvroString)
+    AvroType[Unit] should be (AvroNull)
+    AvroType[scala.xml.Node] should be (AvroXml)
+
+    AvroType[java.lang.Boolean] should be (AvroJavaBoolean)
+    AvroType[java.lang.Byte] should be (AvroJavaByte)
+    AvroType[java.lang.Character] should be (AvroJavaCharacter)
+    AvroType[java.lang.Double] should be (AvroJavaDouble)
+    AvroType[java.lang.Float] should be (AvroJavaFloat)
+    AvroType[java.lang.Integer] should be (AvroJavaInteger)
+    AvroType[java.lang.Long] should be (AvroJavaLong)
+    AvroType[java.lang.Short] should be (AvroJavaShort)
+    // support org.w3c.dom Node/Element?
   }
 
   // arrays
@@ -83,7 +97,7 @@ class AvroTypeSpec extends AvroSpec {
           "type": "record",
           "fields": [{
             "name": "name",
-            "type": "string"
+            "type": ["null", "string"]
           }, {
             "name": "age",
             "type": "int"
@@ -292,7 +306,7 @@ class AvroTypeSpec extends AvroSpec {
     "type": "int"
   }, {
     "name": "word",
-    "type": "string",
+    "type": ["null", "string"],
     "default": "Eureka!"
   }]
 }

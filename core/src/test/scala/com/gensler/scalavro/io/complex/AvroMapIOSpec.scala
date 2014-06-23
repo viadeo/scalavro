@@ -27,7 +27,6 @@ class AvroMapIOSpec extends FlatSpec with Matchers {
   }
 
   it should "read and write maps" in {
-
     val io = intMapType.io
 
     val m1: Map[String, Int] = Map(
@@ -42,13 +41,14 @@ class AvroMapIOSpec extends FlatSpec with Matchers {
     io.write(m1, out)
 
     val in = new ByteArrayInputStream(out.toByteArray)
+
     val Success(readResult) = io read in
+
     readResult should equal (m1)
     readResult("cinque") should equal (5)
   }
 
   it should "read and write maps of bytes" in {
-
     val io = AvroType[Map[String, Seq[Byte]]].io
 
     val out = new PipedOutputStream
@@ -104,4 +104,46 @@ class AvroMapIOSpec extends FlatSpec with Matchers {
     readResult should equal (m1)
     readResult("cinque") should equal (5)
   }
+
+  it should "not allow null keys in maps" in {
+    val io = intMapType.io
+
+    val out = new PipedOutputStream
+    val in = new PipedInputStream(out)
+
+    val map: Map[String, Int] = Map(
+      "uno" -> 1,
+      "due" -> 2,
+      null.asInstanceOf[String] -> 3
+    )
+
+    an[AvroSerializationException[_]] should be thrownBy {
+      io.write(map, out)
+      val Success(readResult) = io read in
+      readResult should equal (map)
+    }
+  }
+
+  it should "not allow null keys in maps via JSON" in {
+    val io = intMapType.io
+
+    val map: Map[String, Int] = Map(
+      "uno" -> 1,
+      "due" -> 2,
+      null.asInstanceOf[String] -> 3
+    )
+
+    an[AvroSerializationException[_]] should be thrownBy {
+      val json = io writeJson map
+      val Success(readResult) = io readJson json
+      readResult should equal (map)
+    }
+  }
+
+  it should "not support Maps which have non-String keys" in {
+    an[IllegalArgumentException] should be thrownBy {
+      AvroType.fromType[Map[Int, Int]].get
+    }
+  }
+
 }

@@ -1,7 +1,7 @@
 package com.gensler.scalavro.io.complex
 
 import com.gensler.scalavro.io.AvroTypeIO
-import com.gensler.scalavro.io.primitive.{ AvroLongIO, AvroStringIO }
+import com.gensler.scalavro.io.primitive.AvroLongIO
 import com.gensler.scalavro.types.complex.AvroMap
 import com.gensler.scalavro.error.{ AvroSerializationException, AvroDeserializationException }
 import com.gensler.scalavro.util.ReflectionHelpers
@@ -39,6 +39,8 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
       encoder.writeMapStart
       encoder.setItemCount(map.size)
       for ((key, value) <- map) {
+        if (key == null)
+          throw new AvroSerializationException(map, null, "Null keys are not allowed")
         encoder.startItem
         encoder writeString key
         avroType.itemType.io.write(value, encoder, references, false)
@@ -46,6 +48,7 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
       encoder.writeMapEnd
     }
     catch {
+      case cause: AvroSerializationException[_] => throw cause
       case cause: Throwable =>
         throw new AvroSerializationException(map, cause)
     }
@@ -63,7 +66,7 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
       val absNumItems = math abs numItems
       if (numItems < 0L) { val bytesInBlock = AvroLongIO read decoder }
       (0L until absNumItems) foreach { _ =>
-        val key = AvroStringIO read decoder
+        val key = decoder.readString
         val value = avroType.itemType.io.read(decoder, references, false)
         items += key -> value
       }
@@ -81,8 +84,12 @@ case class AvroMapIO[T, M <: Map[String, T]](avroType: AvroMap[T, M]) extends Av
 
   def writeJson[G <: Map[String, T]: TypeTag](map: G) = {
     val fields = map.map {
-      case (key, value) =>
-        key -> avroType.itemType.io.writeJson(value)
+      case (key, value) => {
+        if (key != null)
+          key -> avroType.itemType.io.writeJson(value)
+        else
+          throw new AvroSerializationException(map, null, "Null keys are not allowed")
+      }
     }
     JsObject(fields.toSeq: _*)
   }
