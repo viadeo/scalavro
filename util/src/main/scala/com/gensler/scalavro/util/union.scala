@@ -74,8 +74,8 @@ object Union extends UnionTypeHelpers {
     * @tparam C the starting conjunction of negations
     * @tparam T the type to add to the conjunction before negation
     */
-  protected[scalavro] def combine[C: TypeTag, T: TypeTag] = {
-    new Union()(typeTag[Union.not[C with Union.not[T]]])
+  protected[scalavro] def combine[C <: not[_]: TypeTag, T: TypeTag] = {
+    new Union()(typeTag[not[C with not[T]]])
   }
 
 }
@@ -100,12 +100,21 @@ class Union[U <: Union.not[_]: TypeTag] {
 
   import Union._
 
+  /**
+    * The underlying type of the union, a Union.not[_].
+    */
   type underlying = U
 
   type containsType[X] = prove[U]#containsType[X]
 
+  /**
+    * TypeTag for the underlying type of the union.
+    */
   val underlyingTag = typeTag[U]
 
+  /**
+    * Given U is a Union.not[X], returns X.
+    */
   val underlyingConjunctionTag: TypeTag[Union.not[_]] = {
     val ut = typeOf[U]
     val tParams = ut.typeSymbol.asType.typeParams // List[Symbol]
@@ -114,6 +123,10 @@ class Union[U <: Union.not[_]: TypeTag] {
 
   case class Value[T](ref: T, tag: TypeTag[T])
 
+  /**
+    * Storage for a value assigned to the union instance, the type of which must conform to one
+    * of the types in the union.
+    */
   protected var wrappedValue: Value[_] = Value((), typeTag[Unit])
 
   /**
@@ -142,12 +155,23 @@ class Union[U <: Union.not[_]: TypeTag] {
     */
   def contains[X: TypeTag]: Boolean = typeOf[not[not[X]]] <:< typeOf[U]
 
+  /**
+    * Assigns a new value to the union, as long as the type of the value assigned is a member of
+    * the union.
+    */
   def assign[X: TypeTag: containsType](newValue: X) {
     wrappedValue = Value(newValue, typeTag[X])
   }
 
+  /**
+    * Retrieves the value assigned to the union, or Unit if no value is assigned.
+    */
   def rawValue() = wrappedValue.ref
 
+  /**
+    * Retrieves the value assigned to the union as an Option[X] where X is one of the types in
+    * the union.
+    */
   def value[X: TypeTag: containsType](): Option[X] = wrappedValue match {
     case Value(x, tag) if tag.tpe <:< typeOf[X] => Some(x.asInstanceOf[X])
     case _                                      => None

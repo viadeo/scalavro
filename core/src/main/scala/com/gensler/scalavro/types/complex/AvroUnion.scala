@@ -66,7 +66,7 @@ object AvroUnion {
     )
   }
 
-  private[types] def fromType[T: TypeTag](processedTypes: Set[Type]): AvroType[T] = {
+  private[types] def fromType[T: TypeTag](processedTypes: Set[Type]): AvroUnion[_, T] = {
     val tt = typeTag[T]
     val tpe = tt.tpe
 
@@ -119,7 +119,7 @@ object AvroUnion {
       new AvroUnion(new Union()(notTypeTag), tt)
     }
 
-    // super types of concrete avro-typable types
+    // super types of concrete avro-typeable types
     else if (tpe.typeSymbol.isClass) {
       // last-ditch attempt: union of avro-typeable subtypes of T
       val extendedProcessedTypes = processedTypes + tpe
@@ -132,24 +132,17 @@ object AvroUnion {
       }
 
       if (subTypeTags.nonEmpty) {
-        if (subTypeTags.length == 1)
-          AvroType.fromTypeHelper(
-            subTypeTags.head,
-            extendedProcessedTypes
-          ).get.asInstanceOf[AvroType[T]]
-        else {
-          import scala.language.existentials
-          var u = Union.unary(subTypeTags.head)
+        import scala.language.existentials
+        var u = Union.unary(subTypeTags.head)
 
-          subTypeTags.tail.foreach { subTypeTag =>
-            u = Union.combine(
-              u.underlyingConjunctionTag,
-              subTypeTag
-            )
-          }
-
-          new AvroUnion(u, tt)
+        subTypeTags.tail.foreach { subTypeTag =>
+          u = Union.combine(
+            u.underlyingConjunctionTag,
+            subTypeTag
+          )
         }
+
+        new AvroUnion(u, tt)
       }
       else throw new IllegalArgumentException(
         "Could not find any avro-typeable sub types of [%s]" format tpe
