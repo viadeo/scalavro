@@ -106,10 +106,10 @@ class Union[U <: Union.not[_]: TypeTag] {
 
   val underlyingTag = typeTag[U]
 
-  val underlyingConjunctionTag = {
+  val underlyingConjunctionTag: TypeTag[Union.not[_]] = {
     val ut = typeOf[U]
     val tParams = ut.typeSymbol.asType.typeParams // List[Symbol]
-    ReflectionHelpers.tagForType(tParams.head.asType.toTypeIn(ut))
+    ReflectionHelpers.tagForType(tParams.head.asType.toTypeIn(ut)).asInstanceOf[TypeTag[Union.not[_]]]
   }
 
   case class Value[T](ref: T, tag: TypeTag[T])
