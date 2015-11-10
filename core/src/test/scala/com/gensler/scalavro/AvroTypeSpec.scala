@@ -282,21 +282,4 @@ class AvroTypeSpec extends AvroSpec {
 
   }
 
-  it should "expose class-level default arguments in generated schemas" in {
-    AvroType[Exclamation].schema.toString should equal ("""
-{
-  "name": "com.gensler.scalavro.test.Exclamation",
-  "type": "record",
-  "fields": [{
-    "name": "volume",
-    "type": "int"
-  }, {
-    "name": "word",
-    "type": "string",
-    "default": "Eureka!"
-  }]
-}
-    """.replaceAll("\\s", ""))
-  }
-
 }

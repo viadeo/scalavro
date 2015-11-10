@@ -52,6 +52,3 @@ case class BoolOrDoubleWrapper(inner: Either[Boolean, Double])
 
 // a recursively defined type
 case class SinglyLinkedStringList(data: String, next: Option[SinglyLinkedStringList])
-
-// a case class with default values
-case class Exclamation(volume: Int, word: String = "Eureka!")
