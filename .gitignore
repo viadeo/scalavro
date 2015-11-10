@@ -5,3 +5,4 @@ project/*/
 *.pdf
 *DS_Store
 *~
+.idea
