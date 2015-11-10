@@ -33,7 +33,6 @@ Interacting with Scalavro is easy from a user's perspective.  Scalavro will use 
 
 ```scala
 import com.gensler.scalavro.types.AvroType
-import com.gensler.scalavro.io.AvroTypeIO
 import scala.util.{ Try, Success, Failure }
 
 // obtaining an instance of AvroType
